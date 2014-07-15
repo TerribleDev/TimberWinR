@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{2C4AC7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimberWinR.ServiceHost", "TimberWinR.ServiceHost\TimberWinR.ServiceHost.csproj", "{2C0B4C56-0D63-4B89-852B-F9BFF4431F00}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimberWinR.UnitTests", "TimberWinR.UnitTests\TimberWinR.UnitTests.csproj", "{4410C95C-B22F-4B68-B132-84545AAA7A31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{2C0B4C56-0D63-4B89-852B-F9BFF4431F00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C0B4C56-0D63-4B89-852B-F9BFF4431F00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C0B4C56-0D63-4B89-852B-F9BFF4431F00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4410C95C-B22F-4B68-B132-84545AAA7A31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4410C95C-B22F-4B68-B132-84545AAA7A31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4410C95C-B22F-4B68-B132-84545AAA7A31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4410C95C-B22F-4B68-B132-84545AAA7A31}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
