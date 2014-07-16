@@ -31,16 +31,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="csredis">
+      <HintPath>..\packages\csredis.1.4.7.1\lib\net40\csredis.dll</HintPath>
+    </Reference>
     <Reference Include="Interop.MSUtil, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <HintPath>lib\com-logparser\Interop.MSUtil.dll</HintPath>
     </Reference>
     <Reference Include="NLog">
-      <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\packages\NLog.3.1.0.0\lib\net40\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -55,8 +55,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="Inputs\InputListener.cs" />
+    <Compile Include="Inputs\TcpInputListener.cs" />
+    <Compile Include="Inputs\TextLine.cs" />
+    <Compile Include="Manager.cs" />
+    <Compile Include="Outputs\OutputSender.cs" />
+    <Compile Include="Outputs\Redis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
