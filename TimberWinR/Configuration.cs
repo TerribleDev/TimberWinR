@@ -151,7 +151,7 @@ namespace TimberWinR
 
             foreach (XAttribute a in attributes)
             {
-                string val = a.Value.ToLower();
+                string val = a.Value;
 
                 switch (a.Name.ToString())
                 {
@@ -242,7 +242,7 @@ namespace TimberWinR
                     case "binaryFormat":
                         if (val == "ASC" || val == "PRINT" || val == "HEX")
                         {
-                            p.WithMsgErrorMode(val);
+                            p.WithBinaryFormat(val);
                         }
                         else
                         {
@@ -386,12 +386,11 @@ namespace TimberWinR
 
         static void parseXMLConf(string xmlConfFile)
         {
-            XDocument config = XDocument.Load(@"c:\users\jpreddy\desktop\testConf.xml");
+            XDocument config = XDocument.Load(xmlConfFile);
 
             IEnumerable<XElement> inputs =
                 from el in config.Root.Descendants("Inputs")
                 select el;
-
 
 
 
@@ -631,14 +630,14 @@ namespace TimberWinR
             {
                 // Default values for parameters.
                 private bool fullText = true;
-                private bool resolveSIDS = false;
+                private bool resolveSIDS = true;
                 private bool formatMsg = true;
                 private string msgErrorMode = "MSG";
                 private bool fullEventCode = false;
                 private string direction = "FW";
                 private string stringsSep = "|";
                 private string iCheckpoint;
-                private string binaryFormat = "HEX";
+                private string binaryFormat = "PRINT";
 
                 public Builder WithFullText(bool value)
                 {

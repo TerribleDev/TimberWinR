@@ -22,11 +22,13 @@ namespace TimberWinR.Inputs
     /// </summary>
     public class WindowsEvtInputListener : InputListener
     {      
-        private int _pollingIntervalInSeconds = 1;       
+        private int _pollingIntervalInSeconds = 1;
+        private TimberWinR.Configuration.WindowsEvents _arguments;
 
-        public WindowsEvtInputListener(CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public WindowsEvtInputListener(TimberWinR.Configuration.WindowsEvents arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken, FieldDefinitions, ParameterDefinitions)
         {
+            _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
             var task = new Task(EventWatcher, cancelToken);
             task.Start();
@@ -39,17 +41,18 @@ namespace TimberWinR.Inputs
             var fileName = Path.Combine(System.IO.Path.GetTempPath(),
                 string.Format("{0}.lpc", Guid.NewGuid().ToString()));
 
+          
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
             {
-                direction = "FW",
-                binaryFormat = "PRINT",
+                direction = _arguments.Direction,
+                binaryFormat = _arguments.BinaryFormat,
                 iCheckpoint = fileName,
-                resolveSIDs = true
+                resolveSIDs = _arguments.ResolveSIDS,
             };
 
             // Create the query
-            var query = @"SELECT * FROM Application, System";
+            var query = string.Format("SELECT * FROM {0}", _arguments.Source);
 
             var firstQuery = true;
             // Execute the query
@@ -115,23 +118,23 @@ namespace TimberWinR.Inputs
             get
             {
                 return new FieldDefinitions()
-            {               
-                {"EventLog", typeof (string)},
-                {"RecordNumber", typeof (string)},
-                {"TimeGenerated", typeof (DateTime)},
-                {"TimeWritten", typeof (DateTime)},
-                {"EventID", typeof (int)},
-                {"EventType", typeof (int)},
-                {"EventTypeName", typeof (string)},
-                {"EventCategory", typeof (int)},
-                {"EventCategoryName", typeof (string)},
-                {"SourceName", typeof (string)},
-                {"Strings", typeof (string)},
-                {"ComputerName", typeof (string)},
-                {"SID", typeof (string)},
-                {"Message", typeof (string)},
-                {"Data", typeof (string)}
-            };
+                {               
+                    {"EventLog", typeof (string)},
+                    {"RecordNumber", typeof (string)},
+                    {"TimeGenerated", typeof (DateTime)},
+                    {"TimeWritten", typeof (DateTime)},
+                    {"EventID", typeof (int)},
+                    {"EventType", typeof (int)},
+                    {"EventTypeName", typeof (string)},
+                    {"EventCategory", typeof (int)},
+                    {"EventCategoryName", typeof (string)},
+                    {"SourceName", typeof (string)},
+                    {"Strings", typeof (string)},
+                    {"ComputerName", typeof (string)},
+                    {"SID", typeof (string)},
+                    {"Message", typeof (string)},
+                    {"Data", typeof (string)}
+                };
             }
         }
       
