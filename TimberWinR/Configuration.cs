@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.IO;
 using System.Globalization;
+using TimberWinR.Inputs;
 namespace TimberWinR
 {
     public class Configuration
@@ -23,35 +24,35 @@ namespace TimberWinR
             parseXMLConf(xmlConfFile);
         }
 
-        static List<string> parseFields_Events(IEnumerable<XElement> xml_fields)
+        static List<FieldDefinition> parseFields_Events(IEnumerable<XElement> xml_fields)
         {
-            List<string> fields = new List<string>();
+            List<FieldDefinition> fields = new List<FieldDefinition>();
 
-            List<string> allPossibleFields = new List<string>
+            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
             {
-                "EventLog",
-                "RecordNumber",
-                "TimeGenerated",
-                "TimeWritten",
-                "EventID",
-                "EventType",
-                "EventTypeName",
-                "EventCategory",
-                "EventCategoryName",
-                "SourceName",
-                "Strings",
-                "ComputerName",
-                "SID",
-                "Message",
-                "Data"
+                { "EventLog", typeof(string) },
+                { "RecordNumber", typeof(int) },
+                { "TimeGenerated", typeof(DateTime) },
+                { "TimeWritten", typeof(DateTime) },
+                { "EventID", typeof(int) },
+                { "EventType", typeof(int) },
+                { "EventTypeName", typeof(string) },
+                { "EventCategory", typeof(int) },
+                { "EventCategoryName", typeof(string) },
+                { "SourceName", typeof(string) },
+                { "Strings", typeof(string) },
+                { "ComputerName", typeof(string) },
+                { "SID", typeof(string) },
+                { "Message", typeof(string) },
+                { "Data", typeof(string) }
             };
 
             foreach (XElement f in xml_fields)
             {
                 string name = f.Attribute("name").Value;
-                if (allPossibleFields.Contains(name))
+                if (allPossibleFields.ContainsKey(name))
                 {
-                    fields.Add(name);
+                    fields.Add(new FieldDefinition(name, allPossibleFields[name]));
                 }
                 else
                 {
@@ -61,29 +62,32 @@ namespace TimberWinR
 
             if (fields.Count == 0)
             {
-                fields = allPossibleFields;
+                foreach (KeyValuePair<string, Type> entry in allPossibleFields)
+                {
+                    fields.Add(new FieldDefinition(entry.Key, entry.Value));
+                }
             }
 
             return fields;
         }
 
-        static List<string> parseFields_Logs(IEnumerable<XElement> xml_fields)
+        static List<FieldDefinition> parseFields_Logs(IEnumerable<XElement> xml_fields)
         {
-            List<string> fields = new List<string>();
+            List<FieldDefinition> fields = new List<FieldDefinition>();
 
-            List<string> allPossibleFields = new List<string>
+            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
             {
-                "LogFilename",
-                "Index",
-                "Text"
+                { "LogFilename", typeof(string) },
+                { "Index", typeof(int) },
+                { "Text", typeof(string) }
             };
 
             foreach (XElement f in xml_fields)
             {
                 string name = f.Attribute("name").Value;
-                if (allPossibleFields.Contains(name))
+                if (allPossibleFields.ContainsKey(name))
                 {
-                    fields.Add(name);
+                    fields.Add(new FieldDefinition(name, allPossibleFields[name]));
                 }
                 else
                 {
@@ -93,43 +97,46 @@ namespace TimberWinR
 
             if (fields.Count == 0)
             {
-                fields = allPossibleFields;
+                foreach (KeyValuePair<string, Type> entry in allPossibleFields)
+                {
+                    fields.Add(new FieldDefinition(entry.Key, entry.Value));
+                }
             }
 
             return fields;
         }
 
-        static List<string> parseFields_IIS(IEnumerable<XElement> xml_fields)
+        static List<FieldDefinition> parseFields_IIS(IEnumerable<XElement> xml_fields)
         {
-            List<string> fields = new List<string>();
+            List<FieldDefinition> fields = new List<FieldDefinition>();
 
-            List<string> allPossibleFields = new List<string>
+            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
             {
-                "LogFilename",
-                "LogRow",
-                "UserIP",
-                "UserName",
-                "Date",
-                "Time",
-                "ServiceInstance",
-                "HostName",
-                "ServerIP",
-                "TimeTaken",
-                "BytesSent",
-                "BytesReceived",
-                "StatusCode",
-                "Win32StatusCode",
-                "RequestType",
-                "Target",
-                "Parameters"
+                { "LogFilename", typeof(string) },
+                { "LogRow", typeof(int) },
+                { "UserIP", typeof(string) },
+                { "UserName", typeof(string) },
+                { "Date", typeof(DateTime) },
+                { "Time", typeof(DateTime) },
+                { "ServiceInstance", typeof(string) },
+                { "HostName", typeof(string) },
+                { "ServerIP", typeof(string) },
+                { "TimeTaken", typeof(int) },
+                { "BytesSent", typeof(int) },
+                { "BytesReceived", typeof(int) },
+                { "StatusCode", typeof(int) },
+                { "Win32StatusCode", typeof(int) },
+                { "RequestType", typeof(string) },
+                { "Target", typeof(string) },
+                { "Parameters", typeof(string) }
             };
 
             foreach (XElement f in xml_fields)
             {
                 string name = f.Attribute("name").Value;
-                if (allPossibleFields.Contains(name))
+                if (allPossibleFields.ContainsKey(name))
                 {
-                    fields.Add(name);
+                    fields.Add(new FieldDefinition(name, allPossibleFields[name]));
                 }
                 else
                 {
@@ -139,7 +146,10 @@ namespace TimberWinR
 
             if (fields.Count == 0)
             {
-                fields = allPossibleFields;
+                foreach (KeyValuePair<string, Type> entry in allPossibleFields)
+                {
+                    fields.Add(new FieldDefinition(entry.Key, entry.Value));
+                }
             }
 
             return fields;
@@ -406,7 +416,7 @@ namespace TimberWinR
                 IEnumerable<XElement> xml_fields =
                     from el in e.Descendants("Fields").Descendants("Field")
                     select el;
-                List<string> fields = parseFields_Events(xml_fields);
+                List<FieldDefinition> fields = parseFields_Events(xml_fields);
 
                 Params_WindowsEvents args = parseParams_Events(e.Attributes());
 
@@ -430,7 +440,7 @@ namespace TimberWinR
                 IEnumerable<XElement> xml_fields =
                     from el in e.Descendants("Fields").Descendants("Field")
                     select el;
-                List<string> fields = parseFields_Logs(xml_fields);
+                List<FieldDefinition> fields = parseFields_Logs(xml_fields);
 
                 Params_TextLogs args = parseParams_Logs(e.Attributes());
 
@@ -452,7 +462,7 @@ namespace TimberWinR
                 IEnumerable<XElement> xml_fields =
                     from el in e.Descendants("Fields").Descendants("Field")
                     select el;
-                List<string> fields = parseFields_IIS(xml_fields);
+                List<FieldDefinition> fields = parseFields_IIS(xml_fields);
 
                 Params_IISLogs args = parseParams_IIS(e.Attributes());
 
@@ -468,7 +478,7 @@ namespace TimberWinR
         public class WindowsEvents
         {
             public string Source { get; private set; }
-            public List<string> Fields { get; private set; }
+            public List<FieldDefinition> Fields { get; private set; }
 
             // Parameters
             public bool FullText { get; private set; }
@@ -481,7 +491,7 @@ namespace TimberWinR
             public string ICheckpoint { get; private set; }
             public string BinaryFormat { get; private set; }
 
-            public WindowsEvents(string source, List<string> fields, Params_WindowsEvents args)
+            public WindowsEvents(string source, List<FieldDefinition> fields, Params_WindowsEvents args)
             {
                 Source = source;
                 Fields = fields;
@@ -502,9 +512,9 @@ namespace TimberWinR
                 sb.Append("WindowsEvent\n");
                 sb.Append(String.Format("Source: {0}\n", Source));
                 sb.Append("Fields:\n");
-                foreach (string f in Fields)
+                foreach (FieldDefinition f in Fields)
                 {
-                    sb.Append(String.Format("\t{0}\n", f));
+                    sb.Append(String.Format("\t{0}\n", f.Name));
                 }
                 sb.Append("Parameters:\n");
                 sb.Append(String.Format("\tfullText: {0}\n", FullText));
@@ -525,7 +535,7 @@ namespace TimberWinR
         {
             public string Name { get; private set; }
             public string Location { get; private set; }
-            public List<string> Fields { get; private set; }
+            public List<FieldDefinition> Fields { get; private set; }
 
             // Parameters
             public int ICodepage { get; private set; }
@@ -533,7 +543,7 @@ namespace TimberWinR
             public bool SplitLongLines { get; private set; }
             public string ICheckpoint { get; private set; }
 
-            public TextLogs(string name, string location, List<string> fields, Params_TextLogs args)
+            public TextLogs(string name, string location, List<FieldDefinition> fields, Params_TextLogs args)
             {
                 Name = name;
                 Location = location;
@@ -552,9 +562,9 @@ namespace TimberWinR
                 sb.Append(String.Format("Name: {0}\n", Name));
                 sb.Append(String.Format("Location: {0}\n", Location));
                 sb.Append("Fields:\n");
-                foreach (string f in Fields)
+                foreach (FieldDefinition f in Fields)
                 {
-                    sb.Append(String.Format("\t{0}\n", f));
+                    sb.Append(String.Format("\t{0}\n", f.Name));
                 }
                 sb.Append("Parameters:\n");
                 sb.Append(String.Format("\tiCodepage: {0}\n", ICodepage));
@@ -570,7 +580,7 @@ namespace TimberWinR
         {
             public string Name { get; private set; }
             public string Location { get; private set; }
-            public List<string> Fields { get; private set; }
+            public List<FieldDefinition> Fields { get; private set; }
 
             // Parameters
             public int ICodepage { get; private set; }
@@ -579,7 +589,7 @@ namespace TimberWinR
             public string Locale { get; private set; }
             public string ICheckpoint { get; private set; }
 
-            public IISLogs(string name, string location, List<string> fields, Params_IISLogs args)
+            public IISLogs(string name, string location, List<FieldDefinition> fields, Params_IISLogs args)
             {
                 Name = name;
                 Location = location;
@@ -599,9 +609,9 @@ namespace TimberWinR
                 sb.Append(String.Format("Name: {0}\n", Name));
                 sb.Append(String.Format("Location: {0}\n", Location));
                 sb.Append("Fields:\n");
-                foreach (string f in Fields)
+                foreach (FieldDefinition f in Fields)
                 {
-                    sb.Append(String.Format("\t{0}\n", f));
+                    sb.Append(String.Format("\t{0}\n", f.Name));
                 }
                 sb.Append("Parameters:\n");
                 sb.Append(String.Format("\tiCodepage: {0}\n", ICodepage));
