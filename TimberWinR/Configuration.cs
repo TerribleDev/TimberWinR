@@ -80,6 +80,197 @@ namespace TimberWinR
             parseXMLConf(xmlConfFile);
         }
 
+        static void parseXMLConf(string xmlConfFile)
+        {
+            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
+
+            IEnumerable<XElement> inputs =
+                from el in config.Root.Descendants("Inputs")
+                select el;
+
+            // WINDOWS EVENTS
+            IEnumerable<XElement> xml_events =
+                from el in inputs.Descendants("WindowsEvents").Descendants("Events")
+                select el;
+
+            foreach (XElement e in xml_events)
+            {
+                // Required attributes.
+                string source;
+
+                // Parse required attributes.
+                string attributeName;
+                attributeName = "source";
+                try
+                {
+                    source = e.Attribute("source").Value;
+                }
+                catch (NullReferenceException)
+                {
+                    throw new MissingRequiredAttributeException(e, attributeName);
+                }
+
+                // Parse fields.
+                IEnumerable<XElement> xml_fields =
+                    from el in e.Descendants("Fields").Descendants("Field")
+                    select el;
+                List<FieldDefinition> fields = parseFields_Event(xml_fields);
+
+                // Parse parameters.
+                Params_WindowsEvent args = parseParams_Event(e.Attributes());
+
+                WindowsEvent evt = new WindowsEvent(source, fields, args);
+                _events.Add(evt);
+            }
+
+
+
+            // TEXT LOGS
+            IEnumerable<XElement> xml_logs =
+                from el in inputs.Descendants("Logs").Descendants("Log")
+                select el;
+
+            foreach (XElement e in xml_logs)
+            {
+                // Required attributes.
+                string name;
+                string location;
+
+                // Parse required attributes.
+                string attributeName;
+                attributeName = "name";
+                try
+                {
+                    name = e.Attribute(attributeName).Value;
+                }
+                catch (NullReferenceException)
+                {
+                    throw new MissingRequiredAttributeException(e, attributeName);
+                }
+
+                attributeName = "location";
+                try
+                {
+                    location = e.Attribute("location").Value;
+                }
+                catch (NullReferenceException)
+                {
+                    throw new MissingRequiredAttributeException(e, attributeName);
+                }
+
+                // Parse fields.
+                IEnumerable<XElement> xml_fields =
+                    from el in e.Descendants("Fields").Descendants("Field")
+                    select el;
+                List<FieldDefinition> fields = parseFields_Log(xml_fields);
+
+                // Parse parameters.
+                Params_TextLog args = parseParams_Log(e.Attributes());
+
+                TextLog log = new TextLog(name, location, fields, args);
+                _logs.Add(log);
+            }
+
+
+
+            // IIS LOGS
+            IEnumerable<XElement> xml_iis =
+                from el in inputs.Descendants("IISLogs").Descendants("IISLog")
+                select el;
+            foreach (XElement e in xml_iis)
+            {
+                // Required attributes.
+                string name;
+                string location;
+
+                // Parse required attributes.
+                string attributeName;
+                attributeName = "name";
+                try
+                {
+                    name = e.Attribute(attributeName).Value;
+                }
+                catch (NullReferenceException)
+                {
+                    throw new MissingRequiredAttributeException(e, attributeName);
+                }
+
+                attributeName = "location";
+                try
+                {
+                    location = e.Attribute("location").Value;
+                }
+                catch (NullReferenceException)
+                {
+                    throw new MissingRequiredAttributeException(e, attributeName);
+                }
+
+                // Parse fields.
+                IEnumerable<XElement> xml_fields =
+                    from el in e.Descendants("Fields").Descendants("Field")
+                    select el;
+                List<FieldDefinition> fields = parseFields_IIS(xml_fields);
+
+                // Parse parameters.
+                Params_IISLog args = parseParams_IIS(e.Attributes());
+
+
+                IISLog iis = new IISLog(name, location, fields, args);
+                _iislogs.Add(iis);
+            }
+
+
+
+            // IISW3C LOGS
+            IEnumerable<XElement> xml_iisw3c =
+                from el in inputs.Descendants("IISW3CLogs").Descendants("IISW3CLog")
+                select el;
+            foreach (XElement e in xml_iis)
+            {
+                // Required attributes.
+                string name;
+                string location;
+
+                // Parse required attributes.
+                string attributeName;
+                attributeName = "name";
+                try
+                {
+                    name = e.Attribute(attributeName).Value;
+                }
+                catch (NullReferenceException)
+                {
+                    throw new MissingRequiredAttributeException(e, attributeName);
+                }
+
+                attributeName = "location";
+                try
+                {
+                    location = e.Attribute("location").Value;
+                }
+                catch (NullReferenceException)
+                {
+                    throw new MissingRequiredAttributeException(e, attributeName);
+                }
+
+                // Parse fields.
+                IEnumerable<XElement> xml_fields =
+                    from el in e.Descendants("Fields").Descendants("Field")
+                    select el;
+                List<FieldDefinition> fields = parseFields_IISW3C(xml_fields);
+
+                // Parse parameters.
+                Params_IISW3CLog args = parseParams_IISW3C(e.Attributes());
+
+
+                IISW3CLog iisw3c = new IISW3CLog(name, location, fields, args);
+                _iisw3clogs.Add(iisw3c);
+            }
+
+
+            Console.WriteLine("end");
+        }
+
         static List<FieldDefinition> parseFields_Event(IEnumerable<XElement> xml_fields)
         {
             List<FieldDefinition> fields = new List<FieldDefinition>();
@@ -665,197 +856,6 @@ namespace TimberWinR
             }
 
             return p.Build();
-        }
-
-        static void parseXMLConf(string xmlConfFile)
-        {
-            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
-
-            IEnumerable<XElement> inputs =
-                from el in config.Root.Descendants("Inputs")
-                select el;
-
-            // WINDOWS EVENTS
-            IEnumerable<XElement> xml_events =
-                from el in inputs.Descendants("WindowsEvents").Descendants("Events")
-                select el;
-
-            foreach (XElement e in xml_events)
-            {
-                // Required attributes.
-                string source;
-
-                // Parse required attributes.
-                string attributeName;
-                attributeName = "source";
-                try
-                {
-                    source = e.Attribute("source").Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(e, attributeName);
-                }
-
-                // Parse fields.
-                IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
-                    select el;
-                List<FieldDefinition> fields = parseFields_Event(xml_fields);
-
-                // Parse parameters.
-                Params_WindowsEvent args = parseParams_Event(e.Attributes());
-
-                WindowsEvent evt = new WindowsEvent(source, fields, args);
-                _events.Add(evt);
-            }
-
-
-
-            // TEXT LOGS
-            IEnumerable<XElement> xml_logs =
-                from el in inputs.Descendants("Logs").Descendants("Log")
-                select el;
-
-            foreach (XElement e in xml_logs)
-            {
-                // Required attributes.
-                string name;
-                string location;
-
-                // Parse required attributes.
-                string attributeName;
-                attributeName = "name";
-                try
-                {
-                    name = e.Attribute(attributeName).Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(e, attributeName);
-                }
-
-                attributeName = "location";
-                try
-                {
-                    location = e.Attribute("location").Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(e, attributeName);
-                }
-
-                // Parse fields.
-                IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
-                    select el;
-                List<FieldDefinition> fields = parseFields_Log(xml_fields);
-
-                // Parse parameters.
-                Params_TextLog args = parseParams_Log(e.Attributes());
-
-                TextLog log = new TextLog(name, location, fields, args);
-                _logs.Add(log);
-            }
-
-
-
-            // IIS LOGS
-            IEnumerable<XElement> xml_iis =
-                from el in inputs.Descendants("IISLogs").Descendants("IISLog")
-                select el;
-            foreach (XElement e in xml_iis)
-            {
-                // Required attributes.
-                string name;
-                string location;
-
-                // Parse required attributes.
-                string attributeName;
-                attributeName = "name";
-                try
-                {
-                    name = e.Attribute(attributeName).Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(e, attributeName);
-                }
-
-                attributeName = "location";
-                try
-                {
-                    location = e.Attribute("location").Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(e, attributeName);
-                }
-
-                // Parse fields.
-                IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
-                    select el;
-                List<FieldDefinition> fields = parseFields_IIS(xml_fields);
-
-                // Parse parameters.
-                Params_IISLog args = parseParams_IIS(e.Attributes());
-
-
-                IISLog iis = new IISLog(name, location, fields, args);
-                _iislogs.Add(iis);
-            }
-
-
-
-            // IISW3C LOGS
-            IEnumerable<XElement> xml_iisw3c =
-                from el in inputs.Descendants("IISW3CLogs").Descendants("IISW3CLog")
-                select el;
-            foreach (XElement e in xml_iis)
-            {
-                // Required attributes.
-                string name;
-                string location;
-
-                // Parse required attributes.
-                string attributeName;
-                attributeName = "name";
-                try
-                {
-                    name = e.Attribute(attributeName).Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(e, attributeName);
-                }
-
-                attributeName = "location";
-                try
-                {
-                    location = e.Attribute("location").Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(e, attributeName);
-                }
-
-                // Parse fields.
-                IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
-                    select el;
-                List<FieldDefinition> fields = parseFields_IISW3C(xml_fields);
-
-                // Parse parameters.
-                Params_IISW3CLog args = parseParams_IISW3C(e.Attributes());
-
-
-                IISW3CLog iisw3c = new IISW3CLog(name, location, fields, args);
-                _iisw3clogs.Add(iisw3c);
-            }
-
-
-            Console.WriteLine("end");
         }
 
         public class WindowsEvent
