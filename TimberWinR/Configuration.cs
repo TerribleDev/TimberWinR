@@ -12,12 +12,43 @@ namespace TimberWinR
 {
     public class Configuration
     {
+
+        private class InvalidAttributeNameException : Exception
+        {
+            public InvalidAttributeNameException(XAttribute a)
+                : base(
+                    string.Format("{0}:{1} Invalid Attribute Name <{2} {3}>", a.Document.BaseUri,
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.Name.ToString()))
+            {
+            }
+        }
+
+        private class InvalidAttributeDateValueException : Exception
+        {
+            public InvalidAttributeDateValueException(XAttribute a)
+                : base(
+                    string.Format("{0}:{1} Invalid date format given for attribute. Format must be \"yyyy-MM-dd hh:mm:ss\". <{2} {3}>", a.Document.BaseUri,
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
+            {
+            }
+        }
+
+        private class InvalidAttributeIntegerValueException : Exception
+        {
+            public InvalidAttributeIntegerValueException(XAttribute a)
+                : base(
+                    string.Format("{0}:{1} Integer value not given for attribute. <{2} {3}>", a.Document.BaseUri,
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
+            {
+            }
+        }
+
         private class InvalidAttributeValueException : Exception
         {
-            public InvalidAttributeValueException(XAttribute a, string badValue)
+            public InvalidAttributeValueException(XAttribute a)
                 : base(
-                    string.Format("{0}:{1} Invalid Attribute <{2} {3}=\"{4}\">", a.Document.BaseUri,
-                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.Name, badValue))
+                    string.Format("{0}:{1} Invalid Attribute Value <{2} {3}>", a.Document.BaseUri,
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
             {
             }
         }
@@ -68,7 +99,7 @@ namespace TimberWinR
                 }
                 else
                 {
-                    Console.WriteLine(String.Format("ERROR. WindowsEvents encountered unknown field name: {0}", name));
+                    throw new InvalidAttributeValueException(f.Attribute("name"));
                 }
             }
 
@@ -103,7 +134,7 @@ namespace TimberWinR
                 }
                 else
                 {
-                    Console.WriteLine(String.Format("ERROR. Logs encountered unknown field name: {0}", name));
+                    throw new InvalidAttributeValueException(f.Attribute("name"));
                 }
             }
 
@@ -152,7 +183,7 @@ namespace TimberWinR
                 }
                 else
                 {
-                    Console.WriteLine(String.Format("ERROR. IIS Logs encountered unknown field name: {0}", name));
+                    throw new InvalidAttributeValueException(f.Attribute("name"));
                 }
             }
 
@@ -191,7 +222,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     case "resolveSIDS":
@@ -205,7 +236,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     case "formatMsg":
@@ -219,7 +250,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     case "msgErrorMode":
@@ -229,7 +260,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     case "fullEventCode":
@@ -243,7 +274,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     case "direction":
@@ -253,7 +284,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     case "stringsSep":
@@ -269,12 +300,11 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     default:
-                        throw new Exception(String.Format("ERROR. WindowsEvents encountered unknown attribute: {0}.", a.Name.ToString()));
-                        break;
+                        throw new InvalidAttributeNameException(a);
                 }
             }
 
@@ -303,7 +333,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Integer value not given for Logs:iCodepage.");
+                            throw new InvalidAttributeIntegerValueException(a);
                         }
                         break;
                     case "recurse":
@@ -313,7 +343,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Integer value not given for Logs:recurse.");
+                            throw new InvalidAttributeIntegerValueException(a);
                         }
                         break;
                     case "splitLongLines":
@@ -327,15 +357,14 @@ namespace TimberWinR
                         }
                         else
                         {
-                            throw new InvalidAttributeValueException(a, val);
+                            throw new InvalidAttributeValueException(a);
                         }
                         break;
                     case "iCheckpoint":
                         p.WithICheckpoint(val);
                         break;
                     default:
-                        Console.WriteLine(String.Format("ERROR. Logs encountered unknown attribute: {0}.", a.Name.ToString()));
-                        break;
+                        throw new InvalidAttributeNameException(a);
                 }
             }
 
@@ -364,7 +393,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Integer value not given for Logs:iCodepage.");
+                            throw new InvalidAttributeIntegerValueException(a);
                         }
                         break;
                     case "recurse":
@@ -374,7 +403,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Integer value not given for Logs:recurse.");
+                            throw new InvalidAttributeIntegerValueException(a);
                         }
                         break;
                     case "minDateMod":
@@ -389,7 +418,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Invalid date format given for Logs:minDateMod. Date format must be yyyy-MM-dd hh:mm:ss");
+                            throw new InvalidAttributeDateValueException(a);
                         }
                         break;
                     case "locale":
@@ -399,8 +428,7 @@ namespace TimberWinR
                         p.WithICheckpoint(val);
                         break;
                     default:
-                        Console.WriteLine(String.Format("ERROR. IIS Logs encountered unknown attribute: {0}.", a.Name.ToString()));
-                        break;
+                        throw new InvalidAttributeNameException(a);
                 }
             }
 
@@ -415,7 +443,7 @@ namespace TimberWinR
                 from el in config.Root.Descendants("Inputs")
                 select el;
 
-            // WINDOWS EVENTSexc
+            // WINDOWS EVENTS
             IEnumerable<XElement> xml_events =
                 from el in inputs.Descendants("WindowsEvents").Descendants("Events")
                 select el;
