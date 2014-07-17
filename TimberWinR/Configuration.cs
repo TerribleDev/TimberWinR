@@ -693,7 +693,7 @@ namespace TimberWinR
 
             // WINDOWS EVENTS
             IEnumerable<XElement> xml_events =
-                from el in inputs.Descendants("WindowsEvents").Descendants("Events")
+                from el in inputs.Descendants("WindowsEvents").Descendants("Event")
                 select el;
 
             foreach (XElement e in xml_events)

@@ -3,14 +3,14 @@
 
   <Inputs>
     <WindowsEvents>
-      <Events source="Application">
+      <Event source="Application">
         <Fields>
           <Field name="EventLog"/>
           <Field name="RecordNumber"/>
         </Fields>
-      </Events>
-      <Events source="System">
-      </Events>
+      </Event>
+      <Event source="System">
+      </Event>
     </WindowsEvents>
     <Logs>
       <Log name="First Set" location="C:\Logs1\*.log">
