@@ -19,7 +19,7 @@ namespace TimberWinR
         public Manager(string configurationFile=null)
         {
             // Read the Configuration file
-            Config = new Configuration();
+           // Config = new Configuration();
 
             var loggingConfiguration = new LoggingConfiguration();
 

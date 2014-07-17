@@ -70,9 +70,12 @@ namespace TimberWinR.ServiceHost
             _cancellationToken = _cancellationTokenSource.Token;
             _serviceTask = new Task(RunService, _cancellationToken);
 
+            var elistner = new WindowsEvtInputListener(_cancellationToken);
+
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
             var outputRedis = new RedisOutput(new string[] { "tstlexiceapp006.vistaprint.svc", "tstlexiceapp007.vistaprint.svc" }, _cancellationToken);
-            outputRedis.Connect(_nlogListener);            
+            outputRedis.Connect(_nlogListener);
+            outputRedis.Connect(elistner);        
         }
         
         public void Start()
@@ -93,11 +96,10 @@ namespace TimberWinR.ServiceHost
         {
             TimberWinR.Manager manager = new TimberWinR.Manager();
 
-            while (!_cancellationTokenSource.IsCancellationRequested)
-            {
-                Console.WriteLine("I am working");
-                System.Threading.Thread.Sleep(1000);               
-            }
+            //while (!_cancellationTokenSource.IsCancellationRequested)
+            //{               
+            //    System.Threading.Thread.Sleep(1000);               
+            //}
         }
     }
 }

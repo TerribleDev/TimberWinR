@@ -13,14 +13,13 @@ namespace TimberWinR.Outputs
 {
     public class RedisOutput : OutputSender
     {       
-        private readonly string _logstashIndexName;
-        private readonly string _hostname;
+        private readonly string _logstashIndexName;       
         private readonly int _port;
         private readonly int _timeout;
-        private object _locker = new object();
-        private List<string> _jsonQueue;
+        private readonly object _locker = new object();
+        private readonly List<string> _jsonQueue;
         readonly Task _consumerTask;
-        private string[] _redisHosts;
+        private readonly string[] _redisHosts;
         private int _redisHostIndex;
 
         /// <summary>
@@ -61,8 +60,8 @@ namespace TimberWinR.Outputs
             _jsonQueue = new List<string>();          
             _port = port;
             _timeout = timeout;
-            _logstashIndexName = logstashIndexName;          
-            _consumerTask = new Task(RedisSender, CancellationToken.None);
+            _logstashIndexName = logstashIndexName;
+            _consumerTask = new Task(RedisSender, cancelToken);
             _consumerTask.Start();
         }
 

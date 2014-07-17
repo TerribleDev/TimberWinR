@@ -15,12 +15,12 @@ namespace TimberWinR.Inputs
         private Thread _listenThread;
         const int bufferSize = 16535;
 
-        public TcpInputListener(CancellationToken cancelToken, int port = 5140) : base(cancelToken)
+        public TcpInputListener(CancellationToken cancelToken, int port = 5140) : base(cancelToken, null, null)
         {            
             _tcpListener = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
             _listenThread = new Thread(new ThreadStart(ListenForClients));
             _listenThread.Start();
-        }
+        }      
 
         public void Shutdown()
         {
@@ -82,7 +82,7 @@ namespace TimberWinR.Inputs
                 var encoder = new ASCIIEncoding();
                 var encodedMessage = encoder.GetString(message, 0, bytesRead);
 
-                ProcessMessage(encodedMessage);             
+                ProcessJson(encodedMessage);             
             }
             tcpClient.Close();
         }
