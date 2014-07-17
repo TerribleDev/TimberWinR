@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using System.IO;
 using System.Globalization;
@@ -10,6 +12,16 @@ namespace TimberWinR
 {
     public class Configuration
     {
+        private class InvalidAttributeValueException : Exception
+        {
+            public InvalidAttributeValueException(XAttribute a, string badValue)
+                : base(
+                    string.Format("{0}:{1} Invalid Attribute <{2} {3}=\"{4}\">", a.Document.BaseUri,
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.Name, badValue))
+            {
+            }
+        }
+
         private static List<WindowsEvents> _events = new List<WindowsEvents>();
         public IEnumerable<WindowsEvents> Events { get { return _events; } }
 
@@ -162,6 +174,7 @@ namespace TimberWinR
             foreach (XAttribute a in attributes)
             {
                 string val = a.Value;
+                IXmlLineInfo li = ((IXmlLineInfo)a);
 
                 switch (a.Name.ToString())
                 {
@@ -178,7 +191,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for fullText.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     case "resolveSIDS":
@@ -192,7 +205,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for resolveSIDS.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     case "formatMsg":
@@ -206,7 +219,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for formatMsg.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     case "msgErrorMode":
@@ -216,7 +229,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for msgErrorMode.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     case "fullEventCode":
@@ -230,7 +243,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for fullEventCode.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     case "direction":
@@ -240,7 +253,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for direction.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     case "stringsSep":
@@ -256,11 +269,11 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for binaryFormat.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     default:
-                        Console.WriteLine(String.Format("ERROR. WindowsEvents encountered unknown attribute: {0}.", a.Name.ToString()));
+                        throw new Exception(String.Format("ERROR. WindowsEvents encountered unknown attribute: {0}.", a.Name.ToString()));
                         break;
                 }
             }
@@ -314,7 +327,7 @@ namespace TimberWinR
                         }
                         else
                         {
-                            Console.WriteLine("ERROR. Unknown value declared for Logs:splitLongLines.");
+                            throw new InvalidAttributeValueException(a, val);
                         }
                         break;
                     case "iCheckpoint":
@@ -396,15 +409,13 @@ namespace TimberWinR
 
         static void parseXMLConf(string xmlConfFile)
         {
-            XDocument config = XDocument.Load(xmlConfFile);
+            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
 
             IEnumerable<XElement> inputs =
                 from el in config.Root.Descendants("Inputs")
                 select el;
 
-
-
-            // WINDOWS EVENTS
+            // WINDOWS EVENTSexc
             IEnumerable<XElement> xml_events =
                 from el in inputs.Descendants("WindowsEvents").Descendants("Events")
                 select el;
@@ -420,8 +431,7 @@ namespace TimberWinR
 
                 Params_WindowsEvents args = parseParams_Events(e.Attributes());
 
-
-                WindowsEvents evt = new WindowsEvents(source, fields, args);   
+                WindowsEvents evt = new WindowsEvents(source, fields, args);
                 _events.Add(evt);
             }
 
@@ -526,7 +536,7 @@ namespace TimberWinR
                 sb.Append(String.Format("\tstringsSep: {0}\n", StringsSep));
                 sb.Append(String.Format("\tiCheckpoint: {0}\n", ICheckpoint));
                 sb.Append(String.Format("\tbinaryFormat: {0}\n", BinaryFormat));
-                
+
                 return sb.ToString();
             }
         }

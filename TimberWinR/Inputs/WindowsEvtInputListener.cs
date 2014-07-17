@@ -68,14 +68,14 @@ namespace TimberWinR.Inputs
                         {
                             var record = rs.getRecord();
                             var json = new JObject();
-                            foreach (var fieldName in _arguments.Fields)
+                            foreach (var field in _arguments.Fields)
                             {
-                                object v = record.getValue(fieldName);
+                                object v = record.getValue(field.Name);
 
-                              //  if (field.FieldType == typeof(DateTime))
-                              //      v = field.ToDateTime(v).ToUniversalTime();
+                                if (field.FieldType == typeof(DateTime))
+                                    v = field.ToDateTime(v).ToUniversalTime();
 
-                                json.Add(new JProperty(fieldName, v));
+                                json.Add(new JProperty(field.Name, v));
                             }
                             json.Add(new JProperty("type", "Win32-Eventlog"));
                             ProcessJson(json.ToString());
@@ -92,31 +92,5 @@ namespace TimberWinR.Inputs
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
         }       
-
-        public static FieldDefinitions FieldDefinitions
-        {
-            get
-            {
-                return new FieldDefinitions()
-                {               
-                    {"EventLog", typeof (string)},
-                    {"RecordNumber", typeof (string)},
-                    {"TimeGenerated", typeof (DateTime)},
-                    {"TimeWritten", typeof (DateTime)},
-                    {"EventID", typeof (int)},
-                    {"EventType", typeof (int)},
-                    {"EventTypeName", typeof (string)},
-                    {"EventCategory", typeof (int)},
-                    {"EventCategoryName", typeof (string)},
-                    {"SourceName", typeof (string)},
-                    {"Strings", typeof (string)},
-                    {"ComputerName", typeof (string)},
-                    {"SID", typeof (string)},
-                    {"Message", typeof (string)},
-                    {"Data", typeof (string)}
-                };
-            }
-        }
-      
     }
 }
