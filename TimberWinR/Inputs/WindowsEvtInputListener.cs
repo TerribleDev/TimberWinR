@@ -26,7 +26,7 @@ namespace TimberWinR.Inputs
         private TimberWinR.Configuration.WindowsEvents _arguments;
 
         public WindowsEvtInputListener(TimberWinR.Configuration.WindowsEvents arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
-            : base(cancelToken, FieldDefinitions, ParameterDefinitions)
+            : base(cancelToken)
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
@@ -39,8 +39,7 @@ namespace TimberWinR.Inputs
             var oLogQuery = new LogQuery();
 
             var fileName = Path.Combine(System.IO.Path.GetTempPath(),
-                string.Format("{0}.lpc", Guid.NewGuid().ToString()));
-
+                string.Format("{0}.lpc", Guid.NewGuid().ToString()));          
           
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
@@ -69,14 +68,14 @@ namespace TimberWinR.Inputs
                         {
                             var record = rs.getRecord();
                             var json = new JObject();
-                            foreach (var field in Fields)
+                            foreach (var fieldName in _arguments.Fields)
                             {
-                                object v = record.getValue(field.Name);
+                                object v = record.getValue(fieldName);
 
-                                if (field.FieldType == typeof(DateTime))
-                                    v = field.ToDateTime(v).ToUniversalTime();
+                              //  if (field.FieldType == typeof(DateTime))
+                              //      v = field.ToDateTime(v).ToUniversalTime();
 
-                                json.Add(new JProperty(field.Name, v));
+                                json.Add(new JProperty(fieldName, v));
                             }
                             json.Add(new JProperty("type", "Win32-Eventlog"));
                             ProcessJson(json.ToString());
@@ -92,26 +91,7 @@ namespace TimberWinR.Inputs
                 firstQuery = false;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
-        }
-
-
-        public static ParameterDefinitions ParameterDefinitions
-        {
-            get
-            {
-                return new ParameterDefinitions()
-                {
-                    {"fullText", "ON", typeof(bool), new string[] {"OFF", "ON"}},
-                    {"resolveSIDs", "OFF", typeof(bool), new string[] {"OFF", "ON"}},
-                    {"formatMsg", "ON", typeof(bool), new string[] {"OFF", "ON"}},
-                    {"msgErrorMode", "MSG", typeof(string), new string[] {"NULL", "ERROR", "MSG"}},
-                    {"fullEventCode", "OFF", typeof(bool), new string[] {"OFF", "ON"}},
-                    {"direction", "FW", typeof(string), new string[] {"FW", "BW"}},
-                    {"stringsSep", "|", typeof(string)},
-                    {"binaryFormat", "HEX",  typeof(string), new string[] {"ASC", "PRINT", "HEX"}},
-                };
-            }
-        }
+        }       
 
         public static FieldDefinitions FieldDefinitions
         {

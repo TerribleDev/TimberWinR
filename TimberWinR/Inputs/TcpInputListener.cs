@@ -15,7 +15,7 @@ namespace TimberWinR.Inputs
         private Thread _listenThread;
         const int bufferSize = 16535;
 
-        public TcpInputListener(CancellationToken cancelToken, int port = 5140) : base(cancelToken, null, null)
+        public TcpInputListener(CancellationToken cancelToken, int port = 5140) : base(cancelToken)
         {            
             _tcpListener = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
             _listenThread = new Thread(new ThreadStart(ListenForClients));

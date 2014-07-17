@@ -11,14 +11,10 @@ namespace TimberWinR.Inputs
         public CancellationToken CancelToken { get; set; }
         public event Action<string> OnMessageRecieved;
 
-        public FieldDefinitions Fields { get; set; }
-        public ParameterDefinitions Parameters { get; set; }
-      
-        public InputListener(CancellationToken token, FieldDefinitions fields, ParameterDefinitions parms)
+       
+        public InputListener(CancellationToken token)
         {
-            this.CancelToken = token;
-            Parameters = parms;
-            Fields = fields;
+            this.CancelToken = token;          
         }
 
         protected void ProcessJson(string message)
