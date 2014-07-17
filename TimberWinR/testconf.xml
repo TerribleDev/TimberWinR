@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TimberWinR>
+
+  <Inputs>
+    <WindowsEvents>
+      <Events source="Application">
+        <Fields>
+          <Field name="EventLog"/>
+          <Field name="RecordNumber"/>
+        </Fields>
+      </Events>
+      <Events source="System">
+      </Events>
+    </WindowsEvents>
+    <Logs>
+      <Log name="First Set" location="C:\Logs1\*.log">
+        <Fields>
+          <Field name="EventLog"/>
+          <Field name="RecordNumber"/>
+        </Fields>
+      </Log>
+      <Log name="Second Set" location="C:\Logs2\*.log" recurse="0" splitLongLines="OFF"  />
+      <Log name="Third Set" location="C:\Logs2\1.log,C:\Logs2\2.log" />
+    </Logs>
+
+    <IISLogs>
+      
+    </IISLogs>
+  </Inputs>
+
+</TimberWinR>
