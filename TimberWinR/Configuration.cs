@@ -685,9 +685,8 @@ namespace TimberWinR
                 // Required attributes.
                 string source;
 
-                string attributeName;
-
                 // Parse required attributes.
+                string attributeName;
                 attributeName = "source";
                 try
                 {
@@ -724,9 +723,8 @@ namespace TimberWinR
                 string name;
                 string location;
 
-                string attributeName;
-
                 // Parse required attributes.
+                string attributeName;
                 attributeName = "name";
                 try
                 {
@@ -772,9 +770,8 @@ namespace TimberWinR
                 string name;
                 string location;
 
-                string attributeName;
-
                 // Parse required attributes.
+                string attributeName;
                 attributeName = "name";
                 try
                 {
@@ -821,9 +818,8 @@ namespace TimberWinR
                 string name;
                 string location;
 
-                string attributeName;
-
                 // Parse required attributes.
+                string attributeName;
                 attributeName = "name";
                 try
                 {
