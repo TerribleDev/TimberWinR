@@ -244,7 +244,7 @@ namespace TimberWinR
             IEnumerable<XElement> xml_iisw3c =
                 from el in inputs.Descendants("IISW3CLogs").Descendants("IISW3CLog")
                 select el;
-            foreach (XElement e in xml_iis)
+            foreach (XElement e in xml_iisw3c)
             {
                 // Required attributes.
                 string name;
@@ -285,10 +285,7 @@ namespace TimberWinR
 
                 IISW3CLog iisw3c = new IISW3CLog(name, location, fields, args);
                 _iisw3clogs.Add(iisw3c);
-            }
-
-
-            Console.WriteLine("end");
+            }           
         }
 
         static List<FieldDefinition> parseFields_Event(IEnumerable<XElement> xml_fields)
@@ -488,9 +485,9 @@ namespace TimberWinR
                 { "time-taken", typeof(int) },
                 { "cs-version", typeof(string) },
                 { "cs-host", typeof(string) },
-                { "cs (User-Agent)", typeof(string) },
-                { "cs (Cookie)", typeof(string) },
-                { "cs (Referer)", typeof(string) },
+                { "cs(User-Agent)", typeof(string) },
+                { "cs(Cookie)", typeof(string) },
+                { "cs(Referer)", typeof(string) },
                 { "s-event", typeof(string) },
                 { "s-process-type", typeof(string) },
                 { "s-user-time", typeof(double) },

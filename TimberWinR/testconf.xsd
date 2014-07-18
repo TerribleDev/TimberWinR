@@ -8,7 +8,7 @@
               <xs:element name="WindowsEvents" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="Events" maxOccurs="unbounded" minOccurs="0">
+                    <xs:element name="Event" maxOccurs="unbounded" minOccurs="0">
                       <xs:complexType mixed="true">
                         <xs:sequence>
                           <xs:element name="Fields" minOccurs="0">

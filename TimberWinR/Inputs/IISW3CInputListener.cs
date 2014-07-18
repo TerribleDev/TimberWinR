@@ -12,51 +12,50 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NLog;
 using LogQuery = Interop.MSUtil.LogQueryClassClass;
-using EventLogInputFormat = Interop.MSUtil.COMEventLogInputContextClassClass;
+using IISW3CLogInputFormat = Interop.MSUtil.COMIISW3CInputContextClassClass;
 using LogRecordSet = Interop.MSUtil.ILogRecordset;
+
 
 namespace TimberWinR.Inputs
 {
-    /// <summary>
-    /// Listen to Windows Event Log
-    /// </summary>
-    public class WindowsEvtInputListener : InputListener
-    {      
+    public class IISW3CInputListener : InputListener
+    {
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Configuration.WindowsEvent _arguments;
+        private TimberWinR.Configuration.IISW3CLog _arguments;
 
-        public WindowsEvtInputListener(TimberWinR.Configuration.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+
+        public IISW3CInputListener(TimberWinR.Configuration.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
-            var task = new Task(EventWatcher, cancelToken);
+            var task = new Task(IISW3CWatcher, cancelToken);
             task.Start();
         }
 
-        private void EventWatcher()
+        private void IISW3CWatcher()
         {
             var oLogQuery = new LogQuery();
 
             var checkpointFileName = Path.Combine(System.IO.Path.GetTempPath(),
-                string.Format("{0}.lpc", Guid.NewGuid().ToString()));          
-          
-            // Instantiate the Event Log Input Format object
-            var iFmt = new EventLogInputFormat()
+                string.Format("{0}.lpc", Guid.NewGuid().ToString()));
+
+            var iFmt = new IISW3CLogInputFormat()
             {
-                binaryFormat = _arguments.BinaryFormat,
-                direction = _arguments.Direction,
-                formatMsg = _arguments.FormatMsg,
-                fullEventCode = _arguments.FullEventCode,
-                fullText = _arguments.FullText,
-                msgErrorMode =  _arguments.MsgErrorMode,
-                stringsSep = _arguments.StringsSep,
-                resolveSIDs = _arguments.ResolveSIDS,
+                codepage = _arguments.ICodepage,
+                consolidateLogs = _arguments.ConsolidateLogs,
+                dirTime = _arguments.DirTime,
+                dQuotes = _arguments.DQuotes,
                 iCheckpoint = checkpointFileName,               
+                recurse = _arguments.Recurse,
+                useDoubleQuotes = _arguments.DQuotes
             };
 
+            if (!string.IsNullOrEmpty(_arguments.MinDateMod))
+                iFmt.minDateMod = _arguments.MinDateMod;
+
             // Create the query
-            var query = string.Format("SELECT * FROM {0}", _arguments.Source);
+            var query = string.Format("SELECT * FROM {0}", _arguments.Location);
 
             var firstQuery = true;
             // Execute the query
@@ -65,6 +64,13 @@ namespace TimberWinR.Inputs
                 try
                 {
                     var rs = oLogQuery.Execute(query, iFmt);
+                    Dictionary<string, int> colMap = new Dictionary<string, int>();
+                    for (int col=0; col<rs.getColumnCount(); col++)
+                    {
+                        string colName = rs.getColumnName(col);
+                        colMap[colName] = col;
+                    }
+
                     // Browse the recordset
                     for (; !rs.atEnd(); rs.moveNext())
                     {
@@ -75,6 +81,9 @@ namespace TimberWinR.Inputs
                             var json = new JObject();
                             foreach (var field in _arguments.Fields)
                             {
+                                if (!colMap.ContainsKey(field.Name))
+                                    continue;
+
                                 object v = record.getValue(field.Name);
 
                                 if (field.FieldType == typeof(DateTime))
@@ -82,7 +91,7 @@ namespace TimberWinR.Inputs
 
                                 json.Add(new JProperty(field.Name, v));
                             }
-                            json.Add(new JProperty("type", "Win32-Eventlog"));
+                            json.Add(new JProperty("type", "Win32-IISLog"));
                             ProcessJson(json.ToString());
                         }
                     }
@@ -96,6 +105,6 @@ namespace TimberWinR.Inputs
                 firstQuery = false;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
-        }       
+        }
     }
 }

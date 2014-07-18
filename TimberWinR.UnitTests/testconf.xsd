@@ -8,10 +8,10 @@
               <xs:element name="WindowsEvents" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="Events" maxOccurs="unbounded" minOccurs="0">
+                    <xs:element name="Event" maxOccurs="unbounded" minOccurs="0">
                       <xs:complexType mixed="true">
                         <xs:sequence>
-                          <xs:element name="Fields" minOccurs="0">
+             iis             <xs:element name="Fields" minOccurs="0">
                             <xs:complexType>
                               <xs:sequence>
                                 <xs:element name="Field" maxOccurs="unbounded" minOccurs="0">
@@ -138,7 +138,53 @@
               <xs:element name="IISLogs" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="IIS" maxOccurs="unbounded" minOccurs="0">
+                    <xs:element name="IISLog" maxOccurs="unbounded" minOccurs="0">
+                      <xs:complexType mixed="true">
+                        <xs:sequence>
+                          <xs:element name="Fields" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Field" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute name="name" use="required">
+                                          <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                              <xs:pattern value="LogFilename|LogRow|UserIP|UserName|Date|Time|ServiceInstance|HostName|ServerIP|TimeTaken|BytesSent|BytesReceived|StatusCode|Win32StatusCode|RequestType|Target|Parameters" />
+                                            </xs:restriction>
+                                          </xs:simpleType>
+                                        </xs:attribute>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute type="xs:string" name="name" use="required"/>
+                        <xs:attribute type="xs:string" name="location" use="required"/>
+                        <xs:attribute type="xs:int" name="iCodepage" use="optional"/>
+                        <xs:attribute type="xs:int" name="recurse" use="optional"/>
+                        <xs:attribute name="minDateMod" use="optional">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:token">
+                              <xs:pattern value="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute type="xs:string" name="locale" use="optional"/>
+                        <xs:attribute type="xs:string" name="iCheckpoint" use="optional"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="IISW3CLogs" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="IISW3CLog" maxOccurs="unbounded" minOccurs="0">
                       <xs:complexType mixed="true">
                         <xs:sequence>
                           <xs:element name="Fields" minOccurs="0">
