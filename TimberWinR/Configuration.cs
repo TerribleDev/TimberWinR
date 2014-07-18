@@ -86,12 +86,10 @@ namespace TimberWinR
         private static List<IISW3CLog> _iisw3clogs = new List<IISW3CLog>();
         public IEnumerable<IISW3CLog> IISW3C { get { return _iisw3clogs; } }
 
-
         public Configuration(string xmlConfFile)
         {
             parseXMLConf(xmlConfFile, Properties.Resources.configSchema);
         }
-
 
         static void parseXMLConf(string xmlConfFile, string xsdSchema)
         {
