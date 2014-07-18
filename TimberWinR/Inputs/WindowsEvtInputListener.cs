@@ -23,9 +23,9 @@ namespace TimberWinR.Inputs
     public class WindowsEvtInputListener : InputListener
     {      
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Configuration.WindowsEvents _arguments;
+        private TimberWinR.Configuration.WindowsEvent _arguments;
 
-        public WindowsEvtInputListener(TimberWinR.Configuration.WindowsEvents arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public WindowsEvtInputListener(TimberWinR.Configuration.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;
