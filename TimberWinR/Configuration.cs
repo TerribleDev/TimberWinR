@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.IO;
 using System.Globalization;
+using NLog;
 using TimberWinR.Inputs;
 namespace TimberWinR
 {
@@ -33,7 +34,16 @@ namespace TimberWinR
 
         public Configuration(string xmlConfFile)
         {
-            parseXMLConf(xmlConfFile);
+            try
+            {
+                parseXMLConf(xmlConfFile);
+            }
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);
+                throw ex;
+            }
+
         }
 
         static List<FieldDefinition> parseFields_Events(IEnumerable<XElement> xml_fields)
@@ -479,10 +489,7 @@ namespace TimberWinR
 
                 IISLogs iis = new IISLogs(name, location, fields, args);
                 _iislogs.Add(iis);
-            }
-
-
-            Console.WriteLine("end");
+            }            
         }
 
         public class WindowsEvents

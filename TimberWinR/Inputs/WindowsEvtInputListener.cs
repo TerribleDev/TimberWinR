@@ -44,10 +44,15 @@ namespace TimberWinR.Inputs
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
             {
-                direction = _arguments.Direction,
                 binaryFormat = _arguments.BinaryFormat,
-                iCheckpoint = fileName,
+                direction = _arguments.Direction,
+                formatMsg = _arguments.FormatMsg,
+                fullEventCode = _arguments.FullEventCode,
+                fullText = _arguments.FullText,
+                msgErrorMode =  _arguments.MsgErrorMode,
+                stringsSep = _arguments.StringsSep,
                 resolveSIDs = _arguments.ResolveSIDS,
+                iCheckpoint = fileName,               
             };
 
             // Create the query

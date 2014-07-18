@@ -2,7 +2,7 @@
 <TimberWinR>
   <Inputs>
     <WindowsEvents>
-      <Events source="System,Application" binaryFormat="PRINT" fullText="crap" />
+      <Events source="System,Application,Security" binaryFormat="PRINT" />
     </WindowsEvents>
     <Logs>
       <Log name="First Set" location="C:\Logs1\*.log" />

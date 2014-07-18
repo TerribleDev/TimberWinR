@@ -69,9 +69,7 @@ namespace TimberWinR.ServiceHost
             _args = args;
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
-            _serviceTask = new Task(RunService, _cancellationToken);
-
-           
+            _serviceTask = new Task(RunService, _cancellationToken);           
         }
         
         public void Start()
@@ -90,19 +88,19 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
-            var config = new Configuration(_args.ConfigFile);
+            TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile);
+           
             var outputRedis = new RedisOutput(new string[] { "tstlexiceapp006.vistaprint.svc", "tstlexiceapp007.vistaprint.svc" }, _cancellationToken);
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
             outputRedis.Connect(_nlogListener);
 
-            foreach (Configuration.WindowsEvents eventConfig in config.Events)
+            foreach (Configuration.WindowsEvents eventConfig in manager.Config.Events)
             {
                 var elistner = new WindowsEvtInputListener(eventConfig, _cancellationToken);
                 outputRedis.Connect(elistner);
             }
 
-            TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile);
-
+       
             //while (!_cancellationTokenSource.IsCancellationRequested)
             //{               
             //    System.Threading.Thread.Sleep(1000);               

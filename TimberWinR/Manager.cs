@@ -14,13 +14,10 @@ namespace TimberWinR
     /// </summary>
     public class Manager
     {
-        Configuration Config { get; set; }
+        public Configuration Config { get; set; }
         
         public Manager(string configurationFile=null)
-        {
-            // Read the Configuration file
-            Config = new Configuration(configurationFile);
-
+        { 
             var loggingConfiguration = new LoggingConfiguration();
 
             // Create our default targets
@@ -37,7 +34,10 @@ namespace TimberWinR
             LogManager.Configuration = loggingConfiguration;
             LogManager.EnableLogging();  
             
-            LogManager.GetCurrentClassLogger().Info("Initialized");  
+            LogManager.GetCurrentClassLogger().Info("Initialized");
+
+            // Read the Configuration file
+            Config = new Configuration(configurationFile);
         }
 
         /// <summary>
