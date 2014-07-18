@@ -286,6 +286,9 @@ namespace TimberWinR
                 IISW3CLog iisw3c = new IISW3CLog(name, location, fields, args);
                 _iisw3clogs.Add(iisw3c);
             }
+
+
+            Console.WriteLine("end");
         }
 
         static List<FieldDefinition> parseFields_Event(IEnumerable<XElement> xml_fields)
