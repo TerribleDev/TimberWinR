@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System.IO;
 using System.Globalization;
 using TimberWinR.Inputs;
+using System.Xml.Schema;
 
 namespace TimberWinR
 {
@@ -87,13 +88,29 @@ namespace TimberWinR
 
         public Configuration(string xmlConfFile)
         {
-            parseXMLConf(xmlConfFile);
+            parseXMLConf(xmlConfFile, Properties.Resources.configSchema);
         }
 
-        static void parseXMLConf(string xmlConfFile)
+        static void parseXMLConf(string xmlConfFile, string xsdSchema)
         {
             XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
 
+
+            // Ensure that the xml configuration file provided obeys the xsd schema.
+            XmlSchemaSet schemas = new XmlSchemaSet();
+            schemas.Add("", XmlReader.Create(new StringReader(xsdSchema)));
+
+            bool errors = false;
+            config.Validate(schemas, (o, e) =>
+            {
+                Console.WriteLine("{0}", e.Message);
+                errors = true;
+            });
+            Console.WriteLine("The XML configuration file provided {0}", errors ? "did not validate." : "validated.");
+
+
+
+            // Begin parsing the xml configuration file.
             IEnumerable<XElement> inputs =
                 from el in config.Root.Descendants("Inputs")
                 select el;
@@ -114,9 +131,10 @@ namespace TimberWinR
                 // Required attributes.
                 string source;
 
-                string attributeName;
 
                 // Parse required attributes.
+                string attributeName;
+
                 attributeName = "source";
                 try
                 {
@@ -153,9 +171,10 @@ namespace TimberWinR
                 string name;
                 string location;
 
-                string attributeName;
 
                 // Parse required attributes.
+                string attributeName;
+
                 attributeName = "name";
                 try
                 {
@@ -201,9 +220,10 @@ namespace TimberWinR
                 string name;
                 string location;
 
-                string attributeName;
 
                 // Parse required attributes.
+                string attributeName;
+
                 attributeName = "name";
                 try
                 {
@@ -250,9 +270,10 @@ namespace TimberWinR
                 string name;
                 string location;
 
-                string attributeName;
 
                 // Parse required attributes.
+                string attributeName;
+
                 attributeName = "name";
                 try
                 {
@@ -285,7 +306,7 @@ namespace TimberWinR
 
                 IISW3CLog iisw3c = new IISW3CLog(name, location, fields, args);
                 _iisw3clogs.Add(iisw3c);
-            }           
+            }
         }
 
         static List<FieldDefinition> parseFields_Event(IEnumerable<XElement> xml_fields)

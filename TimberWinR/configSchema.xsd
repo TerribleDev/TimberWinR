@@ -138,7 +138,7 @@
               <xs:element name="IISLogs" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="IIS" maxOccurs="unbounded" minOccurs="0">
+                    <xs:element name="IISLog" maxOccurs="unbounded" minOccurs="0">
                       <xs:complexType mixed="true">
                         <xs:sequence>
                           <xs:element name="Fields" minOccurs="0">
@@ -175,6 +175,72 @@
                           </xs:simpleType>
                         </xs:attribute>
                         <xs:attribute type="xs:string" name="locale" use="optional"/>
+                        <xs:attribute type="xs:string" name="iCheckpoint" use="optional"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="IISW3CLogs" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="IISW3CLog" maxOccurs="unbounded" minOccurs="0">
+                      <xs:complexType mixed="true">
+                        <xs:sequence>
+                          <xs:element name="Fields" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Field" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:simpleContent>
+                                      <xs:extension base="xs:string">
+                                        <xs:attribute name="name" use="required">
+                                          <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                              <xs:pattern value="LogFilename|LogRow|date|time|c-ip|cs-username|s-sitename|s-computername|s-ip|s-port|cs-method|cs-uri-stem|cs-uri-query|sc-status|sc-substatus|sc-win32-status|sc-bytes|cs-bytes|time-taken|cs-version|cs-host|cs(User-Agent)|cs(Cookie)|cs(Referer)|s-event|s-process-type|s-user-time|s-kernel-time|s-page-faults|s-total-procs|s-active-procs|s-stopped-procs" />
+                                            </xs:restriction>
+                                          </xs:simpleType>
+                                        </xs:attribute>
+                                      </xs:extension>
+                                    </xs:simpleContent>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute type="xs:string" name="name" use="required"/>
+                        <xs:attribute type="xs:string" name="location" use="required"/>
+                        <xs:attribute type="xs:int" name="iCodepage" use="optional"/>
+                        <xs:attribute type="xs:int" name="recurse" use="optional"/>
+                        <xs:attribute name="minDateMod" use="optional">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:token">
+                              <xs:pattern value="[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="dQuotes" use="optional">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:pattern value="ON|on|OFF|off|true|false" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="dirTime" use="optional">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:pattern value="ON|on|OFF|off|true|false" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="consolidateLogs" use="optional">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:pattern value="ON|on|OFF|off|true|false" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
                         <xs:attribute type="xs:string" name="iCheckpoint" use="optional"/>
                       </xs:complexType>
                     </xs:element>
