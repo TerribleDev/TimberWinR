@@ -90,7 +90,13 @@ namespace TimberWinR.ServiceHost
         {
             TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile);
            
-            var outputRedis = new RedisOutput(new string[] { "tstlexiceapp006.vistaprint.svc", "tstlexiceapp007.vistaprint.svc" }, _cancellationToken);
+            // logaggregator.vistaprint.svc
+
+            //var outputRedis = new RedisOutput(new string[] { "tstlexiceapp006.vistaprint.svc", "tstlexiceapp007.vistaprint.svc" }, _cancellationToken);
+
+      //     var outputRedis = new RedisOutput(new string[] { "prdlexicelgs001.vistaprint.svc" }, _cancellationToken);
+            var outputRedis = new RedisOutput(new string[] { "logaggregator.vistaprint.svc" }, _cancellationToken);
+       
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
             outputRedis.Connect(_nlogListener);
 

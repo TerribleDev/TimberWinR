@@ -37,14 +37,16 @@ namespace TimberWinR.Outputs
                 try
                 {
                     RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port, _timeout);
+                  
                     _redisHostIndex++;
                     if (_redisHostIndex >= _redisHosts.Length)
                         _redisHostIndex = 0;
                   
                     return client;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    
                 }
                 numTries++;
             }         
@@ -129,9 +131,9 @@ namespace TimberWinR.Outputs
                                 }
                             }
                         }
-                        catch(Exception)
+                        catch(Exception ex)
                         {
-                            // Got an error, try the other hosts                         
+                            LogManager.GetCurrentClassLogger().Error(ex);                                                   
                         }
                     }
                 }
