@@ -74,6 +74,16 @@ namespace TimberWinR
             }
         }
 
+        private class InvalidElementNameException : Exception
+        {
+            public InvalidElementNameException(XElement e)
+                : base(
+                    string.Format("{0}:{1} Invalid Element Name <{2}> <{3}>", e.Document.BaseUri,
+                        ((IXmlLineInfo)e).LineNumber, e.Parent.Name, e.ToString()))
+            {
+            }
+        }
+
         private static List<WindowsEvent> _events = new List<WindowsEvent>();
         public IEnumerable<WindowsEvent> Events { get { return _events; } }
 
@@ -86,15 +96,20 @@ namespace TimberWinR
         private static List<IISW3CLog> _iisw3clogs = new List<IISW3CLog>();
         public IEnumerable<IISW3CLog> IISW3C { get { return _iisw3clogs; } }
 
+        private static List<Grok> _groks = new List<Grok>();
+        public IEnumerable<Grok> Groks { get { return _groks; } }
+
         public Configuration(string xmlConfFile)
         {
-            parseXMLConf(xmlConfFile, Properties.Resources.configSchema);
+            validateWithSchema(xmlConfFile, Properties.Resources.configSchema);
+
+            parseConfInput(xmlConfFile);
+            parseConfFilter(xmlConfFile);
         }
 
-        static void parseXMLConf(string xmlConfFile, string xsdSchema)
+        static void validateWithSchema(string xmlConfFile, string xsdSchema)
         {
             XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
-
 
             // Ensure that the xml configuration file provided obeys the xsd schema.
             XmlSchemaSet schemas = new XmlSchemaSet();
@@ -107,13 +122,34 @@ namespace TimberWinR
                 errors = true;
             });
             Console.WriteLine("The XML configuration file provided {0}", errors ? "did not validate." : "validated.");
+        }
 
-
+        static void parseConfInput(string xmlConfFile)
+        {
+            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
 
             // Begin parsing the xml configuration file.
             IEnumerable<XElement> inputs =
-                from el in config.Root.Descendants("Inputs")
+                from el in config.Root.Elements("Inputs")
                 select el;
+            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
+            {
+                { "EventLog", typeof(string) },
+                { "RecordNumber", typeof(int) },
+                { "TimeGenerated", typeof(DateTime) },
+                { "TimeWritten", typeof(DateTime) },
+                { "EventID", typeof(int) },
+                { "EventType", typeof(int) },
+                { "EventTypeName", typeof(string) },
+                { "EventCategory", typeof(int) },
+                { "EventCategoryName", typeof(string) },
+                { "SourceName", typeof(string) },
+                { "Strings", typeof(string) },
+                { "ComputerName", typeof(string) },
+                { "SID", typeof(string) },
+                { "Message", typeof(string) },
+                { "Data", typeof(string) }
+            };
 
             string tagName = "Inputs";
             if (inputs.Count() == 0)
@@ -123,7 +159,7 @@ namespace TimberWinR
 
             // WINDOWS EVENTS
             IEnumerable<XElement> xml_events =
-                from el in inputs.Descendants("WindowsEvents").Descendants("Event")
+                from el in inputs.Elements("WindowsEvents").Elements("Event")
                 select el;
 
             foreach (XElement e in xml_events)
@@ -147,9 +183,10 @@ namespace TimberWinR
 
                 // Parse fields.
                 IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
+                    from el in e.Elements("Fields").Elements("Field")
                     select el;
-                List<FieldDefinition> fields = parseFields_Event(xml_fields);
+
+                List<FieldDefinition> fields = parseFields(xml_fields, allPossibleFields);
 
                 // Parse parameters.
                 Params_WindowsEvent args = parseParams_Event(e.Attributes());
@@ -162,8 +199,15 @@ namespace TimberWinR
 
             // TEXT LOGS
             IEnumerable<XElement> xml_logs =
-                from el in inputs.Descendants("Logs").Descendants("Log")
+                from el in inputs.Elements("Logs").Elements("Log")
                 select el;
+
+            allPossibleFields = new Dictionary<string, Type>()
+            {
+                { "LogFilename", typeof(string) },
+                { "Index", typeof(int) },
+                { "Text", typeof(string) }
+            };
 
             foreach (XElement e in xml_logs)
             {
@@ -197,9 +241,9 @@ namespace TimberWinR
 
                 // Parse fields.
                 IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
+                    from el in e.Elements("Fields").Elements("Field")
                     select el;
-                List<FieldDefinition> fields = parseFields_Log(xml_fields);
+                List<FieldDefinition> fields = parseFields(xml_fields, allPossibleFields);
 
                 // Parse parameters.
                 Params_TextLog args = parseParams_Log(e.Attributes());
@@ -212,8 +256,29 @@ namespace TimberWinR
 
             // IIS LOGS
             IEnumerable<XElement> xml_iis =
-                from el in inputs.Descendants("IISLogs").Descendants("IISLog")
+                from el in inputs.Elements("IISLogs").Elements("IISLog")
                 select el;
+            allPossibleFields = new Dictionary<string, Type>()
+            {
+                { "LogFilename", typeof(string) },
+                { "LogRow", typeof(int) },
+                { "UserIP", typeof(string) },
+                { "UserName", typeof(string) },
+                { "Date", typeof(DateTime) },
+                { "Time", typeof(DateTime) },
+                { "ServiceInstance", typeof(string) },
+                { "HostName", typeof(string) },
+                { "ServerIP", typeof(string) },
+                { "TimeTaken", typeof(int) },
+                { "BytesSent", typeof(int) },
+                { "BytesReceived", typeof(int) },
+                { "StatusCode", typeof(int) },
+                { "Win32StatusCode", typeof(int) },
+                { "RequestType", typeof(string) },
+                { "Target", typeof(string) },
+                { "Parameters", typeof(string) }
+            };
+
             foreach (XElement e in xml_iis)
             {
                 // Required attributes.
@@ -246,9 +311,12 @@ namespace TimberWinR
 
                 // Parse fields.
                 IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
+                    from el in e.Elements("Fields").Elements("Field")
                     select el;
-                List<FieldDefinition> fields = parseFields_IIS(xml_fields);
+
+
+
+                List<FieldDefinition> fields = parseFields(xml_fields, allPossibleFields);
 
                 // Parse parameters.
                 Params_IISLog args = parseParams_IIS(e.Attributes());
@@ -262,8 +330,45 @@ namespace TimberWinR
 
             // IISW3C LOGS
             IEnumerable<XElement> xml_iisw3c =
-                from el in inputs.Descendants("IISW3CLogs").Descendants("IISW3CLog")
+                from el in inputs.Elements("IISW3CLogs").Elements("IISW3CLog")
                 select el;
+
+            allPossibleFields = new Dictionary<string, Type>()
+                {
+                    { "LogFilename", typeof(string) },
+                    { "LogRow", typeof(int) },
+                    { "date", typeof(DateTime) },
+                    { "time", typeof(DateTime) },
+                    { "c-ip", typeof(string) },
+                    { "cs-username", typeof(string) },
+                    { "s-sitename", typeof(string) },
+                    { "s-computername", typeof(int) },
+                    { "s-ip", typeof(string) },
+                    { "s-port", typeof(int) },
+                    { "cs-method", typeof(string) },
+                    { "cs-uri-stem", typeof(string) },
+                    { "cs-uri-query", typeof(string) },
+                    { "sc-status", typeof(int) },
+                    { "sc-substatus", typeof(int) },
+                    { "sc-win32-status", typeof(int) },
+                    { "sc-bytes", typeof(int) },
+                    { "cs-bytes", typeof(int) },
+                    { "time-taken", typeof(int) },
+                    { "cs-version", typeof(string) },
+                    { "cs-host", typeof(string) },
+                    { "cs(User-Agent)", typeof(string) },
+                    { "cs(Cookie)", typeof(string) },
+                    { "cs(Referer)", typeof(string) },
+                    { "s-event", typeof(string) },
+                    { "s-process-type", typeof(string) },
+                    { "s-user-time", typeof(double) },
+                    { "s-kernel-time", typeof(double) },
+                    { "s-page-faults", typeof(int) },
+                    { "s-total-procs", typeof(int) },
+                    { "s-active-procs", typeof(int) },
+                    { "s-stopped-procs", typeof(int) }
+                };
+
             foreach (XElement e in xml_iisw3c)
             {
                 // Required attributes.
@@ -296,9 +401,11 @@ namespace TimberWinR
 
                 // Parse fields.
                 IEnumerable<XElement> xml_fields =
-                    from el in e.Descendants("Fields").Descendants("Field")
+                    from el in e.Elements("Fields").Elements("Field")
                     select el;
-                List<FieldDefinition> fields = parseFields_IISW3C(xml_fields);
+
+
+                List<FieldDefinition> fields = parseFields(xml_fields, allPossibleFields);
 
                 // Parse parameters.
                 Params_IISW3CLog args = parseParams_IISW3C(e.Attributes());
@@ -309,215 +416,32 @@ namespace TimberWinR
             }
         }
 
-        static List<FieldDefinition> parseFields_Event(IEnumerable<XElement> xml_fields)
+        static void parseConfFilter(string xmlConfFile)
         {
-            List<FieldDefinition> fields = new List<FieldDefinition>();
+            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
 
-            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
+            IEnumerable<XElement> filters =
+                from el in config.Root.Elements("Filters")
+                select el;
+
+            foreach (XElement e in filters.Elements())
             {
-                { "EventLog", typeof(string) },
-                { "RecordNumber", typeof(int) },
-                { "TimeGenerated", typeof(DateTime) },
-                { "TimeWritten", typeof(DateTime) },
-                { "EventID", typeof(int) },
-                { "EventType", typeof(int) },
-                { "EventTypeName", typeof(string) },
-                { "EventCategory", typeof(int) },
-                { "EventCategoryName", typeof(string) },
-                { "SourceName", typeof(string) },
-                { "Strings", typeof(string) },
-                { "ComputerName", typeof(string) },
-                { "SID", typeof(string) },
-                { "Message", typeof(string) },
-                { "Data", typeof(string) }
-            };
-
-            foreach (XElement f in xml_fields)
-            {
-                // Parse field name.
-                string name;
-                string attributeName = "name";
-                try
+                switch (e.Name.ToString())
                 {
-                    name = f.Attribute(attributeName).Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(f, attributeName);
-                }
-
-                // Ensure field name is valid.
-                if (allPossibleFields.ContainsKey(name))
-                {
-                    fields.Add(new FieldDefinition(name, allPossibleFields[name]));
-                }
-                else
-                {
-                    throw new InvalidAttributeValueException(f.Attribute("name"));
+                    case "Grok":
+                        Params_Grok args = parseParams_Grok(e.Elements());
+                        Grok grok = new Grok(args);
+                        _groks.Add(grok);
+                        break;
+                    case "Mutate":
+                        break;
                 }
             }
-
-            // If no fields are provided, default to all fields.
-            if (fields.Count == 0)
-            {
-                foreach (KeyValuePair<string, Type> entry in allPossibleFields)
-                {
-                    fields.Add(new FieldDefinition(entry.Key, entry.Value));
-                }
-            }
-
-            return fields;
         }
 
-        static List<FieldDefinition> parseFields_Log(IEnumerable<XElement> xml_fields)
+        static List<FieldDefinition> parseFields(IEnumerable<XElement> xml_fields, Dictionary<string, Type> allPossibleFields)
         {
             List<FieldDefinition> fields = new List<FieldDefinition>();
-
-            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
-            {
-                { "LogFilename", typeof(string) },
-                { "Index", typeof(int) },
-                { "Text", typeof(string) }
-            };
-
-            foreach (XElement f in xml_fields)
-            {
-                // Parse field name.
-                string name;
-                string attributeName = "name";
-                try
-                {
-                    name = f.Attribute(attributeName).Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(f, attributeName);
-                }
-
-                // Ensure field name is valid.
-                if (allPossibleFields.ContainsKey(name))
-                {
-                    fields.Add(new FieldDefinition(name, allPossibleFields[name]));
-                }
-                else
-                {
-                    throw new InvalidAttributeValueException(f.Attribute("name"));
-                }
-            }
-
-            // If no fields are provided, default to all fields.
-            if (fields.Count == 0)
-            {
-                foreach (KeyValuePair<string, Type> entry in allPossibleFields)
-                {
-                    fields.Add(new FieldDefinition(entry.Key, entry.Value));
-                }
-            }
-
-            return fields;
-        }
-
-        static List<FieldDefinition> parseFields_IIS(IEnumerable<XElement> xml_fields)
-        {
-            List<FieldDefinition> fields = new List<FieldDefinition>();
-
-            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
-            {
-                { "LogFilename", typeof(string) },
-                { "LogRow", typeof(int) },
-                { "UserIP", typeof(string) },
-                { "UserName", typeof(string) },
-                { "Date", typeof(DateTime) },
-                { "Time", typeof(DateTime) },
-                { "ServiceInstance", typeof(string) },
-                { "HostName", typeof(string) },
-                { "ServerIP", typeof(string) },
-                { "TimeTaken", typeof(int) },
-                { "BytesSent", typeof(int) },
-                { "BytesReceived", typeof(int) },
-                { "StatusCode", typeof(int) },
-                { "Win32StatusCode", typeof(int) },
-                { "RequestType", typeof(string) },
-                { "Target", typeof(string) },
-                { "Parameters", typeof(string) }
-            };
-
-            foreach (XElement f in xml_fields)
-            {
-                // Parse field name.
-                string name;
-                string attributeName = "name";
-                try
-                {
-                    name = f.Attribute(attributeName).Value;
-                }
-                catch (NullReferenceException)
-                {
-                    throw new MissingRequiredAttributeException(f, attributeName);
-                }
-
-                // Ensure field name is valid.
-                if (allPossibleFields.ContainsKey(name))
-                {
-                    fields.Add(new FieldDefinition(name, allPossibleFields[name]));
-                }
-                else
-                {
-                    throw new InvalidAttributeValueException(f.Attribute("name"));
-                }
-            }
-
-            // If no fields are provided, default to all fields.
-            if (fields.Count == 0)
-            {
-                foreach (KeyValuePair<string, Type> entry in allPossibleFields)
-                {
-                    fields.Add(new FieldDefinition(entry.Key, entry.Value));
-                }
-            }
-
-            return fields;
-        }
-
-        static List<FieldDefinition> parseFields_IISW3C(IEnumerable<XElement> xml_fields)
-        {
-            List<FieldDefinition> fields = new List<FieldDefinition>();
-
-            Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
-            {
-                { "LogFilename", typeof(string) },
-                { "LogRow", typeof(int) },
-                { "date", typeof(DateTime) },
-                { "time", typeof(DateTime) },
-                { "c-ip", typeof(string) },
-                { "cs-username", typeof(string) },
-                { "s-sitename", typeof(string) },
-                { "s-computername", typeof(int) },
-                { "s-ip", typeof(string) },
-                { "s-port", typeof(int) },
-                { "cs-method", typeof(string) },
-                { "cs-uri-stem", typeof(string) },
-                { "cs-uri-query", typeof(string) },
-                { "sc-status", typeof(int) },
-                { "sc-substatus", typeof(int) },
-                { "sc-win32-status", typeof(int) },
-                { "sc-bytes", typeof(int) },
-                { "cs-bytes", typeof(int) },
-                { "time-taken", typeof(int) },
-                { "cs-version", typeof(string) },
-                { "cs-host", typeof(string) },
-                { "cs(User-Agent)", typeof(string) },
-                { "cs(Cookie)", typeof(string) },
-                { "cs(Referer)", typeof(string) },
-                { "s-event", typeof(string) },
-                { "s-process-type", typeof(string) },
-                { "s-user-time", typeof(double) },
-                { "s-kernel-time", typeof(double) },
-                { "s-page-faults", typeof(int) },
-                { "s-total-procs", typeof(int) },
-                { "s-active-procs", typeof(int) },
-                { "s-stopped-procs", typeof(int) }
-            };
 
             foreach (XElement f in xml_fields)
             {
@@ -896,6 +820,94 @@ namespace TimberWinR
             return p.Build();
         }
 
+        static Params_Grok parseParams_Grok(IEnumerable<XElement> elements)
+        {
+            Params_Grok.Builder p = new Params_Grok.Builder();
+
+            foreach (XElement e in elements)
+            {
+                string val;
+                string attributeName;
+                switch (e.Name.ToString())
+                {
+                    case "Match":
+                        attributeName = "value";
+                        try
+                        {
+                            val = e.Attribute(attributeName).Value;
+                        }
+                        catch
+                        {
+                            throw new MissingRequiredAttributeException(e, attributeName);
+                        }
+                        p.WithMatch(val);
+                        break;
+                    case "AddField":
+                        string name, value;
+                        attributeName = "name";
+                        try
+                        {
+                            name = e.Attribute(attributeName).Value;
+                        }
+                        catch
+                        {
+                            throw new MissingRequiredAttributeException(e, attributeName);
+                        }
+                        attributeName = "value";
+                        try
+                        {
+                            value = e.Attribute(attributeName).Value;
+                        }
+                        catch
+                        {
+                            throw new MissingRequiredAttributeException(e, attributeName);
+                        }
+                        Pair addField = new Pair(name, value);
+                        p.WithAddField(addField);
+                        break;
+                    case "DropIfMatch":
+                        attributeName = "value";
+                        try
+                        {
+                            val = e.Attribute(attributeName).Value;
+                        }
+                        catch
+                        {
+                            throw new MissingRequiredAttributeException(e, attributeName);
+                        }
+                        if (val == "ON" || val == "true")
+                        {
+                            p.WithDropIfMatch(true);
+                        }
+                        else if (val == "OFF" || val == "false")
+                        {
+                            p.WithDropIfMatch(false);
+                        }
+                        else
+                        {
+                            throw new InvalidAttributeValueException(e.Attribute(attributeName));
+                        }
+                        break;
+                    case "RemoveField":
+                        attributeName = "value";
+                        try
+                        {
+                            val = e.Attribute(attributeName).Value;
+                        }
+                        catch
+                        {
+                            throw new MissingRequiredAttributeException(e, attributeName);
+                        }
+                        p.WithRemoveField(val);
+                        break;
+                    default:
+                        throw new InvalidElementNameException(e);
+                }
+            }
+
+            return p.Build();
+        }
+
         public class WindowsEvent
         {
             public string Source { get; private set; }
@@ -1026,7 +1038,7 @@ namespace TimberWinR
             public override string ToString()
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append("TextLog\n");
+                sb.Append("IISLog\n");
                 sb.Append(String.Format("Name: {0}\n", Name));
                 sb.Append(String.Format("Location: {0}\n", Location));
                 sb.Append("Fields:\n");
@@ -1078,7 +1090,7 @@ namespace TimberWinR
             public override string ToString()
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append("TextLog\n");
+                sb.Append("IISW3CLog\n");
                 sb.Append(String.Format("Name: {0}\n", Name));
                 sb.Append(String.Format("Location: {0}\n", Location));
                 sb.Append("Fields:\n");
@@ -1387,6 +1399,105 @@ namespace TimberWinR
                         ICheckpoint = iCheckpoint
                     };
                 }
+            }
+        }
+
+        public struct Pair
+        {
+            public readonly string Name, Value;
+
+            public Pair(string name, string value)
+            {
+                Name = name;
+                Value = value;
+            }
+
+            public override string ToString()
+            {
+                return String.Format("Name:= {0} , Value:= {1}", Name, Value);
+            }
+        }
+
+        public class Grok
+        {
+            public string Match { get; private set; }
+            public Pair AddField { get; private set; }
+            public bool DropIfMatch { get; private set; }
+            public string RemoveField { get; private set; }
+
+            public Grok(Params_Grok args)
+            {
+                Match = args.Match;
+                AddField = args.AddField;
+                DropIfMatch = args.DropIfMatch;
+                RemoveField = args.RemoveField;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("Grok\n");
+                foreach (var prop in this.GetType().GetProperties())
+                {
+                    if (prop != null)
+                    {
+                        sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
+                    }
+
+                }
+                return sb.ToString();
+            }
+        }
+
+        public class Params_Grok
+        {
+            public string Match { get; private set; }
+            public Pair AddField { get; private set; }
+            public bool DropIfMatch { get; private set; }
+            public string RemoveField { get; private set; }
+
+            public class Builder
+            {
+                private string match;
+                private Pair addField;
+                private bool dropIfMatch = false;
+                private string removeField;
+
+                public Builder WithMatch(string value)
+                {
+                    match = value;
+                    return this;
+                }
+
+                public Builder WithAddField(Pair value)
+                {
+                    addField = value;
+                    return this;
+                }
+
+                public Builder WithDropIfMatch(bool value)
+                {
+                    dropIfMatch = value;
+                    return this;
+                }
+
+                public Builder WithRemoveField(string value)
+                {
+                    removeField = value;
+                    return this;
+                }
+
+                public Params_Grok Build()
+                {
+                    return new Params_Grok()
+                    {
+                        Match = match,
+                        AddField = addField,
+                        DropIfMatch = dropIfMatch,
+                        RemoveField = removeField
+                    };
+                }
+
             }
         }
 

@@ -19,7 +19,7 @@
     <Grok match="%{IPAddress:ip1} %{IPAddress:ip2}" dropifmatch="true|false">
       <AddField name="field1" value="%{foo}" />
       <RemoveField value="ip1" />
-    </Grok>    
+    </Grok>
   </Filters>
   
 </TimberWinR>
