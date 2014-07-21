@@ -100,7 +100,7 @@ namespace TimberWinR.ServiceHost
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
             outputRedis.Connect(_nlogListener);
 
-            foreach (Configuration.IISW3CLog iisw3cConfig in manager.Config.Filters)
+            foreach (Configuration.IISW3CLog iisw3cConfig in manager.Config.IISW3C)
             {
                 var elistner = new IISW3CInputListener(iisw3cConfig, _cancellationToken);
                 outputRedis.Connect(elistner);
