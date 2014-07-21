@@ -16,8 +16,10 @@
   </Inputs>
 
   <Filters>
-    <Grok match="%{IPAddress:ip1} %{IPAddress:ip2}" dropifmatch="true|false">
+    <Grok>
+      <Match value="%{IPAddress:ip1} %{IPAddress:ip2}" />
       <AddField name="field1" value="%{foo}" />
+      <DropIfMatch value="true" />
       <RemoveField value="ip1" />
     </Grok>
   </Filters>
