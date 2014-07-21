@@ -1339,9 +1339,9 @@ namespace TimberWinR
                 private int iCodepage = -2;
                 private int recurse = 0;
                 private string minDateMod;
-                private bool dQuotes;
-                private bool dirTime;
-                private bool consolidateLogs;
+                private bool dQuotes = false;
+                private bool dirTime = false;
+                private bool consolidateLogs = false;
                 private string iCheckpoint;
 
                 public Builder WithICodepage(int value)
