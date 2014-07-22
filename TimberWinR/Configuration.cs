@@ -140,6 +140,8 @@ namespace TimberWinR
             // Ensure that the xml configuration file provided obeys the xsd schema.
             XmlSchemaSet schemas = new XmlSchemaSet();
             schemas.Add("", XmlReader.Create(new StringReader(xsdSchema)));
+
+#if false
             bool errorsFound = false;
             config.Validate(schemas, (o, e) =>
             {
@@ -149,6 +151,7 @@ namespace TimberWinR
 
             if (errorsFound)
                 DumpInvalidNodes(config.Root);
+#endif
         }
 
         static void DumpInvalidNodes(XElement el)
@@ -472,6 +475,8 @@ namespace TimberWinR
             IEnumerable<XElement> filters =
                 from el in config.Root.Elements("Filters")
                 select el;
+
+            MutateFilter.Parse(_filters, config.Root);           
 
             foreach (XElement e in filters.Elements())
             {
@@ -923,7 +928,7 @@ namespace TimberWinR
                         {
                             throw new MissingRequiredAttributeException(e, attributeName);
                         }
-                        TimberWinR.Filters.GrokFilter.Pair addField = new TimberWinR.Filters.GrokFilter.Pair(name, value);
+                        TimberWinR.Filters.Pair addField = new TimberWinR.Filters.Pair(name, value);
                         p.WithAddField(addField);
                         break;
                     case "DropIfMatch":

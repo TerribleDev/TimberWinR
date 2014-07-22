@@ -73,21 +73,7 @@ namespace TimberWinR.Filters
                 json[fieldName] = fieldValue;
         }
 
-        public struct Pair
-        {
-            public readonly string Name, Value;
-
-            public Pair(string name, string value)
-            {
-                Name = name;
-                Value = value;
-            }
-
-            public override string ToString()
-            {
-                return String.Format("Name:= {0} , Value:= {1}", Name, Value);
-            }
-        }
+      
 
         public class Params_GrokFilter
         {
@@ -150,4 +136,21 @@ namespace TimberWinR.Filters
             }
         }
     }
+
+    public struct Pair
+    {
+        public readonly string Name, Value;
+
+        public Pair(string name, string value)
+        {
+            Name = name;
+            Value = value;
+        }
+
+        public override string ToString()
+        {
+            return String.Format("Name:= {0} , Value:= {1}", Name, Value);
+        }
+    }
+
 }

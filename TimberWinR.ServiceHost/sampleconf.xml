@@ -17,10 +17,14 @@
       <!--Single Tag-->
       <Match field="Text" value="%{SYSLOGLINE}" />               
     </Grok>
-    <!--<Date field="timestamp" target="@timestamp" convertToUTC="true">
+    <Mutate>
+      <Rename oldName="foo" newName="bar"/>
+      <Rename oldName="foo" newName="bar"/>
+    </Mutate>
+    <Date field="timestamp" target="@timestamp" convertToUTC="true">
       <Pattern>MMM  d HH:mm:ss</Pattern>
       <Pattern>MMM dd HH:mm:ss</Pattern>
       <Pattern>ISO8601</Pattern>
-    </Date>-->
+    </Date>
   </Filters>  
 </TimberWinR>
