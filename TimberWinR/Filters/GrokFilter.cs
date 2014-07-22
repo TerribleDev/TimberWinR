@@ -60,24 +60,24 @@ namespace TimberWinR.Filters
                         foreach (string fieldName in namedCaptures.Keys)
                         {
 
-                            if (fieldName == "timestamp")
-                            {
-                                string value = namedCaptures[fieldName];
-                                DateTime ts;
-                                if (DateTime.TryParse(value, out ts))
-                                    json.Add(fieldName, ts.ToUniversalTime());
-                                else if (DateTime.TryParseExact(value, new string[]
-                                {
-                                    "MMM dd hh:mm:ss",
-                                    "MMM dd HH:mm:ss",
-                                    "MMM dd h:mm",
-                                    "MMM dd hh:mm",
-                                }, CultureInfo.InvariantCulture, DateTimeStyles.None, out ts))
-                                    json.Add(fieldName, ts.ToUniversalTime());
-                                else
-                                    json.Add(fieldName, (JToken) namedCaptures[fieldName]);
-                            }
-                            else
+                            //if (fieldName == "timestamp")
+                            //{
+                            //    string value = namedCaptures[fieldName];
+                            //    DateTime ts;
+                            //    if (DateTime.TryParse(value, out ts))
+                            //        json.Add(fieldName, ts.ToUniversalTime());
+                            //    else if (DateTime.TryParseExact(value, new string[]
+                            //    {
+                            //        "MMM dd hh:mm:ss",
+                            //        "MMM dd HH:mm:ss",
+                            //        "MMM dd h:mm",
+                            //        "MMM dd hh:mm",
+                            //    }, CultureInfo.InvariantCulture, DateTimeStyles.None, out ts))
+                            //        json.Add(fieldName, ts.ToUniversalTime());
+                            //    else
+                            //        json.Add(fieldName, (JToken) namedCaptures[fieldName]);
+                            //}
+                            //else
                                 json.Add(fieldName, (JToken) namedCaptures[fieldName]);
                         }
                     }

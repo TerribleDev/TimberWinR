@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace TimberWinR.Filters
 {
@@ -10,8 +13,9 @@ namespace TimberWinR.Filters
         public string Field { get; private set; }
         public string Target { get; private set; }
         public bool ConvertToUTC { get; private set; }
-        public List<string> Pattern { get; private set; }
+        public List<string> Patterns { get; private set; }
 
+<<<<<<< HEAD
         public DateFilter(Params_DateFilter args)
         {
             Field = args.Field;
@@ -36,8 +40,51 @@ namespace TimberWinR.Filters
         }
 
         public override void Apply(Newtonsoft.Json.Linq.JObject json)
+=======
+        public DateFilter()
+>>>>>>> ec8c41eb8339a04a975b5813cfedc74a9b787e56
         {
-            throw new NotImplementedException();
+            Patterns = new List<string>();
+        }
+
+        public override void Apply(JObject json)
+        {
+            JToken token = null;
+            if (json.TryGetValue(Field, StringComparison.OrdinalIgnoreCase, out token))
+            {
+                string text = token.ToString();
+                if (!string.IsNullOrEmpty(text))
+                {
+                    DateTime ts;
+                    if (Patterns == null || Patterns.Count == 0)
+                    {
+                        if (DateTime.TryParse(text, out ts))
+                        {
+                            if (ConvertToUTC)
+                                ts = ts.ToUniversalTime();
+
+                            if (json[Target] == null)
+                                json.Add(Target, ts);
+                            else
+                                json[Target] = ts;
+                        }
+                    }
+                    else
+                    {
+                        if (DateTime.TryParseExact(text, Patterns.ToArray(), CultureInfo.InvariantCulture,
+                            DateTimeStyles.None, out ts))
+                        {
+                            if (ConvertToUTC)
+                                ts = ts.ToUniversalTime();
+
+                            if (json[Target] == null)
+                                json.Add(Target, ts);
+                            else
+                                json[Target] = ts;
+                        }
+                    }
+                }
+            }
         }
 
         public class Params_DateFilter
