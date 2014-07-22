@@ -32,32 +32,26 @@ namespace TimberWinR.Filters
                     if (Patterns == null || Patterns.Count == 0)
                     {
                         if (DateTime.TryParse(text, out ts))
-                        {
-                            if (ConvertToUTC)
-                                ts = ts.ToUniversalTime();
-
-                            if (json[Target] == null)
-                                json.Add(Target, ts);
-                            else
-                                json[Target] = ts;
-                        }
+                            AddOrModify(json, ts);
                     }
                     else
                     {
-                        if (DateTime.TryParseExact(text, Patterns.ToArray(), CultureInfo.InvariantCulture,
-                            DateTimeStyles.None, out ts))
-                        {
-                            if (ConvertToUTC)
-                                ts = ts.ToUniversalTime();
-
-                            if (json[Target] == null)
-                                json.Add(Target, ts);
-                            else
-                                json[Target] = ts;
-                        }
+                        if (DateTime.TryParseExact(text, Patterns.ToArray(), CultureInfo.InvariantCulture, DateTimeStyles.None, out ts))
+                            AddOrModify(json, ts);
                     }
                 }
             }
+        }
+
+        private void AddOrModify(JObject json, DateTime ts)
+        {
+            if (ConvertToUTC)
+                ts = ts.ToUniversalTime();
+
+            if (json[Target] == null)
+                json.Add(Target, ts);
+            else
+                json[Target] = ts;
         }
     }
 }

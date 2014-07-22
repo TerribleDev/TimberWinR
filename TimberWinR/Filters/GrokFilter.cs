@@ -36,7 +36,6 @@ namespace TimberWinR.Filters
                 {
                     sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
                 }
-
             }
             return sb.ToString();
         }
@@ -59,30 +58,19 @@ namespace TimberWinR.Filters
                         var namedCaptures = regex.MatchNamedCaptures(text);
                         foreach (string fieldName in namedCaptures.Keys)
                         {
-
-                            //if (fieldName == "timestamp")
-                            //{
-                            //    string value = namedCaptures[fieldName];
-                            //    DateTime ts;
-                            //    if (DateTime.TryParse(value, out ts))
-                            //        json.Add(fieldName, ts.ToUniversalTime());
-                            //    else if (DateTime.TryParseExact(value, new string[]
-                            //    {
-                            //        "MMM dd hh:mm:ss",
-                            //        "MMM dd HH:mm:ss",
-                            //        "MMM dd h:mm",
-                            //        "MMM dd hh:mm",
-                            //    }, CultureInfo.InvariantCulture, DateTimeStyles.None, out ts))
-                            //        json.Add(fieldName, ts.ToUniversalTime());
-                            //    else
-                            //        json.Add(fieldName, (JToken) namedCaptures[fieldName]);
-                            //}
-                            //else
-                                json.Add(fieldName, (JToken) namedCaptures[fieldName]);
+                            AddOrModify(json, fieldName, namedCaptures[fieldName]);                          
                         }
                     }
                 }
             }
         }
+        private void AddOrModify(JObject json, string fieldName, string fieldValue)
+        {
+            if (json[fieldName] == null)
+                json.Add(fieldName, fieldValue);
+            else
+                json[fieldName] = fieldValue;
+        }
+
     }
 }
