@@ -64,16 +64,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="ConfigurationErrors.cs" />
     <Compile Include="Filters\DateFilter.cs" />
     <Compile Include="Filters\FilterBase.cs" />
     <Compile Include="Filters\GrokFilter.cs" />
     <Compile Include="Filters\MutateFilter.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
+    <Compile Include="Inputs\IISLog.cs" />
     <Compile Include="Inputs\IISW3CInputListener.cs" />
+    <Compile Include="Inputs\IISW3CLog.cs" />
+    <Compile Include="Inputs\InputBase.cs" />
     <Compile Include="Inputs\InputListener.cs" />
     <Compile Include="Inputs\ParameterDefinitions.cs" />
+    <Compile Include="Inputs\TailFileInput.cs" />
     <Compile Include="Inputs\TcpInputListener.cs" />
     <Compile Include="Inputs\TailFileInputListener.cs" />
+    <Compile Include="Inputs\WindowsEvent.cs" />
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="Outputs\OutputSender.cs" />

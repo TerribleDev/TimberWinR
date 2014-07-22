@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using System.Xml.Linq;
 
 namespace TimberWinR.Filters
 {
@@ -15,12 +15,88 @@ namespace TimberWinR.Filters
         public bool ConvertToUTC { get; private set; }
         public List<string> Patterns { get; private set; }
 
-        public DateFilter(Params_DateFilter args)
+        public static void Parse(List<FilterBase> filters, XElement dateElement)
         {
-            Field = args.Field;
-            Target = args.Target;
-            ConvertToUTC = args.ConvertToUTC;
-            Patterns = args.Patterns;
+            filters.Add(parseDate(dateElement));
+        }
+
+        static DateFilter parseDate(XElement e)
+        {
+            return new DateFilter(e);
+        }
+
+        DateFilter(XElement parent)
+        {
+            Patterns = new List<string>();
+
+            ParseField(parent);
+            ParseTarget(parent);
+            ParseConvertToUTC(parent);
+            ParsePatterns(parent);
+        }
+
+        private void ParseField(XElement parent)
+        {
+            string attributeName = "field";
+
+            try
+            {
+                XAttribute a = parent.Attribute(attributeName);
+                Field = a.Value;
+            }
+            catch
+            {
+            }
+        }
+
+        private void ParseTarget(XElement parent)
+        {
+            string attributeName = "field";
+
+            try
+            {
+                XAttribute a = parent.Attribute(attributeName);
+                Field = a.Value;
+            }
+            catch
+            {
+            }
+        }
+
+        private void ParseConvertToUTC(XElement parent)
+        {
+            string attributeName = "convertToUTC";
+            string value;
+
+            try
+            {
+                XAttribute a = parent.Attribute(attributeName);
+
+                value = a.Value;
+
+                if (value == "ON" || value == "true")
+                {
+                    ConvertToUTC = true;
+                }
+                else if (value == "OFF" || value == "false")
+                {
+                    ConvertToUTC = false;
+                }
+                else
+                {
+                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
+                }
+            }
+            catch { }
+        }
+
+        private void ParsePatterns(XElement parent)
+        {
+            foreach (var e in parent.Elements("Pattern"))
+            {
+                string pattern = e.Value;
+                Patterns.Add(pattern);
+            }
         }
 
         public override string ToString()
@@ -73,55 +149,5 @@ namespace TimberWinR.Filters
                 json[Target] = ts;
         }
 
-        public class Params_DateFilter
-        {
-            public string Field { get; private set; }
-            public string Target { get; private set; }
-            public bool ConvertToUTC { get; private set; }
-            public List<string> Patterns { get; private set; }
-
-            public class Builder
-            {
-                private string field;
-                private string target;
-                private bool convertToUTC = false;
-                private List<string> patterns;
-
-                public Builder WithField(string value)
-                {
-                    field = value;
-                    return this;
-                }
-
-                public Builder WithTarget(string value)
-                {
-                    target = value;
-                    return this;
-                }
-
-                public Builder WithConvertToUTC(bool value)
-                {
-                    convertToUTC = value;
-                    return this;
-                }
-
-                public Builder WithPattern(string value)
-                {
-                    patterns.Add(value);
-                    return this;
-                }
-
-                public Params_DateFilter Build()
-                {
-                    return new Params_DateFilter()
-                    {
-                        Field = field,
-                        Target = target,
-                        ConvertToUTC = convertToUTC,
-                        Patterns = patterns
-                    };
-                }
-            }
-        }
     }
 }

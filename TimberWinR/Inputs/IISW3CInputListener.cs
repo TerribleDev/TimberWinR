@@ -21,10 +21,10 @@ namespace TimberWinR.Inputs
     public class IISW3CInputListener : InputListener
     {
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Configuration.IISW3CLog _arguments;
+        private TimberWinR.Inputs.IISW3CLog _arguments;
 
 
-        public IISW3CInputListener(TimberWinR.Configuration.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public IISW3CInputListener(TimberWinR.Inputs.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;

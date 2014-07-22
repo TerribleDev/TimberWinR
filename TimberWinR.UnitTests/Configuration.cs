@@ -229,7 +229,7 @@ namespace TimberWinR.UnitTests
             string iCheckpoint;
             string binaryFormat = "PRINT";
 
-            TimberWinR.Configuration.WindowsEvent evt = c.Events.ToArray()[0];
+            TimberWinR.Inputs.WindowsEvent evt = c.Events.ToArray()[0];
 
             Assert.AreEqual(source, evt.Source);
             Assert.AreEqual(fullText, evt.FullText);
@@ -253,7 +253,7 @@ namespace TimberWinR.UnitTests
             bool splitLongLines = false;
             string iCheckpoint;
 
-            TimberWinR.Configuration.TailFileInput log = c.Logs.ToArray()[0];
+            TimberWinR.Inputs.TailFileInput log = c.Logs.ToArray()[0];
 
             Assert.AreEqual(name, log.Name);
             Assert.AreEqual(location, log.Location);
@@ -307,7 +307,7 @@ namespace TimberWinR.UnitTests
             bool consolidateLogs = false;
             string iCheckpoint;
 
-            TimberWinR.Configuration.IISW3CLog iisw3c = c.IISW3C.ToArray()[0];
+            TimberWinR.Inputs.IISW3CLog iisw3c = c.IISW3C.ToArray()[0];
 
             Assert.AreEqual(name, iisw3c.Name);
             Assert.AreEqual(location, iisw3c.Location);

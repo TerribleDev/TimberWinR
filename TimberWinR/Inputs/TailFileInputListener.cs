@@ -23,9 +23,9 @@ namespace TimberWinR.Inputs
     public class TailFileInputListener : InputListener
     {
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Configuration.TailFileInput _arguments;
+        private TimberWinR.Inputs.TailFileInput _arguments;
 
-        public TailFileInputListener(TimberWinR.Configuration.TailFileInput arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public TailFileInputListener(TimberWinR.Inputs.TailFileInput arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;

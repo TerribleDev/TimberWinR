@@ -96,13 +96,13 @@ namespace TimberWinR.ServiceHost
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
             outputRedis.Connect(_nlogListener);
 
-            foreach (Configuration.IISW3CLog iisw3cConfig in manager.Config.IISW3C)
+            foreach (Inputs.IISW3CLog iisw3cConfig in manager.Config.IISW3C)
             {
                 var elistner = new IISW3CInputListener(iisw3cConfig, _cancellationToken);
                 outputRedis.Connect(elistner);
             }
 
-            foreach (Configuration.WindowsEvent eventConfig in manager.Config.Events)
+            foreach (Inputs.WindowsEvent eventConfig in manager.Config.Events)
             {
                 var elistner = new WindowsEvtInputListener(eventConfig, _cancellationToken);
                 outputRedis.Connect(elistner);

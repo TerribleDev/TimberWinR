@@ -6,24 +6,143 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace TimberWinR.Filters
 {
     public class GrokFilter : FilterBase
     {
+        public const string TagName = "Grok";
+
         public string Match { get; private set; }
         public string Field { get; private set; }
-        public Pair AddField { get; private set; }
+        public List<FieldValuePair> AddFields { get; private set; }
         public bool DropIfMatch { get; private set; }
-        public string RemoveField { get; private set; }
+        public List<string> RemoveFields { get; private set; }
 
-        public GrokFilter(Params_GrokFilter args)
+        public static void Parse(List<FilterBase> filters, XElement grokElement)
         {
-            Match = args.Match;
-            Field = args.Field;
-            AddField = args.AddField;
-            DropIfMatch = args.DropIfMatch;
-            RemoveField = args.RemoveField;
+            filters.Add(parseGrok(grokElement));
+        }
+
+        static GrokFilter parseGrok(XElement e)
+        {
+            return new GrokFilter(e);
+        }
+
+        GrokFilter(XElement parent)
+        {
+            AddFields = new List<FieldValuePair>();
+            RemoveFields = new List<string>();
+
+            ParseMatch(parent);
+            ParseAddFields(parent);
+            ParseDropIfMatch(parent);
+            ParseRemoveFields(parent);
+        }
+
+        private void ParseMatch(XElement parent)
+        {
+            XElement e = parent.Element("Match");
+            
+            if (e != null)
+            {
+                string attributeName = "value";
+                try
+                {
+                    Match = e.Attribute(attributeName).Value;
+                }
+                catch
+                {
+                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
+                }
+
+            }
+        }
+
+        private void ParseAddFields(XElement parent)
+        {
+            foreach (var e in parent.Elements("AddField"))
+            {
+                string attributeName = "field";
+                string field, value;
+
+                try
+                {
+                    field = e.Attribute(attributeName).Value;
+                }
+                catch
+                {
+                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
+                }
+
+                attributeName = "value";
+                try
+                {
+                    value = e.Attribute(attributeName).Value;
+                }
+                catch
+                {
+                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
+                }
+
+                FieldValuePair a = new FieldValuePair(field, value);
+                AddFields.Add(a);
+            }
+        }
+
+        private void ParseDropIfMatch(XElement parent)
+        {
+            XElement e = parent.Element("DropIfMatch");
+
+            if (e != null)
+            {
+                string attributeName = "value";
+                string value;
+                try
+                {
+                    value = e.Attribute(attributeName).Value;
+                }
+                catch
+                {
+                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
+                }
+
+
+                if (value == "ON" || value == "true")
+                {
+                    DropIfMatch = true;
+                }
+                else if (value == "OFF" || value == "false")
+                {
+                    DropIfMatch = false;
+                }
+                else
+                {
+                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(e.Attribute(attributeName));
+                }
+            }
+        }
+
+        private void ParseRemoveFields(XElement parent)
+        {
+            foreach (var e in parent.Elements("RemoveField"))
+            {
+                if (e != null)
+                {
+                    string attributeName = "value";
+                    string value;
+                    try
+                    {
+                        value = e.Attribute(attributeName).Value;
+                    }
+                    catch
+                    {
+                        throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
+                    }
+                    RemoveFields.Add(e.Attribute("value").Value);
+                }
+            }
         }
 
         public override string ToString()
@@ -73,66 +192,15 @@ namespace TimberWinR.Filters
                 json[fieldName] = fieldValue;
         }
 
-      
-
-        public class Params_GrokFilter
+        public class FieldValuePair
         {
-            public string Match { get; private set; }
-            public string Field { get; private set; }
-            public Pair AddField { get; private set; }
-            public bool DropIfMatch { get; private set; }
-            public string RemoveField { get; private set; }
+            public string Field { get; set; }
+            public string Value { get; set; }
 
-            public class Builder
+            public FieldValuePair(string field, string value)
             {
-                private string match;
-                private string field;
-                private Pair addField;
-                private bool dropIfMatch = false;
-                private string removeField;
-
-                public Builder WithField(string value)
-                {
-                    field = value;
-                    return this;
-                }
-
-                public Builder WithMatch(string value)
-                {
-                    match = value;
-                    return this;
-                }
-
-                public Builder WithAddField(Pair value)
-                {
-                    addField = value;
-                    return this;
-                }
-
-                public Builder WithDropIfMatch(bool value)
-                {
-                    dropIfMatch = value;
-                    return this;
-                }
-
-                public Builder WithRemoveField(string value)
-                {
-                    removeField = value;
-                    return this;
-                }
-
-                public Params_GrokFilter Build()
-                {
-                    return new Params_GrokFilter()
-                    {
-                        Match = match,
-                        Field = field,
-                        AddField = addField,
-                        DropIfMatch = dropIfMatch,
-                        RemoveField = removeField
-                    };
-                }
-
+                Field = field;
+                Value = value;
             }
         }
     }
