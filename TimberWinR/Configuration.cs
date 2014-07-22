@@ -474,9 +474,7 @@ namespace TimberWinR
 
             IEnumerable<XElement> filters =
                 from el in config.Root.Elements("Filters")
-                select el;
-
-            MutateFilter.Parse(_filters, config.Root);           
+                select el;                   
 
             foreach (XElement e in filters.Elements())
             {
@@ -487,7 +485,8 @@ namespace TimberWinR
                         GrokFilter grok = new GrokFilter(args);
                         _filters.Add(grok);
                         break;
-                    case "Mutate":
+                    case MutateFilter.TagName:
+                        MutateFilter.Parse(_filters, e);   
                         break;
                 }
             }
