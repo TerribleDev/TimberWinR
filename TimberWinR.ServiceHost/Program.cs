@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using System.Text;
@@ -20,9 +21,9 @@ namespace TimberWinR.ServiceHost
         private static void Main(string[] args)
         {
             Arguments arguments = new Arguments();
-            
+
             HostFactory.Run(hostConfigurator =>
-            {      
+            {
                 string cmdLine = Environment.CommandLine;
 
                 hostConfigurator.Service<TimberWinRService>(serviceConfigurator =>
@@ -55,23 +56,23 @@ namespace TimberWinR.ServiceHost
         }
     }
 
- 
+
     internal class TimberWinRService
     {
         readonly CancellationTokenSource _cancellationTokenSource;
         readonly CancellationToken _cancellationToken;
         readonly Task _serviceTask;
         private readonly Arguments _args;
-        private  TcpInputListener _nlogListener;
+        private TcpInputListener _nlogListener;
 
         public TimberWinRService(Arguments args)
         {
             _args = args;
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
-            _serviceTask = new Task(RunService, _cancellationToken);           
+            _serviceTask = new Task(RunService, _cancellationToken);
         }
-        
+
         public void Start()
         {
             _serviceTask.Start();
@@ -82,21 +83,16 @@ namespace TimberWinR.ServiceHost
             _cancellationTokenSource.Cancel();
             _nlogListener.Shutdown();
         }
-      
+
         /// <summary>
         /// The Main body of the Service Worker Thread
         /// </summary>
         private void RunService()
         {
             TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile);
-           
-            // logaggregator.vistaprint.svc
 
-            //var outputRedis = new RedisOutput(new string[] { "tstlexiceapp006.vistaprint.svc", "tstlexiceapp007.vistaprint.svc" }, _cancellationToken);
+            var outputRedis = new RedisOutput(manager, new string[] { "logaggregator.vistaprint.svc" }, _cancellationToken);
 
-      //     var outputRedis = new RedisOutput(new string[] { "prdlexicelgs001.vistaprint.svc" }, _cancellationToken);
-            var outputRedis = new RedisOutput(new string[] { "logaggregator.vistaprint.svc" }, _cancellationToken);
-       
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
             outputRedis.Connect(_nlogListener);
 
@@ -105,18 +101,18 @@ namespace TimberWinR.ServiceHost
                 var elistner = new IISW3CInputListener(iisw3cConfig, _cancellationToken);
                 outputRedis.Connect(elistner);
             }
-        
+
             foreach (Configuration.WindowsEvent eventConfig in manager.Config.Events)
             {
                 var elistner = new WindowsEvtInputListener(eventConfig, _cancellationToken);
                 outputRedis.Connect(elistner);
             }
 
-       
-            //while (!_cancellationTokenSource.IsCancellationRequested)
-            //{               
-            //    System.Threading.Thread.Sleep(1000);               
-            //}
+            foreach (var logConfig in manager.Config.Logs)
+            {
+                var elistner = new TailFileInputListener(logConfig, _cancellationToken);
+                outputRedis.Connect(elistner);
+            }
         }
     }
 }

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TimberWinR>
+  <Inputs>
+    <WindowsEvents>
+      <Event source="System,Application" binaryFormat="PRINT" />
+    </WindowsEvents>
+    <Logs>
+      <Log name="Syslogs" location="C:\Logs1\*.log" />     
+    </Logs>
+    <IISW3CLogs>
+      <IISW3CLog name="Default site" location="c:\inetpub\logs\LogFiles\W3SVC1\*" />
+    </IISW3CLogs>
+  </Inputs>
+
+  <Filters>
+    <Grok>
+      <!--Single Tag-->
+      <Match field="Text" value="%{SYSLOGLINE}" />
+      <DropIfMatch value="true" />
+
+      <!--Multiple Tag allowed -->
+      <AddField name="field1" value="%{foo}" />
+      <AddField name="field2" value="%{foo}" />    
+      <RemoveField value="ip1" />
+      <RemoveField value="ip2" />
+
+      <!--Verify field 'name' is unique also target unique -->      
+      <Date field="timestamp" target="@timestamp" convertToUTC="true">
+        <Pattern>MMM  d HH:mm:ss</Pattern>
+        <Pattern>MMM dd HH:mm:ss</Pattern>
+        <Pattern>ISO8601</Pattern>
+      </Date>
+      <Date field="timestamp2" target="@timestamp2" convertToUTC="false">
+        <Pattern>MMM  d HH:mm:ss</Pattern>
+        <Pattern>MMM dd HH:mm:ss</Pattern>
+        <Pattern>ISO8601</Pattern>
+      </Date>
+    </Grok>
+  </Filters>  
+</TimberWinR>

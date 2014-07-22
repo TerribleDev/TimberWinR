@@ -257,7 +257,7 @@ namespace TimberWinR.UnitTests
             bool splitLongLines = false;
             string iCheckpoint;
 
-            TimberWinR.Configuration.TextLog log = c.Logs.ToArray()[0];
+            TimberWinR.Configuration.TailFileInput log = c.Logs.ToArray()[0];
 
             Assert.AreEqual(name, log.Name);
             Assert.AreEqual(location, log.Location);

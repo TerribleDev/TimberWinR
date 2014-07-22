@@ -9,6 +9,7 @@ using System.IO;
 using System.Globalization;
 using TimberWinR.Inputs;
 using System.Xml.Schema;
+using NLog;
 
 namespace TimberWinR
 {
@@ -29,7 +30,7 @@ namespace TimberWinR
             public MissingRequiredAttributeException(XElement e, string attributeName)
                 : base(
                     string.Format("{0}:{1} Missing required attribute \"{2}\" for element <{3}>", e.Document.BaseUri,
-                        ((IXmlLineInfo)e).LineNumber, attributeName, e.Name.ToString()))
+                        ((IXmlLineInfo) e).LineNumber, attributeName, e.Name.ToString()))
             {
             }
         }
@@ -39,7 +40,7 @@ namespace TimberWinR
             public InvalidAttributeNameException(XAttribute a)
                 : base(
                     string.Format("{0}:{1} Invalid Attribute Name <{2} {3}>", a.Document.BaseUri,
-                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.Name.ToString()))
+                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.Name.ToString()))
             {
             }
         }
@@ -48,8 +49,10 @@ namespace TimberWinR
         {
             public InvalidAttributeDateValueException(XAttribute a)
                 : base(
-                    string.Format("{0}:{1} Invalid date format given for attribute. Format must be \"yyyy-MM-dd hh:mm:ss\". <{2} {3}>", a.Document.BaseUri,
-                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
+                    string.Format(
+                        "{0}:{1} Invalid date format given for attribute. Format must be \"yyyy-MM-dd hh:mm:ss\". <{2} {3}>",
+                        a.Document.BaseUri,
+                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.ToString()))
             {
             }
         }
@@ -59,7 +62,7 @@ namespace TimberWinR
             public InvalidAttributeIntegerValueException(XAttribute a)
                 : base(
                     string.Format("{0}:{1} Integer value not given for attribute. <{2} {3}>", a.Document.BaseUri,
-                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
+                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.ToString()))
             {
             }
         }
@@ -69,7 +72,7 @@ namespace TimberWinR
             public InvalidAttributeValueException(XAttribute a)
                 : base(
                     string.Format("{0}:{1} Invalid Attribute Value <{2} {3}>", a.Document.BaseUri,
-                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
+                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.ToString()))
             {
             }
         }
@@ -79,25 +82,45 @@ namespace TimberWinR
             public InvalidElementNameException(XElement e)
                 : base(
                     string.Format("{0}:{1} Invalid Element Name <{2}> <{3}>", e.Document.BaseUri,
-                        ((IXmlLineInfo)e).LineNumber, e.Parent.Name, e.ToString()))
+                        ((IXmlLineInfo) e).LineNumber, e.Parent.Name, e.ToString()))
             {
             }
         }
 
         private static List<WindowsEvent> _events = new List<WindowsEvent>();
-        public IEnumerable<WindowsEvent> Events { get { return _events; } }
 
-        private static List<TextLog> _logs = new List<TextLog>();
-        public IEnumerable<TextLog> Logs { get { return _logs; } }
+        public IEnumerable<WindowsEvent> Events
+        {
+            get { return _events; }
+        }
+
+        private static List<TailFileInput> _logs = new List<TailFileInput>();
+
+        public IEnumerable<TailFileInput> Logs
+        {
+            get { return _logs; }
+        }
 
         private static List<IISLog> _iislogs = new List<IISLog>();
-        public IEnumerable<IISLog> IIS { get { return _iislogs; } }
+
+        public IEnumerable<IISLog> IIS
+        {
+            get { return _iislogs; }
+        }
 
         private static List<IISW3CLog> _iisw3clogs = new List<IISW3CLog>();
-        public IEnumerable<IISW3CLog> IISW3C { get { return _iisw3clogs; } }
+
+        public IEnumerable<IISW3CLog> IISW3C
+        {
+            get { return _iisw3clogs; }
+        }
 
         private static List<Grok> _groks = new List<Grok>();
-        public IEnumerable<Grok> Groks { get { return _groks; } }
+
+        public IEnumerable<Grok> Groks
+        {
+            get { return _groks; }
+        }
 
         public Configuration(string xmlConfFile)
         {
@@ -107,22 +130,45 @@ namespace TimberWinR
             parseConfFilter(xmlConfFile);
         }
 
-        static void validateWithSchema(string xmlConfFile, string xsdSchema)
+        private static void validateWithSchema(string xmlConfFile, string xsdSchema)
         {
             XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
 
             // Ensure that the xml configuration file provided obeys the xsd schema.
             XmlSchemaSet schemas = new XmlSchemaSet();
             schemas.Add("", XmlReader.Create(new StringReader(xsdSchema)));
-
-            bool errors = false;
+            bool errorsFound = false;
             config.Validate(schemas, (o, e) =>
             {
-                Console.WriteLine("{0}", e.Message);
-                errors = true;
-            });
-            Console.WriteLine("The XML configuration file provided {0}", errors ? "did not validate." : "validated.");
+                errorsFound = true;
+                LogManager.GetCurrentClassLogger().Error(e.Message);
+            }, true);
+
+            if (errorsFound)          
+                DumpInvalidNodes(config.Root);            
         }
+
+        static void DumpInvalidNodes(XElement el)
+        {
+            if (el.GetSchemaInfo().Validity != XmlSchemaValidity.Valid)
+                LogManager.GetCurrentClassLogger().Error("Invalid Element {0}",
+                    el.AncestorsAndSelf()
+                    .InDocumentOrder()
+                    .Aggregate("", (s, i) => s + "/" + i.Name.ToString()));
+            foreach (XAttribute att in el.Attributes())
+                if (att.GetSchemaInfo().Validity != XmlSchemaValidity.Valid)
+                    LogManager.GetCurrentClassLogger().Error("Invalid Attribute {0}",
+                        att
+                        .Parent
+                        .AncestorsAndSelf()
+                        .InDocumentOrder()
+                        .Aggregate("",
+                            (s, i) => s + "/" + i.Name.ToString()) + "/@" + att.Name.ToString()
+                        );
+            foreach (XElement child in el.Elements())
+                DumpInvalidNodes(child);
+        }
+
 
         static void parseConfInput(string xmlConfFile)
         {
@@ -248,7 +294,7 @@ namespace TimberWinR
                 // Parse parameters.
                 Params_TextLog args = parseParams_Log(e.Attributes());
 
-                TextLog log = new TextLog(name, location, fields, args);
+                TailFileInput log = new TailFileInput(name, location, fields, args);
                 _logs.Add(log);
             }
 
@@ -841,7 +887,19 @@ namespace TimberWinR
                             throw new MissingRequiredAttributeException(e, attributeName);
                         }
                         p.WithMatch(val);
+
+                        attributeName = "field";
+                        try
+                        {
+                            val = e.Attribute(attributeName).Value;
+                        }
+                        catch
+                        {
+                            throw new MissingRequiredAttributeException(e, attributeName);
+                        }
+                        p.WithField(val);
                         break;
+
                     case "AddField":
                         string name, value;
                         attributeName = "name";
@@ -964,7 +1022,7 @@ namespace TimberWinR
             }
         }
 
-        public class TextLog
+        public class TailFileInput
         {
             public string Name { get; private set; }
             public string Location { get; private set; }
@@ -976,7 +1034,7 @@ namespace TimberWinR
             public bool SplitLongLines { get; private set; }
             public string ICheckpoint { get; private set; }
 
-            public TextLog(string name, string location, List<FieldDefinition> fields, Params_TextLog args)
+            public TailFileInput(string name, string location, List<FieldDefinition> fields, Params_TextLog args)
             {
                 Name = name;
                 Location = location;
@@ -1421,6 +1479,7 @@ namespace TimberWinR
         public class Grok
         {
             public string Match { get; private set; }
+            public string Field { get; private set; }
             public Pair AddField { get; private set; }
             public bool DropIfMatch { get; private set; }
             public string RemoveField { get; private set; }
@@ -1428,6 +1487,7 @@ namespace TimberWinR
             public Grok(Params_Grok args)
             {
                 Match = args.Match;
+                Field = args.Field;
                 AddField = args.AddField;
                 DropIfMatch = args.DropIfMatch;
                 RemoveField = args.RemoveField;
@@ -1452,6 +1512,7 @@ namespace TimberWinR
         public class Params_Grok
         {
             public string Match { get; private set; }
+            public string Field { get; private set; }
             public Pair AddField { get; private set; }
             public bool DropIfMatch { get; private set; }
             public string RemoveField { get; private set; }
@@ -1459,9 +1520,16 @@ namespace TimberWinR
             public class Builder
             {
                 private string match;
+                private string field;
                 private Pair addField;
                 private bool dropIfMatch = false;
                 private string removeField;
+
+                public Builder WithField(string value)
+                {
+                    field = value;
+                    return this;
+                }
 
                 public Builder WithMatch(string value)
                 {
@@ -1492,6 +1560,7 @@ namespace TimberWinR
                     return new Params_Grok()
                     {
                         Match = match,
+                        Field = field,
                         AddField = addField,
                         DropIfMatch = dropIfMatch,
                         RemoveField = removeField

@@ -83,7 +83,7 @@ namespace TimberWinR.Inputs
                                 json.Add(new JProperty(field.Name, v));
                             }
                             json.Add(new JProperty("type", "Win32-Eventlog"));
-                            ProcessJson(json.ToString());
+                            ProcessJson(json);
                         }
                     }
                     // Close the recordset

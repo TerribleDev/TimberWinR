@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,50 +10,46 @@ using Interop.MSUtil;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NLog;
-using LogQuery = Interop.MSUtil.LogQueryClassClass;
-using IISW3CLogInputFormat = Interop.MSUtil.COMIISW3CInputContextClassClass;
-using LogRecordSet = Interop.MSUtil.ILogRecordset;
 
+using LogQuery = Interop.MSUtil.LogQueryClassClass;
+using TextLineInputFormat = Interop.MSUtil.COMTextLineInputContextClass;
+using LogRecordSet = Interop.MSUtil.ILogRecordset;
 
 namespace TimberWinR.Inputs
 {
-    public class IISW3CInputListener : InputListener
+    /// <summary>
+    /// Tail a file.
+    /// </summary>
+    public class TailFileInputListener : InputListener
     {
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Configuration.IISW3CLog _arguments;
+        private TimberWinR.Configuration.TailFileInput _arguments;
 
-
-        public IISW3CInputListener(TimberWinR.Configuration.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public TailFileInputListener(TimberWinR.Configuration.TailFileInput arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
-            var task = new Task(IISW3CWatcher, cancelToken);
+            var task = new Task(FileWatcher, cancelToken);
             task.Start();
         }
 
-        private void IISW3CWatcher()
+        private void FileWatcher()
         {
             var oLogQuery = new LogQuery();
 
             var checkpointFileName = Path.Combine(System.IO.Path.GetTempPath(),
                 string.Format("{0}.lpc", Guid.NewGuid().ToString()));
 
-            var iFmt = new IISW3CLogInputFormat()
+            var iFmt = new TextLineInputFormat()
             {
-                codepage = _arguments.ICodepage,
-                consolidateLogs = _arguments.ConsolidateLogs,
-                dirTime = _arguments.DirTime,
-                dQuotes = _arguments.DQuotes,
-                iCheckpoint = checkpointFileName,               
-                recurse = _arguments.Recurse,
-                useDoubleQuotes = _arguments.DQuotes
+                iCodepage = _arguments.ICodepage,
+                splitLongLines = _arguments.SplitLongLines,
+                iCheckpoint = checkpointFileName,
+                recurse = _arguments.Recurse
             };
 
-            if (!string.IsNullOrEmpty(_arguments.MinDateMod))
-                iFmt.minDateMod = _arguments.MinDateMod;
-
-            // Create the query
+              // Create the query
             var query = string.Format("SELECT * FROM {0}", _arguments.Location);
 
             var firstQuery = true;
@@ -91,7 +86,7 @@ namespace TimberWinR.Inputs
 
                                 json.Add(new JProperty(field.Name, v));
                             }
-                            json.Add(new JProperty("type", "Win32-IISLog"));
+                            json.Add(new JProperty("type", "Win32-FileLog"));
                             ProcessJson(json);
                         }
                     }
@@ -105,6 +100,6 @@ namespace TimberWinR.Inputs
                 firstQuery = false;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
-        }
+        }       
     }
 }

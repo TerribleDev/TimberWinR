@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using Newtonsoft.Json.Linq;
 using NLog;
 
 namespace TimberWinR.Inputs
@@ -82,7 +83,7 @@ namespace TimberWinR.Inputs
                 var encoder = new ASCIIEncoding();
                 var encodedMessage = encoder.GetString(message, 0, bytesRead);
 
-                ProcessJson(encodedMessage);             
+                ProcessJson(JObject.Parse(encodedMessage));
             }
             tcpClient.Close();
         }

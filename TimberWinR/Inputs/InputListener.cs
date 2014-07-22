@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ namespace TimberWinR.Inputs
     public abstract class InputListener
     {
         public CancellationToken CancelToken { get; set; }
-        public event Action<string> OnMessageRecieved;
+        public event Action<JObject> OnMessageRecieved;
 
        
         public InputListener(CancellationToken token)
@@ -17,10 +18,11 @@ namespace TimberWinR.Inputs
             this.CancelToken = token;          
         }
 
-        protected void ProcessJson(string message)
-        {
+
+        protected void ProcessJson(JObject json)
+        {           
             if (OnMessageRecieved != null)
-                OnMessageRecieved(message);
+                OnMessageRecieved(json);
         }
     }
 }

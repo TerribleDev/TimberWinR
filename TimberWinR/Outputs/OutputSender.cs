@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 using TimberWinR.Inputs;
 
 namespace TimberWinR.Outputs
@@ -23,6 +24,6 @@ namespace TimberWinR.Outputs
             listener.OnMessageRecieved += MessageReceivedHandler;            
         }
 
-        protected abstract void MessageReceivedHandler(string jsonMessage);
+        protected abstract void MessageReceivedHandler(JObject jsonMessage);
     }
 }

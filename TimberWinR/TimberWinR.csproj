@@ -46,7 +46,8 @@
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.3.1.0.0\lib\net40\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="RapidRegex.Core">
+    <Reference Include="RapidRegex.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\RapidRegex.Core.1.0.0.0\lib\net40\RapidRegex.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -68,7 +69,7 @@
     <Compile Include="Inputs\InputListener.cs" />
     <Compile Include="Inputs\ParameterDefinitions.cs" />
     <Compile Include="Inputs\TcpInputListener.cs" />
-    <Compile Include="Inputs\TextLine.cs" />
+    <Compile Include="Inputs\TailFileInputListener.cs" />
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="Outputs\OutputSender.cs" />
@@ -81,7 +82,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\com-logparser\Interop.MSUtil.dll" />
+    <Content Include="lib\com-logparser\Interop.MSUtil.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="configSchema.xsd">
