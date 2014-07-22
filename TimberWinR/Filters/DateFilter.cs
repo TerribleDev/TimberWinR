@@ -15,13 +15,12 @@ namespace TimberWinR.Filters
         public bool ConvertToUTC { get; private set; }
         public List<string> Patterns { get; private set; }
 
-<<<<<<< HEAD
         public DateFilter(Params_DateFilter args)
         {
             Field = args.Field;
             Target = args.Target;
             ConvertToUTC = args.ConvertToUTC;
-            Pattern = args.Pattern;
+            Patterns = args.Patterns;
         }
 
         public override string ToString()
@@ -37,14 +36,6 @@ namespace TimberWinR.Filters
 
             }
             return sb.ToString();
-        }
-
-        public override void Apply(Newtonsoft.Json.Linq.JObject json)
-=======
-        public DateFilter()
->>>>>>> ec8c41eb8339a04a975b5813cfedc74a9b787e56
-        {
-            Patterns = new List<string>();
         }
 
         public override void Apply(JObject json)
@@ -92,14 +83,14 @@ namespace TimberWinR.Filters
             public string Field { get; private set; }
             public string Target { get; private set; }
             public bool ConvertToUTC { get; private set; }
-            public List<string> Pattern { get; private set; }
+            public List<string> Patterns { get; private set; }
 
             public class Builder
             {
                 private string field;
                 private string target;
                 private bool convertToUTC = false;
-                private List<string> pattern;
+                private List<string> patterns;
 
                 public Builder WithField(string value)
                 {
@@ -121,7 +112,7 @@ namespace TimberWinR.Filters
 
                 public Builder WithPattern(string value)
                 {
-                    pattern.Add(value);
+                    patterns.Add(value);
                     return this;
                 }
 
@@ -132,7 +123,7 @@ namespace TimberWinR.Filters
                         Field = field,
                         Target = target,
                         ConvertToUTC = convertToUTC,
-                        Pattern = pattern
+                        Patterns = patterns
                     };
                 }
 

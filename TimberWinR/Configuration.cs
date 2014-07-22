@@ -477,7 +477,7 @@ namespace TimberWinR
                 switch (e.Name.ToString())
                 {
                     case "Grok":
-                        TimberWinR.Filters.GrokFilter.Params_Grok args = parseParams_Grok(e.Elements());
+                        TimberWinR.Filters.GrokFilter.Params_GrokFilter args = parseParams_GrokFilter(e.Elements());
                         GrokFilter grok = new GrokFilter(args);
                         _filters.Add(grok);
                         break;
@@ -868,9 +868,9 @@ namespace TimberWinR
             return p.Build();
         }
 
-        static TimberWinR.Filters.GrokFilter.Params_Grok parseParams_Grok(IEnumerable<XElement> elements)
+        static TimberWinR.Filters.GrokFilter.Params_GrokFilter parseParams_GrokFilter(IEnumerable<XElement> elements)
         {
-            TimberWinR.Filters.GrokFilter.Params_Grok.Builder p = new TimberWinR.Filters.GrokFilter.Params_Grok.Builder();
+            TimberWinR.Filters.GrokFilter.Params_GrokFilter.Builder p = new TimberWinR.Filters.GrokFilter.Params_GrokFilter.Builder();
 
             foreach (XElement e in elements)
             {
