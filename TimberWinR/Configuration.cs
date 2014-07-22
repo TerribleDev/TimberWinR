@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System.IO;
 using System.Globalization;
 using TimberWinR.Inputs;
+using TimberWinR.Filters;
 using System.Xml.Schema;
 using NLog;
 
@@ -115,9 +116,9 @@ namespace TimberWinR
             get { return _iisw3clogs; }
         }
 
-        private static List<Grok> _groks = new List<Grok>();
+        private static List<GrokFilter> _groks = new List<GrokFilter>();
 
-        public IEnumerable<Grok> Groks
+        public IEnumerable<GrokFilter> Groks
         {
             get { return _groks; }
         }
@@ -476,7 +477,7 @@ namespace TimberWinR
                 {
                     case "Grok":
                         Params_Grok args = parseParams_Grok(e.Elements());
-                        Grok grok = new Grok(args);
+                        GrokFilter grok = new GrokFilter(args);
                         _groks.Add(grok);
                         break;
                     case "Mutate":
@@ -1476,39 +1477,7 @@ namespace TimberWinR
             }
         }
 
-        public class Grok
-        {
-            public string Match { get; private set; }
-            public string Field { get; private set; }
-            public Pair AddField { get; private set; }
-            public bool DropIfMatch { get; private set; }
-            public string RemoveField { get; private set; }
-
-            public Grok(Params_Grok args)
-            {
-                Match = args.Match;
-                Field = args.Field;
-                AddField = args.AddField;
-                DropIfMatch = args.DropIfMatch;
-                RemoveField = args.RemoveField;
-            }
-
-            public override string ToString()
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("Grok\n");
-                foreach (var prop in this.GetType().GetProperties())
-                {
-                    if (prop != null)
-                    {
-                        sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
-                    }
-
-                }
-                return sb.ToString();
-            }
-        }
-
+    
         public class Params_Grok
         {
             public string Match { get; private set; }

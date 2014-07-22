@@ -332,7 +332,7 @@ namespace TimberWinR.UnitTests
             bool dropIfMatch = true;
             string removeField = "ip1";
 
-            TimberWinR.Configuration.Grok grok = c.Groks.ToArray()[0];
+            TimberWinR.Filters.GrokFilter grok = c.Groks.ToArray()[0];
 
             Assert.AreEqual(match, grok.Match);
             Assert.AreEqual(addField, grok.AddField);

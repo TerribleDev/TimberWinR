@@ -64,6 +64,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Filters\DateFilter.cs" />
+    <Compile Include="Filters\FilterBase.cs" />
+    <Compile Include="Filters\GrokFilter.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
     <Compile Include="Inputs\IISW3CInputListener.cs" />
     <Compile Include="Inputs\InputListener.cs" />
