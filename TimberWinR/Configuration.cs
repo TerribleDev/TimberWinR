@@ -7,9 +7,11 @@ using System.Xml;
 using System.Xml.Linq;
 using System.IO;
 using System.Globalization;
+using System.Xml.Schema;
+
 using TimberWinR.Inputs;
 using TimberWinR.Filters;
-using System.Xml.Schema;
+
 using NLog;
 
 namespace TimberWinR
@@ -31,7 +33,7 @@ namespace TimberWinR
             public MissingRequiredAttributeException(XElement e, string attributeName)
                 : base(
                     string.Format("{0}:{1} Missing required attribute \"{2}\" for element <{3}>", e.Document.BaseUri,
-                        ((IXmlLineInfo) e).LineNumber, attributeName, e.Name.ToString()))
+                        ((IXmlLineInfo)e).LineNumber, attributeName, e.Name.ToString()))
             {
             }
         }
@@ -41,7 +43,7 @@ namespace TimberWinR
             public InvalidAttributeNameException(XAttribute a)
                 : base(
                     string.Format("{0}:{1} Invalid Attribute Name <{2} {3}>", a.Document.BaseUri,
-                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.Name.ToString()))
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.Name.ToString()))
             {
             }
         }
@@ -53,7 +55,7 @@ namespace TimberWinR
                     string.Format(
                         "{0}:{1} Invalid date format given for attribute. Format must be \"yyyy-MM-dd hh:mm:ss\". <{2} {3}>",
                         a.Document.BaseUri,
-                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.ToString()))
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
             {
             }
         }
@@ -63,7 +65,7 @@ namespace TimberWinR
             public InvalidAttributeIntegerValueException(XAttribute a)
                 : base(
                     string.Format("{0}:{1} Integer value not given for attribute. <{2} {3}>", a.Document.BaseUri,
-                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.ToString()))
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
             {
             }
         }
@@ -73,7 +75,7 @@ namespace TimberWinR
             public InvalidAttributeValueException(XAttribute a)
                 : base(
                     string.Format("{0}:{1} Invalid Attribute Value <{2} {3}>", a.Document.BaseUri,
-                        ((IXmlLineInfo) a).LineNumber, a.Parent.Name, a.ToString()))
+                        ((IXmlLineInfo)a).LineNumber, a.Parent.Name, a.ToString()))
             {
             }
         }
@@ -83,7 +85,7 @@ namespace TimberWinR
             public InvalidElementNameException(XElement e)
                 : base(
                     string.Format("{0}:{1} Invalid Element Name <{2}> <{3}>", e.Document.BaseUri,
-                        ((IXmlLineInfo) e).LineNumber, e.Parent.Name, e.ToString()))
+                        ((IXmlLineInfo)e).LineNumber, e.Parent.Name, e.ToString()))
             {
             }
         }
@@ -145,8 +147,8 @@ namespace TimberWinR
                 LogManager.GetCurrentClassLogger().Error(e.Message);
             }, true);
 
-            if (errorsFound)          
-                DumpInvalidNodes(config.Root);            
+            if (errorsFound)
+                DumpInvalidNodes(config.Root);
         }
 
         static void DumpInvalidNodes(XElement el)
@@ -476,7 +478,7 @@ namespace TimberWinR
                 switch (e.Name.ToString())
                 {
                     case "Grok":
-                        Params_Grok args = parseParams_Grok(e.Elements());
+                        TimberWinR.Filters.GrokFilter.Params_GrokFilter args = parseParams_GrokFilter(e.Elements());
                         GrokFilter grok = new GrokFilter(args);
                         _filters.Add(grok);
                         break;
@@ -867,9 +869,9 @@ namespace TimberWinR
             return p.Build();
         }
 
-        static Params_Grok parseParams_Grok(IEnumerable<XElement> elements)
+        static TimberWinR.Filters.GrokFilter.Params_GrokFilter parseParams_GrokFilter(IEnumerable<XElement> elements)
         {
-            Params_Grok.Builder p = new Params_Grok.Builder();
+            TimberWinR.Filters.GrokFilter.Params_GrokFilter.Builder p = new TimberWinR.Filters.GrokFilter.Params_GrokFilter.Builder();
 
             foreach (XElement e in elements)
             {
@@ -921,7 +923,7 @@ namespace TimberWinR
                         {
                             throw new MissingRequiredAttributeException(e, attributeName);
                         }
-                        Pair addField = new Pair(name, value);
+                        TimberWinR.Filters.GrokFilter.Pair addField = new TimberWinR.Filters.GrokFilter.Pair(name, value);
                         p.WithAddField(addField);
                         break;
                     case "DropIfMatch":
@@ -1460,84 +1462,5 @@ namespace TimberWinR
                 }
             }
         }
-
-        public struct Pair
-        {
-            public readonly string Name, Value;
-
-            public Pair(string name, string value)
-            {
-                Name = name;
-                Value = value;
-            }
-
-            public override string ToString()
-            {
-                return String.Format("Name:= {0} , Value:= {1}", Name, Value);
-            }
-        }
-
-    
-        public class Params_Grok
-        {
-            public string Match { get; private set; }
-            public string Field { get; private set; }
-            public Pair AddField { get; private set; }
-            public bool DropIfMatch { get; private set; }
-            public string RemoveField { get; private set; }
-
-            public class Builder
-            {
-                private string match;
-                private string field;
-                private Pair addField;
-                private bool dropIfMatch = false;
-                private string removeField;
-
-                public Builder WithField(string value)
-                {
-                    field = value;
-                    return this;
-                }
-
-                public Builder WithMatch(string value)
-                {
-                    match = value;
-                    return this;
-                }
-
-                public Builder WithAddField(Pair value)
-                {
-                    addField = value;
-                    return this;
-                }
-
-                public Builder WithDropIfMatch(bool value)
-                {
-                    dropIfMatch = value;
-                    return this;
-                }
-
-                public Builder WithRemoveField(string value)
-                {
-                    removeField = value;
-                    return this;
-                }
-
-                public Params_Grok Build()
-                {
-                    return new Params_Grok()
-                    {
-                        Match = match,
-                        Field = field,
-                        AddField = addField,
-                        DropIfMatch = dropIfMatch,
-                        RemoveField = removeField
-                    };
-                }
-
-            }
-        }
-
     }
 }

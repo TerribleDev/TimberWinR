@@ -13,11 +13,11 @@ namespace TimberWinR.Filters
     {
         public string Match { get; private set; }
         public string Field { get; private set; }
-        public TimberWinR.Configuration.Pair AddField { get; private set; }
+        public Pair AddField { get; private set; }
         public bool DropIfMatch { get; private set; }
         public string RemoveField { get; private set; }
 
-        public GrokFilter(TimberWinR.Configuration.Params_Grok args)
+        public GrokFilter(Params_GrokFilter args)
         {
             Match = args.Match;
             Field = args.Field;
@@ -29,7 +29,7 @@ namespace TimberWinR.Filters
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("Grok\n");
+            sb.Append("GrokFilter\n");
             foreach (var prop in this.GetType().GetProperties())
             {
                 if (prop != null)
@@ -64,6 +64,7 @@ namespace TimberWinR.Filters
                 }
             }
         }
+
         private void AddOrModify(JObject json, string fieldName, string fieldValue)
         {
             if (json[fieldName] == null)
@@ -72,5 +73,81 @@ namespace TimberWinR.Filters
                 json[fieldName] = fieldValue;
         }
 
+        public struct Pair
+        {
+            public readonly string Name, Value;
+
+            public Pair(string name, string value)
+            {
+                Name = name;
+                Value = value;
+            }
+
+            public override string ToString()
+            {
+                return String.Format("Name:= {0} , Value:= {1}", Name, Value);
+            }
+        }
+
+        public class Params_GrokFilter
+        {
+            public string Match { get; private set; }
+            public string Field { get; private set; }
+            public Pair AddField { get; private set; }
+            public bool DropIfMatch { get; private set; }
+            public string RemoveField { get; private set; }
+
+            public class Builder
+            {
+                private string match;
+                private string field;
+                private Pair addField;
+                private bool dropIfMatch = false;
+                private string removeField;
+
+                public Builder WithField(string value)
+                {
+                    field = value;
+                    return this;
+                }
+
+                public Builder WithMatch(string value)
+                {
+                    match = value;
+                    return this;
+                }
+
+                public Builder WithAddField(Pair value)
+                {
+                    addField = value;
+                    return this;
+                }
+
+                public Builder WithDropIfMatch(bool value)
+                {
+                    dropIfMatch = value;
+                    return this;
+                }
+
+                public Builder WithRemoveField(string value)
+                {
+                    removeField = value;
+                    return this;
+                }
+
+                public Params_GrokFilter Build()
+                {
+                    return new Params_GrokFilter()
+                    {
+                        Match = match,
+                        Field = field,
+                        AddField = addField,
+                        DropIfMatch = dropIfMatch,
+                        RemoveField = removeField
+                    };
+                }
+
+            }
+        }
     }
 }
