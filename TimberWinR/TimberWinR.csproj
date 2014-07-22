@@ -46,6 +46,9 @@
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.3.1.0.0\lib\net40\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="RapidRegex.Core">
+      <HintPath>..\packages\RapidRegex.Core.1.0.0.0\lib\net40\RapidRegex.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
