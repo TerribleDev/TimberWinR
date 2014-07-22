@@ -8,6 +8,6 @@ namespace TimberWinR.Filters
 {
     public abstract class FilterBase
     {
-        public abstract void Apply(JObject json);
+        public abstract void Apply(JObject json);       
     }
 }

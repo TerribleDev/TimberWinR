@@ -80,7 +80,7 @@ namespace TimberWinR.Outputs
         /// <param name="jsonMessage"></param>
         protected override void MessageReceivedHandler(JObject jsonMessage)
         {
-            if (_manager.Config.Groks != null)
+            if (_manager.Config.Filters != null)
                 ProcessGroks(jsonMessage);
 
             var message = jsonMessage.ToString();
@@ -94,48 +94,9 @@ namespace TimberWinR.Outputs
 
         private void ProcessGroks(JObject json)
         {
-            foreach (var grok in _manager.Config.Groks)
+            foreach (var grok in _manager.Config.Filters)
             {
-                JToken token = null;
-                if (json.TryGetValue(grok.Field, StringComparison.OrdinalIgnoreCase, out token))
-                {
-                    string text = token.ToString();
-                    if (!string.IsNullOrEmpty(text))
-                    {
-                        string expr = grok.Match;
-                        var resolver = new RegexGrokResolver();
-                        var pattern = resolver.ResolveToRegex(expr);
-                        var match = Regex.Match(text, pattern);
-                        if (match.Success)
-                        {
-                            var regex = new Regex(pattern);
-                            var namedCaptures = regex.MatchNamedCaptures(text);
-                            foreach (string fieldName in namedCaptures.Keys)
-                            {
-
-                                if (fieldName == "timestamp")
-                                {
-                                    string value = namedCaptures[fieldName];
-                                    DateTime ts;
-                                    if (DateTime.TryParse(value, out ts))
-                                        json.Add(fieldName, ts.ToUniversalTime());
-                                    else if (DateTime.TryParseExact(value, new string[] 
-                                                { 
-                                                    "MMM dd hh:mm:ss", 
-                                                    "MMM dd HH:mm:ss", 
-                                                    "MMM dd h:mm",
-                                                    "MMM dd hh:mm",                  
-                                                }, CultureInfo.InvariantCulture, DateTimeStyles.None, out ts))
-                                        json.Add(fieldName, ts.ToUniversalTime());
-                                    else
-                                        json.Add(fieldName, (JToken)namedCaptures[fieldName]);
-                                }
-                                else
-                                    json.Add(fieldName, (JToken)namedCaptures[fieldName]);
-                            }
-                        }
-                    }
-                }
+                grok.Apply(json);
             }
         }
 

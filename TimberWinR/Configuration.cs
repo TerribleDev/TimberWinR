@@ -116,11 +116,11 @@ namespace TimberWinR
             get { return _iisw3clogs; }
         }
 
-        private static List<GrokFilter> _groks = new List<GrokFilter>();
+        private static List<FilterBase> _filters = new List<FilterBase>();
 
-        public IEnumerable<GrokFilter> Groks
+        public IEnumerable<FilterBase> Filters
         {
-            get { return _groks; }
+            get { return _filters; }
         }
 
         public Configuration(string xmlConfFile)
@@ -478,7 +478,7 @@ namespace TimberWinR
                     case "Grok":
                         Params_Grok args = parseParams_Grok(e.Elements());
                         GrokFilter grok = new GrokFilter(args);
-                        _groks.Add(grok);
+                        _filters.Add(grok);
                         break;
                     case "Mutate":
                         break;

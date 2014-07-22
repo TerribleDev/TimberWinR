@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TimberWinR;
 using TimberWinR.Inputs;
+using TimberWinR.Filters;
 
 namespace TimberWinR.UnitTests
 {
@@ -48,10 +49,11 @@ namespace TimberWinR.UnitTests
 
         public void OutputGroks()
         {
-            foreach (var grok in c.Groks.ToArray())
-            {
-                Console.WriteLine(grok);
-            }
+
+            //IEnumerable<FilterBase> filters = c.Filters;
+
+            //foreach (var grok in c.Filters)
+            //    Console.WriteLine(grok);           
         }
 
         [Test]
@@ -82,13 +84,7 @@ namespace TimberWinR.UnitTests
         public void NumOfIISW3C()
         {
             Assert.AreEqual(1, c.IISW3C.ToArray().Length);
-        }
-
-        [Test]
-        public void NumOfGroks()
-        {
-            Assert.AreEqual(1, c.Groks.ToArray().Length);
-        }
+        }       
 
         [Test]
         public void FieldsOfEvents()
@@ -322,22 +318,6 @@ namespace TimberWinR.UnitTests
             Assert.AreEqual(dirTime, iisw3c.DirTime);
             Assert.AreEqual(consolidateLogs, iisw3c.ConsolidateLogs);
             Assert.IsNull(iisw3c.ICheckpoint);
-        }
-
-        [Test]
-        public void ParametersOfGrok()
-        {
-            string match = "%{IPAddress:ip1} %{IPAddress:ip2}";
-            TimberWinR.Configuration.Pair addField = new TimberWinR.Configuration.Pair("field1", @"%{foo}");
-            bool dropIfMatch = true;
-            string removeField = "ip1";
-
-            TimberWinR.Filters.GrokFilter grok = c.Groks.ToArray()[0];
-
-            Assert.AreEqual(match, grok.Match);
-            Assert.AreEqual(addField, grok.AddField);
-            Assert.AreEqual(dropIfMatch, grok.DropIfMatch);
-            Assert.AreEqual(removeField, grok.RemoveField);
-        }
+        }       
     }
 }
