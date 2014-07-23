@@ -118,13 +118,13 @@ namespace TimberWinR
             if (allInputs == null)          
                 throw new TimberWinR.ConfigurationErrors.MissingRequiredTagException(InputBase.TagName);
 
-            createInput(allInputs, WindowsEvent.ParentTagName, WindowsEvent.TagName, _events, WindowsEvent.Parse);
-            createInput(allInputs, TailFileInput.ParentTagName, TailFileInput.TagName, _logs, TailFileInput.Parse);
-            createInput(allInputs, IISLog.ParentTagName, IISLog.TagName, _iislogs, IISLog.Parse);
-            createInput(allInputs, IISW3CLog.ParentTagName, IISW3CLog.TagName, _iisw3clogs, IISW3CLog.Parse);       
+            createInputs(allInputs, WindowsEvent.ParentTagName, WindowsEvent.TagName, _events, WindowsEvent.Parse);
+            createInputs(allInputs, TailFileInput.ParentTagName, TailFileInput.TagName, _logs, TailFileInput.Parse);
+            createInputs(allInputs, IISLog.ParentTagName, IISLog.TagName, _iislogs, IISLog.Parse);
+            createInputs(allInputs, IISW3CLog.ParentTagName, IISW3CLog.TagName, _iisw3clogs, IISW3CLog.Parse);       
         }
 
-        static void createInput<T>(XElement allInputs, string parentTagName, string tagName, List<T> inputList, Action<List<T>, XElement> parse)
+        static void createInputs<T>(XElement allInputs, string parentTagName, string tagName, List<T> inputList, Action<List<T>, XElement> parse)
         {
             IEnumerable<XElement> inputs =
                 from el in allInputs.Elements(parentTagName).Elements(tagName)

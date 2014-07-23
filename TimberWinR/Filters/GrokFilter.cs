@@ -65,30 +65,7 @@ namespace TimberWinR.Filters
 
             if (e != null)
             {
-                string attributeName = "value";
-                string value;
-                try
-                {
-                    value = e.Attribute(attributeName).Value;
-                }
-                catch
-                {
-                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
-                }
-
-
-                if (value == "ON" || value == "true")
-                {
-                    DropIfMatch = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    DropIfMatch = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(e.Attribute(attributeName));
-                }
+                DropIfMatch = ParseBoolAttribute(e, "value", false);
             }
         }
 
@@ -98,17 +75,7 @@ namespace TimberWinR.Filters
             {
                 if (e != null)
                 {
-                    string attributeName = "value";
-                    string value;
-                    try
-                    {
-                        value = e.Attribute(attributeName).Value;
-                    }
-                    catch
-                    {
-                        throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
-                    }
-                    RemoveFields.Add(e.Attribute("value").Value);
+                    RemoveFields.Add(ParseStringAttribute(e, "value"));
                 }
             }
         }
