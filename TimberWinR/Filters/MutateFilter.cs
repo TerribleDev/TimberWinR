@@ -114,37 +114,13 @@ namespace TimberWinR.Filters
            
             public override void Apply(JObject json)
             {
-                json = RenameProperty(json, name => name == OldName ? NewName : name) as JObject;
-            }
-
-            private static JToken RenameProperty(JToken json, Dictionary<string, string> map)
-            {
-                return RenameProperty(json, name => map.ContainsKey(name) ? map[name] : name);
-            }
-
-            private static JToken RenameProperty(JToken json, Func<string, string> map)
-            {
-                JProperty prop = json as JProperty;
-                if (prop != null)
+                JToken token = json[OldName];
+                if (token != null)
                 {
-                    return new JProperty(map(prop.Name), RenameProperty(prop.Value, map));
-                }
-
-                JArray arr = json as JArray;
-                if (arr != null)
-                {
-                    var cont = arr.Select(el => RenameProperty(el, map));
-                    return new JArray(cont);
-                }
-
-                JObject o = json as JObject;
-                if (o != null)
-                {
-                    var cont = o.Properties().Select(el => RenameProperty(el, map));
-                    return new JObject(cont);
-                }
-                return json;
-            }
+                    json.Remove(OldName);
+                    json.Add(NewName, token);
+                }               
+            }           
         }
     }
 }
