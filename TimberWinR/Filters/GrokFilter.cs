@@ -19,6 +19,7 @@ namespace TimberWinR.Filters
         public List<FieldValuePair> AddFields { get; private set; }
         public bool DropIfMatch { get; private set; }
         public List<string> RemoveFields { get; private set; }
+        public List<AddTag> AddTags { get; private set; } 
 
         public static void Parse(List<FilterBase> filters, XElement grokElement)
         {
@@ -32,13 +33,13 @@ namespace TimberWinR.Filters
 
         GrokFilter(XElement parent)
         {
+            AddTags = new List<AddTag>();
             AddFields = new List<FieldValuePair>();
             RemoveFields = new List<string>();
 
-            DropIfMatch = ParseBoolAttribute(parent, "dropIfMatch", false);
-
             ParseMatch(parent);
             ParseAddFields(parent);
+            ParseAddTags(parent);
             ParseDropIfMatch(parent);
             ParseRemoveFields(parent);
         }
@@ -46,39 +47,15 @@ namespace TimberWinR.Filters
         private void ParseMatch(XElement parent)
         {
             XElement e = parent.Element("Match");
-
-            Match = e.Attribute("value").Value;
             Field = e.Attribute("field").Value;
+            Match = e.Attribute("value").Value;          
         }
 
         private void ParseAddFields(XElement parent)
         {
             foreach (var e in parent.Elements("AddField"))
-            {
-                string attributeName = "field";
-                string field, value;
-
-                try
-                {
-                    field = e.Attribute(attributeName).Value;
-                }
-                catch
-                {
-                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
-                }
-
-                attributeName = "value";
-                try
-                {
-                    value = e.Attribute(attributeName).Value;
-                }
-                catch
-                {
-                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
-                }
-
-                FieldValuePair a = new FieldValuePair(field, value);
-                AddFields.Add(a);
+            {                              
+                AddFields.Add(new FieldValuePair(ParseStringAttribute(e, "field"), ParseStringAttribute(e, "value")));
             }
         }
 
@@ -136,8 +113,26 @@ namespace TimberWinR.Filters
             }
         }
 
+        /// <summary>
+        /// Apply the Grok filter to the Object
+        /// </summary>
+        /// <param name="json"></param>
         public override void Apply(Newtonsoft.Json.Linq.JObject json)
         {
+            if (ApplyMatch(json))
+            {
+                foreach (var at in AddTags)
+                    at.Apply(json);
+            }        
+        }
+
+        /// <summary>
+        /// Apply the Match filter, if there is none specified, it's considered a match.
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        private bool ApplyMatch(Newtonsoft.Json.Linq.JObject json)
+        {            
             JToken token = null;
             if (json.TryGetValue(Field, StringComparison.OrdinalIgnoreCase, out token))
             {
@@ -156,9 +151,12 @@ namespace TimberWinR.Filters
                         {
                             AddOrModify(json, fieldName, namedCaptures[fieldName]);
                         }
+                        return true; // Yes!
                     }
                 }
+                return false; // Empty field is no match
             }
+            return true; // Not specified is success
         }
 
         private void AddOrModify(JObject json, string fieldName, string fieldValue)
@@ -180,6 +178,47 @@ namespace TimberWinR.Filters
                 Value = value;
             }
         }
+
+        private void ParseAddTags(XElement parent)
+        {
+            foreach (var e in parent.Elements("AddTag"))
+            {
+                AddTags.Add(new AddTag(e));
+            }
+        }
+
+        public class AddTag
+        {
+            public string Value { get; set; }
+            public AddTag(XElement e)
+            {
+                Value = e.Value.Trim();
+            }
+
+            public void Apply(Newtonsoft.Json.Linq.JObject json)
+            {
+                string value = ReplaceTokens(Value, json);
+                JToken tags = json["tags"];
+                if (tags == null)
+                    json.Add("tags", new JArray(value));
+                else
+                {
+                    JArray a = tags as JArray;
+                    a.Add(value);
+                }
+            }
+
+            private string ReplaceTokens(string fieldName, JObject json)
+            {
+                foreach (var token in json.Children())
+                {
+                    string replaceString = "%{" + token.Path + "}";
+                    fieldName = fieldName.Replace(replaceString, json[token.Path].ToString());
+                }
+                return fieldName;
+            }
+
+        }  
     }
 
     public struct Pair

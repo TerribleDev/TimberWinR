@@ -15,7 +15,9 @@
   <Filters>
     <Grok>
       <!--Single Tag-->
-      <Match field="Text" value="%{SYSLOGLINE}" />               
+      <Match field="Text" value="%{SYSLOGLINE}" />
+      <AddTag>rn_%{RecordNumber}</AddTag>
+      <AddTag>bar</AddTag>
     </Grok>
     <!-- <Mutate>
       <Rename oldName="timestamp" newName="xtimestamp"/>
