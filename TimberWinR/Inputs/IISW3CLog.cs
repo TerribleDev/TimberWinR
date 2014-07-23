@@ -41,10 +41,10 @@ namespace TimberWinR.Inputs
             DirTime = ParseBoolAttribute(parent, "dirTime", false);
             ConsolidateLogs = ParseBoolAttribute(parent, "consolidateLogs", false);
             ICheckpoint = ParseStringAttribute(parent, "iCheckpoint");
-            ParseFields(parent);
+            parseFields(parent);
         }
 
-        private void ParseFields(XElement parent)
+        private void parseFields(XElement parent)
         {
             Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
             {
@@ -82,7 +82,7 @@ namespace TimberWinR.Inputs
                 { "s-stopped-procs", typeof(int) }
             };
 
-            Fields = base.parseFields(parent, allPossibleFields);            
+            Fields = ParseFields(parent, allPossibleFields);            
         }
 
     }

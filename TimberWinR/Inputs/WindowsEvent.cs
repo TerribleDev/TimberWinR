@@ -44,10 +44,10 @@ namespace TimberWinR.Inputs
             Direction = ParseEnumAttribute(parent, "direction", new string[] { "FW", "BW" }, "FW");
             StringsSep = ParseStringAttribute(parent, "stringsSep", "|");
             BinaryFormat = ParseEnumAttribute(parent, "binaryFormat", new string[] { "ASC", "PRINT", "HEX" }, "PRINT");
-            ParseFields(parent);
+            parseFields(parent);
         }
                             
-        private void ParseFields(XElement parent)
+        private void parseFields(XElement parent)
         {
             Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
             {
@@ -68,7 +68,7 @@ namespace TimberWinR.Inputs
                 { "Data", typeof(string) }
             };
 
-            Fields = base.parseFields(parent, allPossibleFields);
+            Fields = ParseFields(parent, allPossibleFields);
         }
 
     }

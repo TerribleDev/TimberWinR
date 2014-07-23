@@ -311,9 +311,6 @@ namespace TimberWinR.UnitTests
             {
                 if (filter.GetType() == typeof(GrokFilter))
                 {
-                    Console.WriteLine(((GrokFilter)filter).AddFields[0].Field);
-                    Console.WriteLine(((GrokFilter)filter).AddFields[0].Value);
-
                     Assert.AreEqual(field, ((GrokFilter)filter).Field);
                     Assert.AreEqual(match, ((GrokFilter)filter).Match);
                     CollectionAssert.AreEqual(addFields, ((GrokFilter)filter).AddFields);

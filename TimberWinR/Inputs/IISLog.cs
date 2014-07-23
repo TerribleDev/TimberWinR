@@ -39,10 +39,10 @@ namespace TimberWinR.Inputs
             MinDateMod = ParseDateAttribute(parent, "minDateMod");
             Locale = ParseStringAttribute(parent, "locale", "DEF");
             ICheckpoint = ParseStringAttribute(parent, "iCheckpoint");
-            ParseFields(parent);
+            parseFields(parent);
         }
 
-        private void ParseFields(XElement parent)
+        private void parseFields(XElement parent)
         {
             Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
             {
@@ -65,7 +65,7 @@ namespace TimberWinR.Inputs
                 { "Parameters", typeof(string) }
             };
 
-            Fields = base.parseFields(parent, allPossibleFields);
+            Fields = ParseFields(parent, allPossibleFields);
         }
 
     }
