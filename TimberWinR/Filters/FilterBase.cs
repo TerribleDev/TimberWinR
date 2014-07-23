@@ -9,6 +9,8 @@ namespace TimberWinR.Filters
 {
     public abstract class FilterBase
     {
+        public const string TagName = "Filters";
+
         public abstract void Apply(JObject json);
 
         protected static string ParseStringAttribute(XElement e, string attributeName, string defaultValue="")

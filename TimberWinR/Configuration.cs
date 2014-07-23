@@ -110,51 +110,27 @@ namespace TimberWinR
                 DumpInvalidNodes(child);
         }
 
-
         static void parseConfInput(string xmlConfFile)
         {
             XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
 
-            // Begin parsing the xml configuration file.
+            XElement allInputs = config.Root.Element(InputBase.TagName);
+            if (allInputs == null)          
+                throw new TimberWinR.ConfigurationErrors.MissingRequiredTagException(InputBase.TagName);
+
+            createInput(allInputs, WindowsEvent.ParentTagName, WindowsEvent.TagName, _events, WindowsEvent.Parse);
+            createInput(allInputs, TailFileInput.ParentTagName, TailFileInput.TagName, _logs, TailFileInput.Parse);
+            createInput(allInputs, IISLog.ParentTagName, IISLog.TagName, _iislogs, IISLog.Parse);
+            createInput(allInputs, IISW3CLog.ParentTagName, IISW3CLog.TagName, _iisw3clogs, IISW3CLog.Parse);       
+        }
+
+        static void createInput<T>(XElement allInputs, string parentTagName, string tagName, List<T> inputList, Action<List<T>, XElement> parse)
+        {
             IEnumerable<XElement> inputs =
-                from el in config.Root.Elements("Inputs")
+                from el in allInputs.Elements(parentTagName).Elements(tagName)
                 select el;
-
-            string tagName = "Inputs";
-            if (inputs.Count() == 0)          
-                throw new TimberWinR.ConfigurationErrors.MissingRequiredTagException(tagName);
-           
-            // WINDOWS EVENTS
-            IEnumerable<XElement> xml_events =
-                from el in inputs.Elements("WindowsEvents").Elements("Event")
-                select el;
-
-            foreach (XElement e in xml_events)           
-                WindowsEvent.Parse(_events, e);          
-
-            // TEXT LOGS
-            IEnumerable<XElement> xml_logs =
-                from el in inputs.Elements("Logs").Elements("Log")
-                select el;
-
-            foreach (XElement e in xml_logs)          
-                TailFileInput.Parse(_logs, e);         
-
-            // IIS LOGS
-            IEnumerable<XElement> xml_iis =
-                from el in inputs.Elements("IISLogs").Elements("IISLog")
-                select el;
-
-            foreach (XElement e in xml_iis)           
-                IISLog.Parse(_iislogs, e);            
-
-            // IISW3C LOGS
-            IEnumerable<XElement> xml_iisw3c =
-                from el in inputs.Elements("IISW3CLogs").Elements("IISW3CLog")
-                select el;
-
-            foreach (XElement e in xml_iisw3c)      
-                IISW3CLog.Parse(_iisw3clogs, e);           
+            foreach (XElement input in inputs)
+                parse(inputList, input);
         }
 
         static void parseConfFilter(string xmlConfFile)
@@ -162,7 +138,7 @@ namespace TimberWinR
             XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
 
             IEnumerable<XElement> filters =
-                from el in config.Root.Elements("Filters")
+                from el in config.Root.Elements(FilterBase.TagName)
                 select el;                   
 
             foreach (XElement e in filters.Elements())

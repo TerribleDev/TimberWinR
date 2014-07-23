@@ -10,6 +10,8 @@ namespace TimberWinR.Inputs
 {
     public abstract class InputBase
     {
+        public const string TagName = "Inputs";
+
         internal List<FieldDefinition> parseFields(XElement parent, Dictionary<string, Type> allPossibleFields)
         {
             IEnumerable<XElement> xml_fields =

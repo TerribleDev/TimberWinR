@@ -7,6 +7,9 @@ namespace TimberWinR.Inputs
 {
     public class TailFileInput : InputBase
     {
+        public const string ParentTagName = "Logs";
+        public const string TagName = "Log";
+
         public string Name { get; private set; }
         public string Location { get; private set; }
         public int ICodepage { get; private set; }
