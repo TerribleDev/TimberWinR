@@ -19,11 +19,9 @@
       <AddTag>rn_%{RecordNumber}</AddTag>
       <AddTag>bar</AddTag>
     </Grok>
-    <!-- <Mutate>
-      <Rename oldName="timestamp" newName="xtimestamp"/>
-      <Remove field="foo%{Index}" />
+    <Mutate>
+      <Rename oldName="TimeGenerated" newName="timestamp"/>
     </Mutate>
-    -->
     <Date field="timestamp" target="@timestamp" convertToUTC="true">
       <Pattern>MMM  d HH:mm:ss</Pattern>
       <Pattern>MMM dd HH:mm:ss</Pattern>
