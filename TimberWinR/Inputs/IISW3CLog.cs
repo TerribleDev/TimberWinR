@@ -9,9 +9,6 @@ namespace TimberWinR.Inputs
     {
         public string Name { get; private set; }
         public string Location { get; private set; }
-        public List<FieldDefinition> Fields { get; private set; }
-
-        // Parameters
         public int ICodepage { get; private set; }
         public int Recurse { get; private set; }
         public string MinDateMod { get; private set; }
@@ -19,6 +16,7 @@ namespace TimberWinR.Inputs
         public bool DirTime { get; private set; }
         public bool ConsolidateLogs { get; private set; }
         public string ICheckpoint { get; private set; }
+        public List<FieldDefinition> Fields { get; private set; }
 
         public static void Parse(List<IISW3CLog> iisw3clogs, XElement iisw3clogElement)
         {
@@ -32,196 +30,15 @@ namespace TimberWinR.Inputs
 
         public IISW3CLog(XElement parent)
         {
-            ParseName(parent);
-            ParseLocation(parent);
-
-            // Default values for parameters.
-            ICodepage = -2;
-            Recurse = 0;
-            DQuotes = false;
-            DirTime = false;
-            ConsolidateLogs = false;
-
-            ParseICodepage(parent);
-            ParseRecurse(parent);
-            ParseDQuotes(parent);
-            ParseDirTime(parent);
-            ParseConsolidateLogs(parent);
-            ParseICheckpoint(parent);
-
+            Name = ParseRequiredStringAttribute(parent, "name");
+            Location = ParseRequiredStringAttribute(parent, "location");
+            ICodepage = ParseIntAttribute(parent, "iCodepage", -2);
+            Recurse = ParseIntAttribute(parent, "recurse", 0);
+            DQuotes = ParseBoolAttribute(parent, "dQuotes", false);
+            DirTime = ParseBoolAttribute(parent, "dirTime", false);
+            ConsolidateLogs = ParseBoolAttribute(parent, "consolidateLogs", false);
+            ICheckpoint = ParseStringAttribute(parent, "iCheckpoint");
             ParseFields(parent);
-        }
-
-        private void ParseName(XElement parent)
-        {
-            string attributeName = "name";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                Name = a.Value;
-            }
-            catch
-            {
-                throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(parent, attributeName);
-            }
-        }
-
-        private void ParseLocation(XElement parent)
-        {
-            string attributeName = "location";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                Location = a.Value;
-            }
-            catch
-            {
-                throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(parent, attributeName);
-            }
-        }
-
-        private void ParseICodepage(XElement parent)
-        {
-            string attributeName = "iCodepage";
-            int valInt;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                if (int.TryParse(a.Value, out valInt))
-                {
-                    ICodepage = valInt;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeIntegerValueException(a);
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        private void ParseRecurse(XElement parent)
-        {
-            string attributeName = "recurse";
-            int valInt;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                if (int.TryParse(a.Value, out valInt))
-                {
-                    Recurse = valInt;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeIntegerValueException(a);
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        private void ParseDQuotes(XElement parent)
-        {
-            string attributeName = "dQuotes";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    DQuotes = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    DQuotes = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseDirTime(XElement parent)
-        {
-            string attributeName = "dirTime";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    DirTime = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    DirTime = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseConsolidateLogs(XElement parent)
-        {
-            string attributeName = "consolidateLogs";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    ConsolidateLogs = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    ConsolidateLogs = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseICheckpoint(XElement parent)
-        {
-            string attributeName = "iCheckpoint";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                ICheckpoint = a.Value;
-            }
-            catch { }
         }
 
         private void ParseFields(XElement parent)
@@ -265,27 +82,5 @@ namespace TimberWinR.Inputs
             Fields = base.parseFields(parent, allPossibleFields);            
         }
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("IISW3CLog\n");
-            sb.Append(String.Format("Name: {0}\n", Name));
-            sb.Append(String.Format("Location: {0}\n", Location));
-            sb.Append("Fields:\n");
-            foreach (FieldDefinition f in Fields)
-            {
-                sb.Append(String.Format("\t{0}\n", f.Name));
-            }
-            sb.Append("Parameters:\n");
-            sb.Append(String.Format("\tiCodepage: {0}\n", ICodepage));
-            sb.Append(String.Format("\trecurse: {0}\n", Recurse));
-            sb.Append(String.Format("\tminDateMod: {0}\n", MinDateMod));
-            sb.Append(String.Format("\tdQuotes: {0}\n", DQuotes));
-            sb.Append(String.Format("\tdirTime: {0}\n", DirTime));
-            sb.Append(String.Format("\tconsolidateLogs: {0}\n", ConsolidateLogs));
-            sb.Append(String.Format("\tiCheckpoint: {0}\n", ICheckpoint));
-
-            return sb.ToString();
-        }
     }
 }

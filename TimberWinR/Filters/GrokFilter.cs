@@ -35,6 +35,8 @@ namespace TimberWinR.Filters
             AddFields = new List<FieldValuePair>();
             RemoveFields = new List<string>();
 
+            DropIfMatch = ParseBoolAttribute(parent, "dropIfMatch", false);
+
             ParseMatch(parent);
             ParseAddFields(parent);
             ParseDropIfMatch(parent);
@@ -132,20 +134,6 @@ namespace TimberWinR.Filters
                     RemoveFields.Add(e.Attribute("value").Value);
                 }
             }
-        }
-
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("GrokFilter\n");
-            foreach (var prop in this.GetType().GetProperties())
-            {
-                if (prop != null)
-                {
-                    sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
-                }
-            }
-            return sb.ToString();
         }
 
         public override void Apply(Newtonsoft.Json.Linq.JObject json)

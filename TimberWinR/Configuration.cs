@@ -180,7 +180,6 @@ namespace TimberWinR
                         break;
                     default:
                         throw new Exception(string.Format("Unknown tag: {0}", e.Name.ToString()));
-                        break;
                 }
             }
         }

@@ -17,49 +17,42 @@ namespace TimberWinR.UnitTests
 
         public void OutputEvents()
         {
-            foreach (var evt in c.Events.ToArray())
-            {
+            foreach (var evt in c.Events)
                 Console.WriteLine(evt);
-            }
         }
 
         public void OutputLogs()
         {
-            foreach (var log in c.Logs.ToArray())
-            {
+            foreach (var log in c.Logs)
                 Console.WriteLine(log);
-            }
         }
 
         public void OutputIIS()
         {
-            foreach (var iis in c.IIS.ToArray())
-            {
+            foreach (var iis in c.IIS)
                 Console.WriteLine(iis);
-            }
         }
 
         public void OutputIISW3C()
         {
-            foreach (var iisw3c in c.IISW3C.ToArray())
-            {
+            foreach (var iisw3c in c.IISW3C)
                 Console.WriteLine(iisw3c);
-            }
         }
 
-        public void OutputGroks()
+        public void OutputFilters()
         {
-
-            //IEnumerable<FilterBase> filters = c.Filters;
-
-            //foreach (var grok in c.Filters)
-            //    Console.WriteLine(grok);           
+            foreach (var filter in c.Filters)
+                Console.WriteLine(filter);           
         }
 
         [Test]
-        public void Test1()
+        public void Output()
         {
-            Assert.AreEqual(c.Logs.ToArray()[1].Name, "Second Set");
+            OutputEvents();
+            OutputLogs();
+            OutputIIS();
+            OutputIISW3C();
+            OutputFilters();
         }
 
         [Test]
@@ -226,7 +219,6 @@ namespace TimberWinR.UnitTests
             bool fullEventCode = false;
             string direction = "FW";
             string stringsSep = "|";
-            string iCheckpoint;
             string binaryFormat = "PRINT";
 
             TimberWinR.Inputs.WindowsEvent evt = c.Events.ToArray()[0];
@@ -251,7 +243,6 @@ namespace TimberWinR.UnitTests
             int iCodepage = 0;
             int recurse = 0;
             bool splitLongLines = false;
-            string iCheckpoint;
 
             TimberWinR.Inputs.TailFileInput log = c.Logs.ToArray()[0];
 
@@ -299,11 +290,9 @@ namespace TimberWinR.UnitTests
             string location = @"c:\inetpub\logs\LogFiles\W3SVC1\*";
             int iCodepage = -2;
             int recurse = 0;
-            string minDateMod;
             bool dQuotes = false;
             bool dirTime = false;
             bool consolidateLogs = false;
-            string iCheckpoint;
 
             TimberWinR.Inputs.IISW3CLog iisw3c = c.IISW3C.ToArray()[0];
 
@@ -315,7 +304,7 @@ namespace TimberWinR.UnitTests
             Assert.AreEqual(dQuotes, iisw3c.DQuotes);
             Assert.AreEqual(dirTime, iisw3c.DirTime);
             Assert.AreEqual(consolidateLogs, iisw3c.ConsolidateLogs);
-            Assert.IsNull(iisw3c.ICheckpoint);
+            Assert.IsEmpty(iisw3c.ICheckpoint);
         }       
     }
 }

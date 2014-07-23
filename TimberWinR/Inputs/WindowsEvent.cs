@@ -9,9 +9,6 @@ namespace TimberWinR.Inputs
     public class WindowsEvent : InputBase
     {
         public string Source { get; private set; }
-        public List<FieldDefinition> Fields { get; private set; }
-
-        // Parameters
         public bool FullText { get; private set; }
         public bool ResolveSIDS { get; private set; }
         public bool FormatMsg { get; private set; }
@@ -21,6 +18,7 @@ namespace TimberWinR.Inputs
         public string StringsSep { get; private set; }
         public string ICheckpoint { get; private set; }
         public string BinaryFormat { get; private set; }
+        public List<FieldDefinition> Fields { get; private set; }
 
         public static void Parse(List<WindowsEvent> events, XElement eventElement)
         {
@@ -70,28 +68,5 @@ namespace TimberWinR.Inputs
             Fields = base.parseFields(parent, allPossibleFields);
         }
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("WindowsEvent\n");
-            sb.Append(String.Format("Source: {0}\n", Source));
-            sb.Append("Fields:\n");
-            foreach (FieldDefinition f in Fields)
-            {
-                sb.Append(String.Format("\t{0}\n", f.Name));
-            }
-            sb.Append("Parameters:\n");
-            sb.Append(String.Format("\tfullText: {0}\n", FullText));
-            sb.Append(String.Format("\tresolveSIDS: {0}\n", ResolveSIDS));
-            sb.Append(String.Format("\tformatMsg: {0}\n", FormatMsg));
-            sb.Append(String.Format("\tmsgErrorMode: {0}\n", MsgErrorMode));
-            sb.Append(String.Format("\tfullEventCode: {0}\n", FullEventCode));
-            sb.Append(String.Format("\tdirection: {0}\n", Direction));
-            sb.Append(String.Format("\tstringsSep: {0}\n", StringsSep));
-            sb.Append(String.Format("\tiCheckpoint: {0}\n", ICheckpoint));
-            sb.Append(String.Format("\tbinaryFormat: {0}\n", BinaryFormat));
-
-            return sb.ToString();
-        }
     }
 }

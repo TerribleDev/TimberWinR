@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 namespace TimberWinR.Inputs
@@ -71,13 +73,36 @@ namespace TimberWinR.Inputs
             return retValue;
         }
 
+        protected static string ParseDateAttribute(XElement e, string attributeName, string defaultValue = "")
+        {
+            string retValue = defaultValue;
+            XAttribute a = e.Attribute(attributeName);
+            if (a != null)
+            {
+                DateTime dt;
+                if (DateTime.TryParseExact(a.Value,
+                    "yyyy-MM-dd hh:mm:ss",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out dt))
+                {
+                    retValue = a.Value;
+                }
+                else
+                {
+                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeDateValueException(a);
+                }
+            }
+
+            return retValue;
+        }
+
         protected static bool ParseRequiredBoolAttribute(XElement e, string attributeName)
         {           
             XAttribute a = e.Attribute(attributeName);
             if (a == null)
                 throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(e.Attribute(attributeName));
 
-            bool retValue = false;
             switch (a.Value)
             {
                 case "ON":
@@ -87,7 +112,6 @@ namespace TimberWinR.Inputs
                 case "OFF":
                 case "false":
                     return false;
-                    break;
 
                 default:
                     throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(e.Attribute(attributeName));                   
@@ -143,6 +167,32 @@ namespace TimberWinR.Inputs
                 }
             }
             return retValue;
-        }         
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(String.Format("{0}\n", this.GetType().ToString()));
+            sb.Append("Parameters:\n");
+            foreach (var prop in this.GetType().GetProperties())
+            {
+                if (prop != null)
+                {
+                    if (prop.Name == "Fields")
+                    {
+                        sb.Append(String.Format("{0}:\n", prop.Name));
+                        foreach (FieldDefinition f in (List<FieldDefinition>)prop.GetValue(this, null))
+                        {
+                            sb.Append(String.Format("\t{0}\n", f.Name));
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
+                    }
+                }
+            }
+            return sb.ToString();
+        }
     }
 }

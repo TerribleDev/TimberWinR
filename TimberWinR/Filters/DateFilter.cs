@@ -48,21 +48,6 @@ namespace TimberWinR.Filters
             }
         }
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("DateFilter\n");
-            foreach (var prop in this.GetType().GetProperties())
-            {
-                if (prop != null)
-                {
-                    sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
-                }
-
-            }
-            return sb.ToString();
-        }
-
         public override void Apply(JObject json)
         {
             JToken token = null;

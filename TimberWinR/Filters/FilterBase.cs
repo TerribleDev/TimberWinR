@@ -41,6 +41,23 @@ namespace TimberWinR.Filters
                 }
             }
             return retValue;
-        }         
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(String.Format("{0}\n", this.GetType().ToString()));
+            foreach (var prop in this.GetType().GetProperties())
+            {
+                if (prop != null)
+                {
+                    sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
+                }
+
+            }
+            return sb.ToString();
+        }
+
     }
 }

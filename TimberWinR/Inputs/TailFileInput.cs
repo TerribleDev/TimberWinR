@@ -9,12 +9,10 @@ namespace TimberWinR.Inputs
     {
         public string Name { get; private set; }
         public string Location { get; private set; }
-        public List<FieldDefinition> Fields { get; private set; }
-
-        // Parameters
         public int ICodepage { get; private set; }
         public int Recurse { get; private set; }
         public bool SplitLongLines { get; private set; }       
+        public List<FieldDefinition> Fields { get; private set; }
 
         public static void Parse(List<TailFileInput> logs, XElement logElement)
         {
@@ -48,21 +46,5 @@ namespace TimberWinR.Inputs
             Fields = base.parseFields(parent, allPossibleFields);
         }
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("TextLog\n");
-            sb.Append(String.Format("Name: {0}\n", Name));
-            sb.Append(String.Format("Location: {0}\n", Location));
-            sb.Append("Fields:\n");
-            foreach (FieldDefinition f in Fields)          
-                sb.Append(String.Format("\t{0}\n", f.Name));            
-            sb.Append("Parameters:\n");
-            sb.Append(String.Format("\tiCodepage: {0}\n", ICodepage));
-            sb.Append(String.Format("\trecurse: {0}\n", Recurse));
-            sb.Append(String.Format("\tsplitLongLines: {0}\n", SplitLongLines));          
-
-            return sb.ToString();
-        }
     }
 }
