@@ -14,8 +14,8 @@ namespace TimberWinR.Filters
     {
         public new const string TagName = "Grok";
 
-        public string Match { get; private set; }
         public string Field { get; private set; }
+        public string Match { get; private set; }
         public List<FieldValuePair> AddFields { get; private set; }
         public bool DropIfMatch { get; private set; }
         public List<string> RemoveFields { get; private set; }
@@ -143,6 +143,37 @@ namespace TimberWinR.Filters
             {
                 Field = field;
                 Value = value;
+            }
+
+            public override bool Equals(System.Object obj)
+            {
+                // If parameter is null return false.
+                if (obj == null)
+                {
+                    return false;
+                }
+
+                // If parameter cannot be cast to Point return false.
+                FieldValuePair p = obj as FieldValuePair;
+                if ((System.Object)p == null)
+                {
+                    return false;
+                }
+
+                // Return true if the fields match:
+                return (Field == p.Field) && (Value == p.Value);
+            }
+
+            public bool Equals(FieldValuePair p)
+            {
+                // If parameter is null return false:
+                if ((object)p == null)
+                {
+                    return false;
+                }
+
+                // Return true if the fields match:
+                return (Field == p.Field) && (Value == p.Value);
             }
         }
 

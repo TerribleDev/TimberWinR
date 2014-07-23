@@ -37,6 +37,41 @@ namespace TimberWinR.Inputs
             Name = fieldName;
             FieldType = fieldType;
         }
+        public override string ToString()
+        {
+           return String.Format("{0}", Name);
+        }
+
+        public override bool Equals(System.Object obj)
+        {
+            // If parameter is null return false.
+            if (obj == null)
+            {
+                return false;
+            }
+
+            // If parameter cannot be cast to Point return false.
+            FieldDefinition p = obj as FieldDefinition;
+            if ((System.Object)p == null)
+            {
+                return false;
+            }
+
+            // Return true if the fields match:
+            return (Name == p.Name) && (FieldType == p.FieldType);
+        }
+
+        public bool Equals(FieldDefinition p)
+        {
+            // If parameter is null return false:
+            if ((object)p == null)
+            {
+                return false;
+            }
+
+            // Return true if the fields match:
+            return (Name == p.Name) && (FieldType == p.FieldType);
+        }
     }
 
     public class FieldDefinitions : IEnumerable<FieldDefinition>

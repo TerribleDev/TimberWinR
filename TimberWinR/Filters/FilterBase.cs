@@ -54,6 +54,15 @@ namespace TimberWinR.Filters
             {
                 if (prop != null)
                 {
+                    if (prop.PropertyType == typeof(List<>)) 
+                    {
+                        sb.Append(String.Format("\t{0}: ", prop.Name));
+                        foreach (var element in prop.GetValue(this, null) as List<object>)
+                        {
+                            sb.Append(String.Format("{0},", element));
+                        }
+                        sb.Append("\n");
+                    }
                     sb.Append(String.Format("\t{0}: {1}\n", prop.Name, prop.GetValue(this, null)));
                 }
 

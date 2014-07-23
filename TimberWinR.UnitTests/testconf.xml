@@ -18,10 +18,18 @@
   <Filters>
     <Grok>
       <Match field="Text" value="%{IPAddress:ip1} %{IPAddress:ip2}" />
-      <AddField name="field1" value="%{foo}" />
+      <AddField field="field1" value="%{foo}" />
       <DropIfMatch value="true" />
       <RemoveField value="ip1" />
     </Grok>
+    <Mutate>
+      <Rename oldName="TimeGenerated" newName="timestamp"/>
+    </Mutate>
+    <Date field="timestamp" target="@timestamp" convertToUTC="true">
+      <Pattern>MMM  d HH:mm:ss</Pattern>
+      <Pattern>MMM dd HH:mm:ss</Pattern>
+      <Pattern>ISO8601</Pattern>
+    </Date>
   </Filters>
   
 </TimberWinR>

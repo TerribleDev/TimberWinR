@@ -77,135 +77,124 @@ namespace TimberWinR.UnitTests
         public void NumOfIISW3C()
         {
             Assert.AreEqual(1, c.IISW3C.ToArray().Length);
+        }
+
+        [Test]
+        public void NumOfFilters()
+        {
+            Assert.AreEqual(3, c.Filters.ToArray().Length);
         }       
 
         [Test]
         public void FieldsOfEvents()
         {
-            Dictionary<string, Type> fields = new Dictionary<string, Type>()
+            List<FieldDefinition> fields = new List<FieldDefinition>()
             {
-                { "EventLog", typeof(string) },
-                { "RecordNumber", typeof(int) },
-                { "TimeGenerated", typeof(DateTime) },
-                { "TimeWritten", typeof(DateTime) },
-                { "EventID", typeof(int) },
-                { "EventType", typeof(int) },
-                { "EventTypeName", typeof(string) },
-                { "EventCategory", typeof(int) },
-                { "EventCategoryName", typeof(string) },
-                { "SourceName", typeof(string) },
-                { "Strings", typeof(string) },
-                { "ComputerName", typeof(string) },
-                { "SID", typeof(string) },
-                { "Message", typeof(string) },
-                { "Data", typeof(string) }
+                new FieldDefinition("EventLog", typeof(string)),
+                new FieldDefinition("RecordNumber", typeof(int)),
+                new FieldDefinition("TimeGenerated", typeof(DateTime)),
+                new FieldDefinition("TimeWritten", typeof(DateTime)),
+                new FieldDefinition("EventID", typeof(int)),
+                new FieldDefinition("EventType", typeof(int)),
+                new FieldDefinition("EventTypeName", typeof(string)),
+                new FieldDefinition("EventCategory", typeof(int)),
+                new FieldDefinition("EventCategoryName", typeof(string)),
+                new FieldDefinition("SourceName", typeof(string)),
+                new FieldDefinition("Strings", typeof(string)),
+                new FieldDefinition("ComputerName", typeof(string)),
+                new FieldDefinition("SID", typeof(string)),
+                new FieldDefinition("Message", typeof(string)),
+                new FieldDefinition("Data", typeof(string))
             };
-            foreach (FieldDefinition field in c.Events.ToArray()[0].Fields) 
-            {
-                Assert.Contains(field.Name, fields.Keys);
-            }
+
+            CollectionAssert.AreEqual(fields, c.Events.ToArray()[0].Fields);
         }
 
         [Test]
         public void FieldsOfLogs()
         {
-            Dictionary<string, Type> fields = new Dictionary<string, Type>()
+            List<FieldDefinition> fields = new List<FieldDefinition>()
             {
-                { "LogFilename", typeof(string) },
-                { "Index", typeof(int) },
-                { "Text", typeof(string) }
+                new FieldDefinition("LogFilename", typeof(string)),
+                new FieldDefinition("Index", typeof(int)),
+                new FieldDefinition("Text", typeof(string))
             };
-            foreach (FieldDefinition field in c.Logs.ToArray()[0].Fields)
-            {
-                Assert.Contains(field.Name, fields.Keys);
-            }
-            foreach (FieldDefinition field in c.Logs.ToArray()[1].Fields)
-            {
-                Assert.Contains(field.Name, fields.Keys);
-            }
-            foreach (FieldDefinition field in c.Logs.ToArray()[2].Fields)
-            {
-                Assert.Contains(field.Name, fields.Keys);
-            }
 
+            CollectionAssert.AreEqual(fields, c.Logs.ToArray()[0].Fields);
+            CollectionAssert.AreEqual(fields, c.Logs.ToArray()[1].Fields);
+            CollectionAssert.AreEqual(fields, c.Logs.ToArray()[2].Fields);
         }
 
         [Test]
         public void FieldsOfIIS()
         {
-            Dictionary<string, Type> fields = new Dictionary<string, Type>()
+            List<FieldDefinition> fields = new List<FieldDefinition>()
             {
-                { "LogFilename", typeof(string) },
-                { "LogRow", typeof(int) },
-                { "UserIP", typeof(string) },
-                { "UserName", typeof(string) },
-                { "Date", typeof(DateTime) },
-                { "Time", typeof(DateTime) },
-                { "ServiceInstance", typeof(string) },
-                { "HostName", typeof(string) },
-                { "ServerIP", typeof(string) },
-                { "TimeTaken", typeof(int) },
-                { "BytesSent", typeof(int) },
-                { "BytesReceived", typeof(int) },
-                { "StatusCode", typeof(int) },
-                { "Win32StatusCode", typeof(int) },
-                { "RequestType", typeof(string) },
-                { "Target", typeof(string) },
-                { "Parameters", typeof(string) }
+                new FieldDefinition("LogFilename", typeof(string)),
+                new FieldDefinition("LogRow", typeof(int)),
+                new FieldDefinition("UserIP", typeof(string)),
+                new FieldDefinition("UserName", typeof(string)),
+                new FieldDefinition("Date", typeof(DateTime)),
+                new FieldDefinition("Time", typeof(DateTime)),
+                new FieldDefinition("ServiceInstance", typeof(string)),
+                new FieldDefinition("HostName", typeof(string)),
+                new FieldDefinition("ServerIP", typeof(string)),
+                new FieldDefinition("TimeTaken", typeof(int)),
+                new FieldDefinition("BytesSent", typeof(int)),
+                new FieldDefinition("BytesReceived", typeof(int)),
+                new FieldDefinition("StatusCode", typeof(int)),
+                new FieldDefinition("Win32StatusCode", typeof(int)),
+                new FieldDefinition("RequestType", typeof(string)),
+                new FieldDefinition("Target", typeof(string)),
+                new FieldDefinition("Parameters", typeof(string))
             };
 
             foreach (var iis in c.IIS.ToArray())
             {
-                foreach (FieldDefinition field in iis.Fields)
-                {
-                    Assert.Contains(field.Name, fields.Keys);
-                }
+                CollectionAssert.AreEquivalent(fields, c.IIS.ToArray()[0].Fields);
             }
-
         }
 
         [Test]
         public void FieldsOfIISW3C()
         {
-            Dictionary<string, Type> fields = new Dictionary<string, Type>()
+            List<FieldDefinition> fields = new List<FieldDefinition>()
             {
-                { "LogFilename", typeof(string) },
-                { "LogRow", typeof(int) },
-                { "date", typeof(DateTime) },
-                { "time", typeof(DateTime) },
-                { "c-ip", typeof(string) },
-                { "cs-username", typeof(string) },
-                { "s-sitename", typeof(string) },
-                { "s-computername", typeof(int) },
-                { "s-ip", typeof(string) },
-                { "s-port", typeof(int) },
-                { "cs-method", typeof(string) },
-                { "cs-uri-stem", typeof(string) },
-                { "cs-uri-query", typeof(string) },
-                { "sc-status", typeof(int) },
-                { "sc-substatus", typeof(int) },
-                { "sc-win32-status", typeof(int) },
-                { "sc-bytes", typeof(int) },
-                { "cs-bytes", typeof(int) },
-                { "time-taken", typeof(int) },
-                { "cs-version", typeof(string) },
-                { "cs-host", typeof(string) },
-                { "cs(User-Agent)", typeof(string) },
-                { "cs(Cookie)", typeof(string) },
-                { "cs(Referer)", typeof(string) },
-                { "s-event", typeof(string) },
-                { "s-process-type", typeof(string) },
-                { "s-user-time", typeof(double) },
-                { "s-kernel-time", typeof(double) },
-                { "s-page-faults", typeof(int) },
-                { "s-total-procs", typeof(int) },
-                { "s-active-procs", typeof(int) },
-                { "s-stopped-procs", typeof(int) }
+                new FieldDefinition("LogFilename", typeof(string)),
+                new FieldDefinition("LogRow", typeof(int)),
+                new FieldDefinition("date", typeof(DateTime)),
+                new FieldDefinition("time", typeof(DateTime)),
+                new FieldDefinition("c-ip", typeof(string)),
+                new FieldDefinition("cs-username", typeof(string)),
+                new FieldDefinition("s-sitename", typeof(string)),
+                new FieldDefinition("s-computername", typeof(int)),
+                new FieldDefinition("s-ip", typeof(string)),
+                new FieldDefinition("s-port", typeof(int)),
+                new FieldDefinition("cs-method", typeof(string)),
+                new FieldDefinition("cs-uri-stem", typeof(string)),
+                new FieldDefinition("cs-uri-query", typeof(string)),
+                new FieldDefinition("sc-status", typeof(int)),
+                new FieldDefinition("sc-substatus", typeof(int)),
+                new FieldDefinition("sc-win32-status", typeof(int)),
+                new FieldDefinition("sc-bytes", typeof(int)),
+                new FieldDefinition("cs-bytes", typeof(int)),
+                new FieldDefinition("time-taken", typeof(int)),
+                new FieldDefinition("cs-version", typeof(string)),
+                new FieldDefinition("cs-host", typeof(string)),
+                new FieldDefinition("cs(User-Agent)", typeof(string)),
+                new FieldDefinition("cs(Cookie)", typeof(string)),
+                new FieldDefinition("cs(Referer)", typeof(string)),
+                new FieldDefinition("s-event", typeof(string)),
+                new FieldDefinition("s-process-type", typeof(string)),
+                new FieldDefinition("s-user-time", typeof(double)),
+                new FieldDefinition("s-kernel-time", typeof(double)),
+                new FieldDefinition("s-page-faults", typeof(int)),
+                new FieldDefinition("s-total-procs", typeof(int)),
+                new FieldDefinition("s-active-procs", typeof(int)),
+                new FieldDefinition("s-stopped-procs", typeof(int))
             };
-            foreach (FieldDefinition field in c.IISW3C.ToArray()[0].Fields)
-            {
-                Assert.Contains(field.Name, fields.Keys);
-            }
+
+            CollectionAssert.AreEquivalent(fields, c.IISW3C.ToArray()[0].Fields);
         }
 
         [Test]
@@ -305,6 +294,57 @@ namespace TimberWinR.UnitTests
             Assert.AreEqual(dirTime, iisw3c.DirTime);
             Assert.AreEqual(consolidateLogs, iisw3c.ConsolidateLogs);
             Assert.IsEmpty(iisw3c.ICheckpoint);
-        }       
+        }
+
+        [Test]
+        public void ParametersOfGrokFilters()
+        {
+            List<TimberWinR.Filters.GrokFilter.FieldValuePair> addFields = new List<TimberWinR.Filters.GrokFilter.FieldValuePair>();
+            List<string> removeFields = new List<string>();
+
+            string field = "Text";
+            string match = "%{IPAddress:ip1} %{IPAddress:ip2}";
+            addFields.Add(new GrokFilter.FieldValuePair("field1", "%{foo}"));
+            bool dropIfMatch = true;
+            removeFields.Add("ip1");
+            foreach (var filter in c.Filters)
+            {
+                if (filter.GetType() == typeof(GrokFilter))
+                {
+                    Console.WriteLine(((GrokFilter)filter).AddFields[0].Field);
+                    Console.WriteLine(((GrokFilter)filter).AddFields[0].Value);
+
+                    Assert.AreEqual(field, ((GrokFilter)filter).Field);
+                    Assert.AreEqual(match, ((GrokFilter)filter).Match);
+                    CollectionAssert.AreEqual(addFields, ((GrokFilter)filter).AddFields);
+                    Assert.AreEqual(dropIfMatch, ((GrokFilter)filter).DropIfMatch);
+                    Assert.AreEqual(removeFields, ((GrokFilter)filter).RemoveFields);
+                }
+            }
+        }
+
+        [Test]
+        public void ParametersOfDateFilters()
+        {
+            List<string> patterns = new List<string>();
+
+            string field = "timestamp";
+            string target = "@timestamp";
+            bool convertToUTC = true;
+            patterns.Add("MMM  d HH:mm:ss");
+            patterns.Add("MMM dd HH:mm:ss");
+            patterns.Add("ISO8601");
+
+            foreach (var filter in c.Filters)
+            {
+                if (filter.GetType() == typeof(DateFilter))
+                {
+                    Assert.AreEqual(field, ((DateFilter)filter).Field);
+                    Assert.AreEqual(target, ((DateFilter)filter).Target);
+                    Assert.AreEqual(convertToUTC, ((DateFilter)filter).ConvertToUTC);
+                    CollectionAssert.AreEquivalent(patterns, ((DateFilter)filter).Patterns);
+                }
+            }
+        }
     }
 }
