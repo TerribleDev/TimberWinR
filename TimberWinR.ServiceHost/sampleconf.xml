@@ -18,7 +18,8 @@
       <Match field="Text" value="%{SYSLOGLINE}" />               
     </Grok>
     <Mutate>
-      <Rename oldName="timestamp" newName="xtimestamp"/>    
+      <Rename oldName="timestamp" newName="xtimestamp"/>
+      <Remove field="foo%{Index}" />
     </Mutate>
     <Date field="timestamp" target="@timestamp" convertToUTC="true">
       <Pattern>MMM  d HH:mm:ss</Pattern>

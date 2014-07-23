@@ -36,7 +36,7 @@ namespace TimberWinR.Inputs
 
         private void FileWatcher()
         {
-            var oLogQuery = new LogQuery();
+            
 
             var checkpointFileName = Path.Combine(System.IO.Path.GetTempPath(),
                 string.Format("{0}.lpc", Guid.NewGuid().ToString()));
@@ -56,8 +56,9 @@ namespace TimberWinR.Inputs
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
             {
+                var oLogQuery = new LogQuery();
                 try
-                {
+                {                   
                     var rs = oLogQuery.Execute(query, iFmt);
                     Dictionary<string, int> colMap = new Dictionary<string, int>();
                     for (int col=0; col<rs.getColumnCount(); col++)
@@ -92,10 +93,15 @@ namespace TimberWinR.Inputs
                     }
                     // Close the recordset
                     rs.close();
+                    rs = null;
                 }
                 catch (Exception ex)
                 {
                     LogManager.GetCurrentClassLogger().Error(ex);
+                }
+                finally
+                {
+                    oLogQuery = null;
                 }
                 firstQuery = false;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
