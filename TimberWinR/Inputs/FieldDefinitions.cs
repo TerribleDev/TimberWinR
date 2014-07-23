@@ -72,6 +72,11 @@ namespace TimberWinR.Inputs
             // Return true if the fields match:
             return (Name == p.Name) && (FieldType == p.FieldType);
         }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode() + FieldType.GetHashCode();
+        }
     }
 
     public class FieldDefinitions : IEnumerable<FieldDefinition>

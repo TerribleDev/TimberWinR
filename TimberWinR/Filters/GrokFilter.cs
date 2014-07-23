@@ -175,6 +175,11 @@ namespace TimberWinR.Filters
                 // Return true if the fields match:
                 return (Field == p.Field) && (Value == p.Value);
             }
+
+            public override int GetHashCode()
+            {
+                return Field.GetHashCode() + Value.GetHashCode();
+            }
         }
 
         private void ParseAddTags(XElement parent)
