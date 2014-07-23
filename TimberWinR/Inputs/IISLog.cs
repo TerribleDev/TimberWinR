@@ -9,7 +9,7 @@ namespace TimberWinR.Inputs
     public class IISLog : InputBase
     {
         public const string ParentTagName = "IISLogs";
-        public const string TagName = "IISLog";
+        public new const string TagName = "IISLog";
 
         public string Name { get; private set; }
         public string Location { get; private set; }

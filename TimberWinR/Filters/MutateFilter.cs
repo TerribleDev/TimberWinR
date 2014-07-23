@@ -11,7 +11,7 @@ namespace TimberWinR.Filters
 { 
     public class MutateFilter : FilterBase
     {
-        public const string TagName = "Mutate";
+        public new const string TagName = "Mutate";
 
         public List<MutateOperation> Operations { get; private set; }
 

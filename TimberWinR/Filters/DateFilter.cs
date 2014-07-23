@@ -11,7 +11,7 @@ namespace TimberWinR.Filters
 {
     public class DateFilter : FilterBase
     {
-        public const string TagName = "Date";
+        public new const string TagName = "Date";
 
         public string Field { get; private set; }
         public string Target { get; private set; }

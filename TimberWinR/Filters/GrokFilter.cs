@@ -12,7 +12,7 @@ namespace TimberWinR.Filters
 {
     public class GrokFilter : FilterBase
     {
-        public const string TagName = "Grok";
+        public new const string TagName = "Grok";
 
         public string Match { get; private set; }
         public string Field { get; private set; }

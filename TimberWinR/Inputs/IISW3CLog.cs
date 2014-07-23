@@ -8,7 +8,7 @@ namespace TimberWinR.Inputs
     public class IISW3CLog : InputBase
     {
         public const string ParentTagName = "IISW3CLogs";
-        public const string TagName = "IISW3CLog";
+        public new const string TagName = "IISW3CLog";
 
         public string Name { get; private set; }
         public string Location { get; private set; }

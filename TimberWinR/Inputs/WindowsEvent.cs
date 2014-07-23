@@ -9,7 +9,7 @@ namespace TimberWinR.Inputs
     public class WindowsEvent : InputBase
     {
         public const string ParentTagName = "WindowsEvents";
-        public const string TagName = "Event";
+        public new const string TagName = "Event";
 
         public string Source { get; private set; }
         public bool FullText { get; private set; }
