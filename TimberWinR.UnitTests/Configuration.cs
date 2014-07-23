@@ -260,7 +260,7 @@ namespace TimberWinR.UnitTests
             Assert.AreEqual(iCodepage, log.ICodepage);
             Assert.AreEqual(recurse, log.Recurse);
             Assert.AreEqual(splitLongLines, log.SplitLongLines);
-            Assert.IsNull(log.ICheckpoint);
+
 
             name = "Second Set";
             location = @"C:\Logs2\*.log";
@@ -275,7 +275,6 @@ namespace TimberWinR.UnitTests
             Assert.AreEqual(iCodepage, log.ICodepage);
             Assert.AreEqual(recurse, log.Recurse);
             Assert.AreEqual(splitLongLines, log.SplitLongLines);
-            Assert.IsNull(log.ICheckpoint);
 
 
             name = "Third Set";
@@ -291,7 +290,6 @@ namespace TimberWinR.UnitTests
             Assert.AreEqual(iCodepage, log.ICodepage);
             Assert.AreEqual(recurse, log.Recurse);
             Assert.AreEqual(splitLongLines, log.SplitLongLines);
-            Assert.IsNull(log.ICheckpoint);
         }
 
         [Test]

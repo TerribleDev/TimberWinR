@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
+using Microsoft.SqlServer.Server;
 
 namespace TimberWinR.Inputs
 {
@@ -33,237 +34,18 @@ namespace TimberWinR.Inputs
 
         WindowsEvent(XElement parent)
         {
-
-            ParseSource(parent);
-
-            // Default values for parameters.
-            FullText = true;
-            ResolveSIDS = true;
-            FormatMsg = true;
-            MsgErrorMode = "MSG";
-            FullEventCode = false;
-            Direction = "FW";
-            StringsSep = "|";
-            BinaryFormat = "PRINT";
-
-            ParseFullText(parent);
-            ParseResolveSIDS(parent);
-            ParseFormatMsg(parent);
-            ParseMsgErrorMode(parent);
-            ParseFullEventCode(parent);
-            ParseDirection(parent);
-            ParseStringsSep(parent);
-            ParseBinaryFormat(parent);
-
+            Source = ParseRequiredStringAttribute(parent, "source");
+            FullText = ParseBoolAttribute(parent, "fullText", true);
+            ResolveSIDS = ParseBoolAttribute(parent, "resolveSIDS", true);
+            FormatMsg = ParseBoolAttribute(parent, "formatMsg", true);
+            MsgErrorMode = ParseEnumAttribute(parent, "msgErrorMode", new string[] {"NULL", "ERROR", "MSG"}, "MSG");
+            FullEventCode = ParseBoolAttribute(parent, "fullEventCode", false); ;
+            Direction = ParseEnumAttribute(parent, "direction", new string[] { "FW", "BW" }, "FW");
+            StringsSep = ParseStringAttribute(parent, "stringsSep", "|");
+            BinaryFormat = ParseEnumAttribute(parent, "binaryFormat", new string[] { "ASC", "PRINT", "HEX" }, "PRINT");
             ParseFields(parent);
         }
-
-        private void ParseSource(XElement parent)
-        {
-            string attributeName = "source";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                Source = a.Value;
-            }
-            catch
-            {
-                throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(parent, attributeName);
-            }
-        }
-
-        private void ParseFullText(XElement parent)
-        {
-            string attributeName = "fullText";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    FullText = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    FullText = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseResolveSIDS(XElement parent)
-        {
-            string attributeName = "resolveSIDS";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    ResolveSIDS = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    ResolveSIDS = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseFormatMsg(XElement parent)
-        {
-            string attributeName = "formatMsg";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    FormatMsg = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    FormatMsg = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseMsgErrorMode(XElement parent)
-        {
-            string attributeName = "msgErrorMode";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "NULL" || value == "ERROR" || value == "MSG")
-                {
-                    MsgErrorMode = value;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseFullEventCode(XElement parent)
-        {
-            string attributeName = "fullEventCode";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    FullEventCode = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    FullEventCode = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseDirection(XElement parent)
-        {
-            string attributeName = "direction";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "FW" || value == "BW")
-                {
-                    Direction = value;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseStringsSep(XElement parent)
-        {
-            string attributeName = "stringsSep";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                StringsSep = a.Value;
-            }
-            catch { }
-        }
-
-        private void ParseBinaryFormat(XElement parent)
-        {
-            string attributeName = "binaryFormat";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ASC" || value == "PRINT" || value == "HEX")
-                {
-                    BinaryFormat = value;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
+                            
         private void ParseFields(XElement parent)
         {
             Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()

@@ -44,20 +44,9 @@ namespace TimberWinR.Filters
         private void ParseMatch(XElement parent)
         {
             XElement e = parent.Element("Match");
-            
-            if (e != null)
-            {
-                string attributeName = "value";
-                try
-                {
-                    Match = e.Attribute(attributeName).Value;
-                }
-                catch
-                {
-                    throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(e, attributeName);
-                }
 
-            }
+            Match = e.Attribute("value").Value;
+            Field = e.Attribute("field").Value;
         }
 
         private void ParseAddFields(XElement parent)
@@ -177,7 +166,7 @@ namespace TimberWinR.Filters
                         var namedCaptures = regex.MatchNamedCaptures(text);
                         foreach (string fieldName in namedCaptures.Keys)
                         {
-                            AddOrModify(json, fieldName, namedCaptures[fieldName]);                          
+                            AddOrModify(json, fieldName, namedCaptures[fieldName]);
                         }
                     }
                 }

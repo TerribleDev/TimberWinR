@@ -4,7 +4,8 @@
       <xs:sequence>
         <xs:element name="Inputs">
           <xs:complexType>
-            <xs:sequence>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+              <xs:choice>
               <xs:element name="WindowsEvents" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
@@ -247,56 +248,96 @@
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
+              </xs:choice>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
         <xs:element name="Filters" minOccurs="0">
           <xs:complexType>
-            <xs:sequence>
-              <xs:element name="Grok" minOccurs="0">
-                <xs:complexType>
-                  <xs:sequence>
-                    <xs:element name="Match" minOccurs="0">
-                      <xs:complexType>
-                        <xs:simpleContent>
-                          <xs:extension base="xs:string">
-                            <xs:attribute type="xs:string" name="field" use="required"/>
-                            <xs:attribute type="xs:string" name="value" use="required"/>
-                          </xs:extension>
-                        </xs:simpleContent>
-                      </xs:complexType>
-                    </xs:element>
-                    <xs:element name="AddField" minOccurs="0">
-                      <xs:complexType>
-                        <xs:simpleContent>
-                          <xs:extension base="xs:string">
-                            <xs:attribute type="xs:string" name="name" use="required"/>
-                            <xs:attribute type="xs:string" name="value" use="required"/>
-                          </xs:extension>
-                        </xs:simpleContent>
-                      </xs:complexType>
-                    </xs:element>
-                    <xs:element name="DropIfMatch" minOccurs="0">
-                      <xs:complexType>
-                        <xs:simpleContent>
-                          <xs:extension base="xs:string">
-                            <xs:attribute type="xs:string" name="value" use="required"/>
-                          </xs:extension>
-                        </xs:simpleContent>
-                      </xs:complexType>
-                    </xs:element>
-                    <xs:element name="RemoveField" minOccurs="0">
-                      <xs:complexType>
-                        <xs:simpleContent>
-                          <xs:extension base="xs:string">
-                            <xs:attribute type="xs:string" name="value" use="required"/>
-                          </xs:extension>
-                        </xs:simpleContent>
-                      </xs:complexType>
-                    </xs:element>
-                  </xs:sequence>
-                </xs:complexType>
-              </xs:element>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+              <xs:choice>
+                <xs:element name="Grok" minOccurs="0">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element name="Match" minOccurs="0">
+                        <xs:complexType>
+                          <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                              <xs:attribute type="xs:string" name="field" use="required"/>
+                              <xs:attribute type="xs:string" name="value" use="required"/>
+                            </xs:extension>
+                          </xs:simpleContent>
+                        </xs:complexType>
+                      </xs:element>
+                      <xs:element name="AddField" minOccurs="0">
+                        <xs:complexType>
+                          <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                              <xs:attribute type="xs:string" name="name" use="required"/>
+                              <xs:attribute type="xs:string" name="value" use="required"/>
+                            </xs:extension>
+                          </xs:simpleContent>
+                        </xs:complexType>
+                      </xs:element>
+                      <xs:element name="DropIfMatch" minOccurs="0">
+                        <xs:complexType>
+                          <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                              <xs:attribute type="xs:string" name="value" use="required"/>
+                            </xs:extension>
+                          </xs:simpleContent>
+                        </xs:complexType>
+                      </xs:element>
+                      <xs:element name="RemoveField" minOccurs="0">
+                        <xs:complexType>
+                          <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                              <xs:attribute type="xs:string" name="value" use="required"/>
+                            </xs:extension>
+                          </xs:simpleContent>
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="Mutate">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:choice>
+                      <xs:element name="Rename" maxOccurs="unbounded" minOccurs="0">
+                        <xs:complexType>
+                          <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                              <xs:attribute type="xs:string" name="oldName" use="optional"/>
+                              <xs:attribute type="xs:string" name="newName" use="optional"/>
+                            </xs:extension>
+                          </xs:simpleContent>
+                        </xs:complexType>
+                      </xs:element>
+                      <xs:element name="Remove" maxOccurs="unbounded" minOccurs="0">
+                        <xs:complexType>
+                          <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                              <xs:attribute type="xs:string" name="field" use="optional"/>
+                            </xs:extension>
+                          </xs:simpleContent>
+                        </xs:complexType>
+                      </xs:element>
+                      </xs:choice>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="Date">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element type="xs:string" name="Pattern" maxOccurs="unbounded" minOccurs="0"/>
+                    </xs:sequence>
+                    <xs:attribute type="xs:string" name="field" use="required"/>
+                    <xs:attribute type="xs:string" name="target" use="optional"/>
+                    <xs:attribute type="xs:string" name="convertToUTC" use="optional"/>
+                  </xs:complexType>
+                </xs:element>
+              </xs:choice>
             </xs:sequence>
           </xs:complexType>
         </xs:element>

@@ -14,8 +14,7 @@ namespace TimberWinR.Inputs
         // Parameters
         public int ICodepage { get; private set; }
         public int Recurse { get; private set; }
-        public bool SplitLongLines { get; private set; }
-        public string ICheckpoint { get; private set; }
+        public bool SplitLongLines { get; private set; }       
 
         public static void Parse(List<TailFileInput> logs, XElement logElement)
         {
@@ -29,139 +28,13 @@ namespace TimberWinR.Inputs
 
         public TailFileInput(XElement parent)
         {
-            ParseName(parent);
-            ParseLocation(parent);
-
-            // Default values for parameters.
-            ICodepage = 0;
-            Recurse = 0;
-            SplitLongLines = false;
-
-            ParseICodepage(parent);
-            ParseRecurse(parent);
-            ParseSplitLongLines(parent);
-            ParseICheckpoint(parent);
-
+            Name = ParseRequiredStringAttribute(parent, "name");
+            Location = ParseRequiredStringAttribute(parent, "location");           
+            ICodepage = ParseIntAttribute(parent, "iCodepage", 0);
+            Recurse = ParseIntAttribute(parent, "recurse", 0);
+            SplitLongLines = ParseBoolAttribute(parent, "splitLongLines", false);                    
             ParseFields(parent);
-        }
-
-        private void ParseName(XElement parent)
-        {
-            string attributeName = "name";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                Name = a.Value;
-            }
-            catch
-            {
-                throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(parent, attributeName);
-            }
-        }
-
-        private void ParseLocation(XElement parent)
-        {
-            string attributeName = "location";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                Location = a.Value;
-            }
-            catch
-            {
-                throw new TimberWinR.ConfigurationErrors.MissingRequiredAttributeException(parent, attributeName);
-            }
-        }
-
-        private void ParseICodepage(XElement parent)
-        {
-            string attributeName = "iCodepage";
-            int valInt;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                if (int.TryParse(a.Value, out valInt))
-                {
-                    ICodepage = valInt;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeIntegerValueException(a);
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        private void ParseRecurse(XElement parent)
-        {
-            string attributeName = "recurse";
-            int valInt;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                if (int.TryParse(a.Value, out valInt))
-                {
-                    Recurse = valInt;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeIntegerValueException(a);
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        private void ParseSplitLongLines(XElement parent)
-        {
-            string attributeName = "splitLongLines";
-            string value;
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                value = a.Value;
-
-                if (value == "ON" || value == "true")
-                {
-                    SplitLongLines = true;
-                }
-                else if (value == "OFF" || value == "false")
-                {
-                    SplitLongLines = false;
-                }
-                else
-                {
-                    throw new TimberWinR.ConfigurationErrors.InvalidAttributeValueException(parent.Attribute(attributeName));
-                }
-            }
-            catch { }
-        }
-
-        private void ParseICheckpoint(XElement parent)
-        {
-            string attributeName = "iCheckpoint";
-
-            try
-            {
-                XAttribute a = parent.Attribute(attributeName);
-
-                ICheckpoint = a.Value;
-            }
-            catch { }
-        }
+        }       
 
         private void ParseFields(XElement parent)
         {
@@ -182,15 +55,12 @@ namespace TimberWinR.Inputs
             sb.Append(String.Format("Name: {0}\n", Name));
             sb.Append(String.Format("Location: {0}\n", Location));
             sb.Append("Fields:\n");
-            foreach (FieldDefinition f in Fields)
-            {
-                sb.Append(String.Format("\t{0}\n", f.Name));
-            }
+            foreach (FieldDefinition f in Fields)          
+                sb.Append(String.Format("\t{0}\n", f.Name));            
             sb.Append("Parameters:\n");
             sb.Append(String.Format("\tiCodepage: {0}\n", ICodepage));
             sb.Append(String.Format("\trecurse: {0}\n", Recurse));
-            sb.Append(String.Format("\tsplitLongLines: {0}\n", SplitLongLines));
-            sb.Append(String.Format("\tiCheckpoint: {0}\n", ICheckpoint));
+            sb.Append(String.Format("\tsplitLongLines: {0}\n", SplitLongLines));          
 
             return sb.ToString();
         }

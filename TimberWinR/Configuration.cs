@@ -58,8 +58,15 @@ namespace TimberWinR
         {
             validateWithSchema(xmlConfFile, Properties.Resources.configSchema);
 
-            parseConfInput(xmlConfFile);
-            parseConfFilter(xmlConfFile);
+            try
+            {
+                parseConfInput(xmlConfFile);
+                parseConfFilter(xmlConfFile);
+            }
+            catch(Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);
+            }
         }
 
         private static void validateWithSchema(string xmlConfFile, string xsdSchema)
@@ -69,8 +76,7 @@ namespace TimberWinR
             // Ensure that the xml configuration file provided obeys the xsd schema.
             XmlSchemaSet schemas = new XmlSchemaSet();
             schemas.Add("", XmlReader.Create(new StringReader(xsdSchema)));
-
-#if false
+#if true
             bool errorsFound = false;
             config.Validate(schemas, (o, e) =>
             {
@@ -115,55 +121,40 @@ namespace TimberWinR
                 select el;
 
             string tagName = "Inputs";
-            if (inputs.Count() == 0)
-            {
+            if (inputs.Count() == 0)          
                 throw new TimberWinR.ConfigurationErrors.MissingRequiredTagException(tagName);
-            }
-
+           
             // WINDOWS EVENTS
             IEnumerable<XElement> xml_events =
                 from el in inputs.Elements("WindowsEvents").Elements("Event")
                 select el;
 
-            foreach (XElement e in xml_events)
-            {
-                WindowsEvent.Parse(_events, e);
-            }
-
-
+            foreach (XElement e in xml_events)           
+                WindowsEvent.Parse(_events, e);          
 
             // TEXT LOGS
             IEnumerable<XElement> xml_logs =
                 from el in inputs.Elements("Logs").Elements("Log")
                 select el;
 
-            foreach (XElement e in xml_logs)
-            {
-                TailFileInput.Parse(_logs, e);
-            }
-
-
+            foreach (XElement e in xml_logs)          
+                TailFileInput.Parse(_logs, e);         
 
             // IIS LOGS
             IEnumerable<XElement> xml_iis =
                 from el in inputs.Elements("IISLogs").Elements("IISLog")
                 select el;
 
-            foreach (XElement e in xml_iis)
-            {
-                IISLog.Parse(_iislogs, e);
-            }
-
+            foreach (XElement e in xml_iis)           
+                IISLog.Parse(_iislogs, e);            
 
             // IISW3C LOGS
             IEnumerable<XElement> xml_iisw3c =
                 from el in inputs.Elements("IISW3CLogs").Elements("IISW3CLog")
                 select el;
 
-            foreach (XElement e in xml_iisw3c)
-            {
-                IISW3CLog.Parse(_iisw3clogs, e);
-            }
+            foreach (XElement e in xml_iisw3c)      
+                IISW3CLog.Parse(_iisw3clogs, e);           
         }
 
         static void parseConfFilter(string xmlConfFile)
@@ -178,16 +169,20 @@ namespace TimberWinR
             {
                 switch (e.Name.ToString())
                 {
+                    case DateFilter.TagName:
+                        DateFilter.Parse(_filters, e);
+                        break;
                     case GrokFilter.TagName:
                         GrokFilter.Parse(_filters, e);
                         break;
                     case MutateFilter.TagName:
                         MutateFilter.Parse(_filters, e);   
                         break;
+                    default:
+                        throw new Exception(string.Format("Unknown tag: {0}", e.Name.ToString()));
+                        break;
                 }
             }
         }
-
-
     }
 }
