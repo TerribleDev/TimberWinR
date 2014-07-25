@@ -1,112 +1,111 @@
-﻿using Newtonsoft.Json.Linq;
-using RapidRegex.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
+using System.Threading;
+using Microsoft.CSharp;
+using Newtonsoft.Json.Linq;
+using NLog;
+using RapidRegex.Core;
 
-namespace TimberWinR.Filters
+namespace TimberWinR.Parser
 {
-    public class GrokFilter : FilterBase
+    public class Fields
     {
-        public new const string TagName = "Grok";
+        private Dictionary<string, string> fields { get; set; }
 
-        public string Match { get; private set; }
-        public string Field { get; private set; }
-        public List<FieldValuePair> AddFields { get; private set; }
-        public bool DropIfMatch { get; private set; }
-        public List<string> RemoveFields { get; private set; }
-        public List<AddTag> AddTags { get; private set; } 
-
-        public static void Parse(List<FilterBase> filters, XElement grokElement)
+        public string this[string i]
         {
-            filters.Add(parseGrok(grokElement));
+            get { return fields[i]; }
+            set { fields[i] = value; }
         }
 
-        static GrokFilter parseGrok(XElement e)
+        public Fields(JObject json)
         {
-            return new GrokFilter(e);
+            fields = new Dictionary<string, string>();
+            IList<string> keys = json.Properties().Select(p => p.Name).ToList();
+            foreach (string key in keys)
+                fields[key] = json[key].ToString();
         }
+    }
 
-        GrokFilter(XElement parent)
+    public partial class Grok : LogstashFilter
+    {
+        public override bool Apply(JObject json)
         {
-            AddTags = new List<AddTag>();
-            AddFields = new List<FieldValuePair>();
-            RemoveFields = new List<string>();
+            if (Condition != null && !EvaluateCondition(json))
+                return false;
 
-            ParseMatch(parent);
-            ParseAddFields(parent);
-            ParseAddTags(parent);
-            ParseDropIfMatch(parent);
-            ParseRemoveFields(parent);
-        }
-
-        private void ParseMatch(XElement parent)
-        {
-            XElement e = parent.Element("Match");
-            Field = e.Attribute("field").Value;
-            Match = e.Attribute("value").Value;          
-        }
-
-        private void ParseAddFields(XElement parent)
-        {
-            foreach (var e in parent.Elements("AddField"))
-            {                              
-                AddFields.Add(new FieldValuePair(ParseStringAttribute(e, "field"), ParseStringAttribute(e, "value")));
-            }
-        }
-
-        private void ParseDropIfMatch(XElement parent)
-        {
-            XElement e = parent.Element("DropIfMatch");
-
-            if (e != null)
+            if (Matches(json))
             {
-                DropIfMatch = ParseBoolAttribute(e, "value", false);
+                AddFields(json);
+                AddTags(json);
+                return true;
             }
+            return false;
         }
 
-        private void ParseRemoveFields(XElement parent)
+        private bool EvaluateCondition(JObject json)
         {
-            foreach (var e in parent.Elements("RemoveField"))
+            // Create a new instance of the C# compiler
+            var cond = Condition;
+
+            IList<string> keys = json.Properties().Select(p => p.Name).ToList();
+            foreach (string key in keys)
+                cond = cond.Replace(string.Format("[{0}]", key), string.Format("\"{0}\"", json[key].ToString()));
+
+            var compiler = new CSharpCodeProvider();
+
+            // Create some parameters for the compiler
+            var parms = new System.CodeDom.Compiler.CompilerParameters
             {
-                if (e != null)
-                {
-                    RemoveFields.Add(ParseStringAttribute(e, "value"));
-                }
+                GenerateExecutable = false,
+                GenerateInMemory = true
+            };
+            parms.ReferencedAssemblies.Add("System.dll");
+            var code = string.Format(@" using System;
+                                        class EvaluatorClass
+                                        {{
+                                            public bool Evaluate()
+                                            {{
+                                                return {0};
+                                            }}               
+                                        }}", cond);
+
+            // Try to compile the string into an assembly
+            var results = compiler.CompileAssemblyFromSource(parms, new string[] { code });
+
+            // If there weren't any errors get an instance of "MyClass" and invoke
+            // the "Message" method on it
+            if (results.Errors.Count == 0)
+            {
+                var evClass = results.CompiledAssembly.CreateInstance("EvaluatorClass");
+                var result = evClass.GetType().
+                    GetMethod("Evaluate").
+                    Invoke(evClass, null);
+                return bool.Parse(result.ToString());
             }
-        }
-
-        /// <summary>
-        /// Apply the Grok filter to the Object
-        /// </summary>
-        /// <param name="json"></param>
-        public override void Apply(Newtonsoft.Json.Linq.JObject json)
-        {
-            if (ApplyMatch(json))
+            else
             {
-                foreach (var at in AddTags)
-                    at.Apply(json);
-            }        
+                foreach (var e in results.Errors)
+                    LogManager.GetCurrentClassLogger().Error(e);
+            }
+
+            return false;
         }
 
-        /// <summary>
-        /// Apply the Match filter, if there is none specified, it's considered a match.
-        /// </summary>
-        /// <param name="json"></param>
-        /// <returns></returns>
-        private bool ApplyMatch(Newtonsoft.Json.Linq.JObject json)
-        {            
+        private bool Matches(Newtonsoft.Json.Linq.JObject json)
+        {
+            string field = Match[0];
+            string expr = Match[1];
+
             JToken token = null;
-            if (json.TryGetValue(Field, StringComparison.OrdinalIgnoreCase, out token))
+            if (json.TryGetValue(field, out token))
             {
                 string text = token.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    string expr = Match;
                     var resolver = new RegexGrokResolver();
                     var pattern = resolver.ResolveToRegex(expr);
                     var match = Regex.Match(text, pattern);
@@ -121,87 +120,42 @@ namespace TimberWinR.Filters
                         return true; // Yes!
                     }
                 }
-                return false; // Empty field is no match
+                return true; // Empty field is no match
             }
-            return true; // Not specified is success
+            return false; // Not specified is failure
         }
 
-        private void AddOrModify(JObject json, string fieldName, string fieldValue)
+        private void AddFields(Newtonsoft.Json.Linq.JObject json)
         {
-            if (json[fieldName] == null)
-                json.Add(fieldName, fieldValue);
-            else
-                json[fieldName] = fieldValue;
-        }
-
-        public class FieldValuePair
-        {
-            public string Field { get; set; }
-            public string Value { get; set; }
-
-            public FieldValuePair(string field, string value)
+            if (AddField != null && AddField.Length > 0)
             {
-                Field = field;
-                Value = value;
-            }
-        }
-
-        private void ParseAddTags(XElement parent)
-        {
-            foreach (var e in parent.Elements("AddTag"))
-            {
-                AddTags.Add(new AddTag(e));
-            }
-        }
-
-        public class AddTag
-        {
-            public string Value { get; set; }
-            public AddTag(XElement e)
-            {
-                Value = e.Value.Trim();
-            }
-
-            public void Apply(Newtonsoft.Json.Linq.JObject json)
-            {
-                string value = ReplaceTokens(Value, json);
-                JToken tags = json["tags"];
-                if (tags == null)
-                    json.Add("tags", new JArray(value));
-                else
+                for (int i = 0; i < AddField.Length; i += 2)
                 {
-                    JArray a = tags as JArray;
-                    a.Add(value);
+                    string fieldName = ExpandField(AddField[i], json);
+                    string fieldValue = ExpandField(AddField[i + 1], json);
+                    AddOrModify(json, fieldName, fieldValue);
                 }
             }
+        }
 
-            private string ReplaceTokens(string fieldName, JObject json)
+        private void AddTags(Newtonsoft.Json.Linq.JObject json)
+        {
+            if (AddTag != null && AddTag.Length > 0)
             {
-                foreach (var token in json.Children())
+                for (int i = 0; i < AddTag.Length; i++)
                 {
-                    string replaceString = "%{" + token.Path + "}";
-                    fieldName = fieldName.Replace(replaceString, json[token.Path].ToString());
+                    string value = ExpandField(AddTag[i], json);
+
+                    JToken tags = json["tags"];
+                    if (tags == null)
+                        json.Add("tags", new JArray(value));
+                    else
+                    {
+                        JArray a = tags as JArray;
+                        a.Add(value);
+                    }
                 }
-                return fieldName;
             }
-
-        }  
-    }
-
-    public struct Pair
-    {
-        public readonly string Name, Value;
-
-        public Pair(string name, string value)
-        {
-            Name = name;
-            Value = value;
-        }
-
-        public override string ToString()
-        {
-            return String.Format("Name:= {0} , Value:= {1}", Name, Value);
         }
     }
-
 }

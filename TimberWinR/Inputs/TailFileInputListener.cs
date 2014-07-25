@@ -23,9 +23,9 @@ namespace TimberWinR.Inputs
     public class TailFileInputListener : InputListener
     {
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Inputs.TailFileInput _arguments;
+        private TimberWinR.Parser.Log _arguments;
 
-        public TailFileInputListener(TimberWinR.Inputs.TailFileInput arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public TailFileInputListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;
@@ -35,15 +35,13 @@ namespace TimberWinR.Inputs
         }
 
         private void FileWatcher()
-        {
-            
-
+        {            
             var checkpointFileName = Path.Combine(System.IO.Path.GetTempPath(),
                 string.Format("{0}.lpc", Guid.NewGuid().ToString()));
 
             var iFmt = new TextLineInputFormat()
             {
-                iCodepage = _arguments.ICodepage,
+                iCodepage = _arguments.CodePage,
                 splitLongLines = _arguments.SplitLongLines,
                 iCheckpoint = checkpointFileName,
                 recurse = _arguments.Recurse
@@ -51,6 +49,12 @@ namespace TimberWinR.Inputs
 
               // Create the query
             var query = string.Format("SELECT * FROM {0}", _arguments.Location);
+
+            string computerName = System.Environment.MachineName + "." +
+                                  Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                                      @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
+                                      .GetValue("Domain", ".")
+                                      .ToString();
 
             var firstQuery = true;
             // Execute the query
@@ -81,13 +85,16 @@ namespace TimberWinR.Inputs
                                     continue;
 
                                 object v = record.getValue(field.Name);
-
-                                if (field.FieldType == typeof(DateTime))
-                                    v = field.ToDateTime(v).ToUniversalTime();
-
-                                json.Add(new JProperty(field.Name, v));
+                                if (field.DataType == typeof(DateTime))
+                                {
+                                    DateTime dt = DateTime.Parse(v.ToString());
+                                    json.Add(new JProperty(field.Name, dt));
+                                }
+                                else
+                                    json.Add(new JProperty(field.Name, v));                                
                             }
                             json.Add(new JProperty("type", "Win32-FileLog"));
+                            json.Add(new JProperty("ComputerName", computerName));
                             ProcessJson(json);
                         }
                     }
