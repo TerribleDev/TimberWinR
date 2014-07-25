@@ -2,162 +2,114 @@
 using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.IO;
 using System.Globalization;
 using System.Xml.Schema;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
+using Newtonsoft.Json.Linq;
 using TimberWinR.Inputs;
 using TimberWinR.Filters;
 
 using NLog;
+using TimberWinR.Parser;
+using IISW3CLog = TimberWinR.Parser.IISW3CLog;
+using WindowsEvent = TimberWinR.Parser.WindowsEvent;
 
 namespace TimberWinR
 {
     public class Configuration
     {
-
-        private static List<WindowsEvent> _events = new List<WindowsEvent>();
+        private List<WindowsEvent> _events = new List<WindowsEvent>();
 
         public IEnumerable<WindowsEvent> Events
         {
             get { return _events; }
         }
 
-        private static List<TailFileInput> _logs = new List<TailFileInput>();
+        private List<Log> _logs = new List<Log>();
 
-        public IEnumerable<TailFileInput> Logs
+        public IEnumerable<Log> Logs
         {
             get { return _logs; }
-        }
+        }       
 
-        private static List<IISLog> _iislogs = new List<IISLog>();
-
-        public IEnumerable<IISLog> IIS
-        {
-            get { return _iislogs; }
-        }
-
-        private static List<IISW3CLog> _iisw3clogs = new List<IISW3CLog>();
+        private List<IISW3CLog> _iisw3clogs = new List<IISW3CLog>();
 
         public IEnumerable<IISW3CLog> IISW3C
         {
             get { return _iisw3clogs; }
         }
 
-        private static List<FilterBase> _filters = new List<FilterBase>();
+        private List<LogstashFilter> _filters = new List<LogstashFilter>();
 
-        public IEnumerable<FilterBase> Filters
+        public IEnumerable<LogstashFilter> Filters
         {
             get { return _filters; }
         }
 
-        public Configuration(string xmlConfFile)
+        public static Configuration FromFile(string jsonConfFile)
         {
-            validateWithSchema(xmlConfFile, Properties.Resources.configSchema);
+            Configuration c = new Configuration();
 
-            try
+            if (!string.IsNullOrEmpty(jsonConfFile))
             {
-                parseConfInput(xmlConfFile);
-                parseConfFilter(xmlConfFile);
+                string json = File.ReadAllText(jsonConfFile);
+
+                return FromString(json);
             }
-            catch(Exception ex)
+
+            return null;
+        }
+
+        public static Configuration FromString(string json)
+        {
+            Configuration c = new Configuration();
+
+            JsonSerializer serializer = new JsonSerializer();
+            TextReader re = new StringReader(json);
+            JsonTextReader reader = new JsonTextReader(re);
+
+            var x = serializer.Deserialize<TimberWinR.Parser.RootObject>(reader);
+
+            if (x.TimberWinR.Inputs != null)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                c._events = x.TimberWinR.Inputs.WindowsEvents.ToList();
+                c._iisw3clogs = x.TimberWinR.Inputs.IISW3CLogs.ToList();
+                c._logs = x.TimberWinR.Inputs.Logs.ToList();       
             }
+
+            if (x.TimberWinR.Filters != null)
+                c._filters = x.TimberWinR.AllFilters.ToList();
+               
+
+            return c;
+        }
+        public Configuration()
+        {
+            _filters = new List<LogstashFilter>();
+            _events = new List<WindowsEvent>();
+            _iisw3clogs = new List<IISW3CLog>();
+            _logs = new List<Log>();
         }
 
-        private static void validateWithSchema(string xmlConfFile, string xsdSchema)
+        public static Object GetPropValue(String name, Object obj)
         {
-            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
-
-            // Ensure that the xml configuration file provided obeys the xsd schema.
-            XmlSchemaSet schemas = new XmlSchemaSet();
-            schemas.Add("", XmlReader.Create(new StringReader(xsdSchema)));
-#if true
-            bool errorsFound = false;
-            config.Validate(schemas, (o, e) =>
+            foreach (String part in name.Split('.'))
             {
-                errorsFound = true;
-                LogManager.GetCurrentClassLogger().Error(e.Message);
-            }, true);
+                if (obj == null) { return null; }
 
-            if (errorsFound)
-                DumpInvalidNodes(config.Root);
-#endif
-        }
+                Type type = obj.GetType();
+                PropertyInfo info = type.GetProperty(part);
+                if (info == null) { return null; }
 
-        static void DumpInvalidNodes(XElement el)
-        {
-            if (el.GetSchemaInfo().Validity != XmlSchemaValidity.Valid)
-                LogManager.GetCurrentClassLogger().Error("Invalid Element {0}",
-                    el.AncestorsAndSelf()
-                    .InDocumentOrder()
-                    .Aggregate("", (s, i) => s + "/" + i.Name.ToString()));
-            foreach (XAttribute att in el.Attributes())
-                if (att.GetSchemaInfo().Validity != XmlSchemaValidity.Valid)
-                    LogManager.GetCurrentClassLogger().Error("Invalid Attribute {0}",
-                        att
-                        .Parent
-                        .AncestorsAndSelf()
-                        .InDocumentOrder()
-                        .Aggregate("",
-                            (s, i) => s + "/" + i.Name.ToString()) + "/@" + att.Name.ToString()
-                        );
-            foreach (XElement child in el.Elements())
-                DumpInvalidNodes(child);
-        }
-
-        static void parseConfInput(string xmlConfFile)
-        {
-            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
-
-            XElement allInputs = config.Root.Element(InputBase.TagName);
-            if (allInputs == null)          
-                throw new TimberWinR.ConfigurationErrors.MissingRequiredTagException(InputBase.TagName);
-
-            createInputs(allInputs, WindowsEvent.ParentTagName, WindowsEvent.TagName, _events, WindowsEvent.Parse);
-            createInputs(allInputs, TailFileInput.ParentTagName, TailFileInput.TagName, _logs, TailFileInput.Parse);
-            createInputs(allInputs, IISLog.ParentTagName, IISLog.TagName, _iislogs, IISLog.Parse);
-            createInputs(allInputs, IISW3CLog.ParentTagName, IISW3CLog.TagName, _iisw3clogs, IISW3CLog.Parse);       
-        }
-
-        static void createInputs<T>(XElement allInputs, string parentTagName, string tagName, List<T> inputList, Action<List<T>, XElement> parse)
-        {
-            IEnumerable<XElement> inputs =
-                from el in allInputs.Elements(parentTagName).Elements(tagName)
-                select el;
-            foreach (XElement input in inputs)
-                parse(inputList, input);
-        }
-
-        static void parseConfFilter(string xmlConfFile)
-        {
-            XDocument config = XDocument.Load(xmlConfFile, LoadOptions.SetLineInfo | LoadOptions.SetBaseUri);
-
-            IEnumerable<XElement> filters =
-                from el in config.Root.Elements(FilterBase.TagName)
-                select el;                   
-
-            foreach (XElement e in filters.Elements())
-            {
-                switch (e.Name.ToString())
-                {
-                    case DateFilter.TagName:
-                        DateFilter.Parse(_filters, e);
-                        break;
-                    case GrokFilter.TagName:
-                        GrokFilter.Parse(_filters, e);
-                        break;
-                    case MutateFilter.TagName:
-                        MutateFilter.Parse(_filters, e);   
-                        break;
-                    default:
-                        throw new Exception(string.Format("Unknown tag: {0}", e.Name.ToString()));
-                }
+                obj = info.GetValue(obj, null);
             }
-        }
+            return obj;
+        }           
     }
 }

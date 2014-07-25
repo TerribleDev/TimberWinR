@@ -20,7 +20,11 @@ namespace TimberWinR.ServiceHost
     {
         private static void Main(string[] args)
         {
-            Arguments arguments = new Arguments();         
+            Arguments arguments = new Arguments();
+
+
+            Type x = Type.GetType("string");
+            Type x1 = Type.GetType("System.string");
 
             HostFactory.Run(hostConfigurator =>
             {
@@ -34,6 +38,7 @@ namespace TimberWinR.ServiceHost
                 });
 
                 hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
+                hostConfigurator.AddCommandLineDefinition("jsonFile", c => arguments.JsonFile = c);
 
                 hostConfigurator.ApplyCommandLine();
                 hostConfigurator.RunAsLocalSystem();
@@ -49,6 +54,7 @@ namespace TimberWinR.ServiceHost
     internal class Arguments
     {
         public string ConfigFile { get; set; }
+        public string JsonFile { get; set; }
 
         public Arguments()
         {
@@ -89,20 +95,20 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
-            TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile);
+            TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile, _args.JsonFile);
 
             var outputRedis = new RedisOutput(manager, new string[] { "logaggregator.vistaprint.svc" }, _cancellationToken);
 
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
             outputRedis.Connect(_nlogListener);
 
-            foreach (Inputs.IISW3CLog iisw3cConfig in manager.Config.IISW3C)
+            foreach (Parser.IISW3CLog iisw3cConfig in manager.Config.IISW3C)
             {
                 var elistner = new IISW3CInputListener(iisw3cConfig, _cancellationToken);
                 outputRedis.Connect(elistner);
             }
 
-            foreach (Inputs.WindowsEvent eventConfig in manager.Config.Events)
+            foreach (Parser.WindowsEvent eventConfig in manager.Config.Events)
             {
                 var elistner = new WindowsEvtInputListener(eventConfig, _cancellationToken);
                 outputRedis.Connect(elistner);

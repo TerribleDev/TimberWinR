@@ -16,7 +16,7 @@ namespace TimberWinR
     {
         public Configuration Config { get; set; }
         
-        public Manager(string configurationFile=null)
+        public Manager(string xmlConfigFile, string jsonConfigFile)
         { 
             var loggingConfiguration = new LoggingConfiguration();
 
@@ -36,8 +36,10 @@ namespace TimberWinR
             
             LogManager.GetCurrentClassLogger().Info("Initialized");
 
+
+        
             // Read the Configuration file
-            Config = new Configuration(configurationFile);
+            Config = Configuration.FromFile(jsonConfigFile);
         }
 
         /// <summary>

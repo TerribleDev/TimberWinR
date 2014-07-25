@@ -21,10 +21,10 @@ namespace TimberWinR.Inputs
     public class IISW3CInputListener : InputListener
     {
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Inputs.IISW3CLog _arguments;
+        private TimberWinR.Parser.IISW3CLog _arguments;
 
 
-        public IISW3CInputListener(TimberWinR.Inputs.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public IISW3CInputListener(TimberWinR.Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;
@@ -42,17 +42,17 @@ namespace TimberWinR.Inputs
 
             var iFmt = new IISW3CLogInputFormat()
             {
-                codepage = _arguments.ICodepage,
+                codepage = _arguments.CodePage,
                 consolidateLogs = _arguments.ConsolidateLogs,
                 dirTime = _arguments.DirTime,
-                dQuotes = _arguments.DQuotes,
+                dQuotes = _arguments.DoubleQuotes,
                 iCheckpoint = checkpointFileName,               
                 recurse = _arguments.Recurse,
-                useDoubleQuotes = _arguments.DQuotes
+                useDoubleQuotes = _arguments.DoubleQuotes
             };
 
-            if (!string.IsNullOrEmpty(_arguments.MinDateMod))
-                iFmt.minDateMod = _arguments.MinDateMod;
+            if (_arguments.MinDateMod.HasValue)
+                iFmt.minDateMod = _arguments.MinDateMod.Value.ToString("yyyy-MM-dd hh:mm:ss");
 
             // Create the query
             var query = string.Format("SELECT * FROM {0}", _arguments.Location);
@@ -84,12 +84,14 @@ namespace TimberWinR.Inputs
                                 if (!colMap.ContainsKey(field.Name))
                                     continue;
 
-                                object v = record.getValue(field.Name);
-
-                                if (field.FieldType == typeof(DateTime))
-                                    v = field.ToDateTime(v).ToUniversalTime();
-
-                                json.Add(new JProperty(field.Name, v));
+                                object v = record.getValue(field.Name);                               
+                                if (field.DataType == typeof(DateTime))
+                                {
+                                    DateTime dt = DateTime.Parse(v.ToString());
+                                    json.Add(new JProperty(field.Name, dt));
+                                }  
+                                else 
+                                    json.Add(new JProperty(field.Name, v));
                             }
                             json.Add(new JProperty("type", "Win32-IISLog"));
                             ProcessJson(json);

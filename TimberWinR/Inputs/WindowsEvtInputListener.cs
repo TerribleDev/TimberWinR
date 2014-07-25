@@ -23,9 +23,9 @@ namespace TimberWinR.Inputs
     public class WindowsEvtInputListener : InputListener
     {      
         private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Inputs.WindowsEvent _arguments;
+        private TimberWinR.Parser.WindowsEvent _arguments;
 
-        public WindowsEvtInputListener(TimberWinR.Inputs.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken)
         {
             _arguments = arguments;
@@ -44,12 +44,12 @@ namespace TimberWinR.Inputs
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
             {
-                binaryFormat = _arguments.BinaryFormat,
-                direction = _arguments.Direction,
+                binaryFormat = _arguments.BinaryFormat.ToString(),
+                direction = _arguments.Direction.ToString(),
                 formatMsg = _arguments.FormatMsg,
                 fullEventCode = _arguments.FullEventCode,
                 fullText = _arguments.FullText,
-                msgErrorMode =  _arguments.MsgErrorMode,
+                msgErrorMode =  _arguments.MsgErrorMode.ToString(),
                 stringsSep = _arguments.StringsSep,
                 resolveSIDs = _arguments.ResolveSIDS,
                 iCheckpoint = checkpointFileName,               
@@ -77,8 +77,8 @@ namespace TimberWinR.Inputs
                             {
                                 object v = record.getValue(field.Name);
 
-                                if (field.FieldType == typeof(DateTime))
-                                    v = field.ToDateTime(v).ToUniversalTime();
+                                //if (field.FieldType == typeof(DateTime))
+                                //    v = field.ToDateTime(v).ToUniversalTime();
 
                                 json.Add(new JProperty(field.Name, v));
                             }

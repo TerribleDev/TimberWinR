@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using ctstone.Redis;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using System.Threading.Tasks;
@@ -97,7 +98,7 @@ namespace TimberWinR.Outputs
             foreach (var grok in _manager.Config.Filters)
             {
                 grok.Apply(json);
-            }
+            }            
         }
 
         // 
