@@ -34,10 +34,10 @@ namespace TimberWinR.Inputs
             ICodepage = ParseIntAttribute(parent, "iCodepage", 0);
             Recurse = ParseIntAttribute(parent, "recurse", 0);
             SplitLongLines = ParseBoolAttribute(parent, "splitLongLines", false);                    
-            ParseFields(parent);
+            parseFields(parent);
         }       
 
-        private void ParseFields(XElement parent)
+        private void parseFields(XElement parent)
         {
             Dictionary<string, Type> allPossibleFields = new Dictionary<string, Type>()
             {
@@ -46,7 +46,7 @@ namespace TimberWinR.Inputs
                 { "Text", typeof(string) }
             };
 
-            Fields = base.parseFields(parent, allPossibleFields);
+            Fields = ParseFields(parent, allPossibleFields);
         }
 
     }
