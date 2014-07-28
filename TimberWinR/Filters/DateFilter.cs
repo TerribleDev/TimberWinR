@@ -6,69 +6,63 @@ using System.Text;
 using System.Xml;
 using Newtonsoft.Json.Linq;
 using System.Xml.Linq;
+using TimberWinR.Parser;
+using RapidRegex.Core;
+using System.Text.RegularExpressions;
 
-namespace TimberWinR.Filters
+namespace TimberWinR.Parser
 {
-    public class DateFilter : FilterBase
-    {
-        public new const string TagName = "Date";
-
-        public string Field { get; private set; }
-        public string Target { get; private set; }
-        public bool ConvertToUTC { get; private set; }
-        public List<string> Patterns { get; private set; }
-
-        public static void Parse(List<FilterBase> filters, XElement dateElement)
+    public partial class DateFilter : LogstashFilter
+    {                               
+        public override bool Apply(JObject json)
         {
-            filters.Add(parseDate(dateElement));
-        }
-
-        static DateFilter parseDate(XElement e)
-        {
-            return new DateFilter(e);
-        }
-
-        DateFilter(XElement parent)
-        {
-            Patterns = new List<string>();
-
-            Field = ParseStringAttribute(parent, "field");
-            Target = ParseStringAttribute(parent, "target", Field);
-            ConvertToUTC = ParseBoolAttribute(parent, "convertToUTC", false);                        
-            ParsePatterns(parent);
-        }
-
-        
-        private void ParsePatterns(XElement parent)
-        {
-            foreach (var e in parent.Elements("Pattern"))
+            if (Matches(json))
             {
-                string pattern = e.Value;
-                Patterns.Add(pattern);
+                ApplyFilter(json);
+            }
+           
+            return true;
+        }
+
+
+        private void ApplyFilter(JObject json)
+        {           
+            string text = json.ToString();
+            if (!string.IsNullOrEmpty(text))
+            {
+                DateTime ts;
+                if (Patterns == null || Patterns.Length == 0)
+                {
+                    if (DateTime.TryParse(text, out ts))
+                        AddOrModify(json, ts);
+                }
+                else
+                {
+                    if (DateTime.TryParseExact(text, Patterns.ToArray(), CultureInfo.InvariantCulture,
+                        DateTimeStyles.None, out ts))
+                        AddOrModify(json, ts);
+                }               
             }
         }
 
-        public override void Apply(JObject json)
+        private bool Matches(Newtonsoft.Json.Linq.JObject json)
         {
+            string field = Match[0];            
+
             JToken token = null;
-            if (json.TryGetValue(Field, StringComparison.OrdinalIgnoreCase, out token))
+            if (json.TryGetValue(field, out token))
             {
                 string text = token.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
                     DateTime ts;
-                    if (Patterns == null || Patterns.Count == 0)
-                    {
-                        if (DateTime.TryParse(text, out ts))
-                            AddOrModify(json, ts);
-                    }
-                    else
-                    {
-                        if (DateTime.TryParseExact(text, Patterns.ToArray(), CultureInfo.InvariantCulture, DateTimeStyles.None, out ts))
-                            AddOrModify(json, ts);
-                    }
+                    var exprArray = Match.Skip(1).ToArray();
+                    if (DateTime.TryParseExact(text, exprArray, CultureInfo.InvariantCulture,DateTimeStyles.None, out ts))
+                        AddOrModify(json, ts);                    
                 }
+                return true; // Empty field is no match
             }
+            return false; // Not specified is failure
         }
 
 
@@ -77,10 +71,10 @@ namespace TimberWinR.Filters
             if (ConvertToUTC)
                 ts = ts.ToUniversalTime();
 
-            if (json[Target] == null)
-                json.Add(Target, ts);
-            else
-                json[Target] = ts;
+            //if (json[Target] == null)
+            //    json.Add(Target, ts);
+            //else
+            //    json[Target] = ts;
         }
     }
 }

@@ -66,6 +66,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationErrors.cs" />
     <Compile Include="Filters\DateFilter.cs" />
+    <Compile Include="Filters\EvaluatingFilter.cs" />
     <Compile Include="Filters\FilterBase.cs" />
     <Compile Include="Filters\GrokFilter.cs" />
     <Compile Include="Filters\MutateFilter.cs" />
@@ -104,6 +105,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Parsing\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

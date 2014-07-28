@@ -1,76 +1,112 @@
-﻿{  
-   "TimberWinR":{  
-      "Inputs":{  
-         "WindowsEvents":[  
-            {  
-               "source":"System,Application",
-               "binaryFormat":"PRINT",
-               "resolveSIDS":true              
+﻿{
+    "TimberWinR": {
+        "Inputs": {
+            "WindowsEvents": [
+                {
+                    "source": "System,Application",
+                    "binaryFormat": "PRINT",
+                    "resolveSIDS": true
+                }
+            ],
+             "Tcp": [
+                {
+                    "port": "5140"
+                }
+            ],
+            "Logs": [
+                {
+                    "name": "Syslogs1",
+                    "location": "C:\\Logs1\\*.log"
+                }
+            ],
+            "IISW3CLogs": [
+                {
+                    "name": "Default site",
+                    "location": "c:\\inetpub\\logs\\LogFiles\\W3SVC1\\*"
+                }
+            ]
+        },
+        "Outputs": {
+            "Redis": [
+                {
+                    "host": [
+                        "logaggregator.vistaprint.svc"
+                    ]
+                }
+            ]
+        },
+        "Filters": [
+            {               
+                "grok": {
+                    "condition": "[type] == \"Win32-FileLog\"",
+                    "match": [
+                        "Text",
+                        ""
+                    ],
+                    "add_field": [
+                        "host",
+                        "%{ComputerName}"
+                    ]
+                }
+            },
+            {
+                "grok": {
+                    "condition": "[type] == \"Win32-Eventlog\"",
+                    "match": [
+                        "Message",
+                        ""
+                    ],
+                    "remove_field": [
+                        "ComputerName"                   
+                    ]
+                }
+            },
+            {
+                "grok": {
+                    "match": [
+                        "message",
+                        "%{SYSLOGLINE}"
+                    ],
+                    "add_tag": [
+                        "rn_%{Index}",
+                        "bar"
+                    ],
+                    "add_field": [
+                        "foo_%{logsource}",
+                        "Hello dude from %{ComputerName}"
+                    ]
+                }
+            },
+            {
+                "grok": {
+                    "match": [
+                        "Text",
+                        "%{SYSLOGLINE}"
+                    ],
+                    "add_tag": [
+                        "rn_%{RecordNumber}",
+                        "bar"
+                    ]
+                }
+            },
+            {
+                "mutate": {                   
+                    "rename": [
+                        "host", "Host",
+                        "message","Message",
+                        "SID", "Username"                 
+                    ]
+                }                
+            },
+            {
+             "date":  {
+                    "match": [
+                        "timestamp",
+                        "MMM  d HH:mm:sss",
+                        "MMM dd HH:mm:ss"
+                    ]
+                }
             }
-         ],
-         "Logs":[  
-            {  
-               "name":"Syslogs1",
-               "location":"C:\\Logs1\\*.log"               
-            }
-         ],
-         "IISW3CLogs":[  
-            {  
-               "name":"Default site",
-               "location":"c:\\inetpub\\logs\\LogFiles\\W3SVC1\\*"
-            }
-         ]
-      },
-      "Filters":[  
-         {  
-            "grok":{  
-               "condition": "[type] == \"Win32-FileLog\"",
-               "match":[  
-                  "Text",
-                  ""
-               ],
-               "add_field":[  
-                  "host",
-                  "%{ComputerName}"
-               ]
-            }
-         },
-         {  
-            "grok":{  
-               "match":[  
-                  "message",
-                  "%{SYSLOGLINE}"
-               ],
-               "add_tag":[  
-                  "rn_%{Index}",
-                  "bar"
-               ],
-               "add_field":[  
-                  "foo_%{logsource}",
-                  "Hello dude from %{ComputerName}"
-               ]
-            }
-         },
-         {  
-            "grok":{  
-               "match":[  
-                  "Text",
-                  "%{SYSLOGLINE}"
-               ],
-               "add_tag":[  
-                  "rn_%{RecordNumber}",
-                  "bar"
-               ]
-            }
-         },        
-         {  
-            "mutate":{  
-               "rename":[  
-                  "message",
-                  "Message"
-               ]
-            }
-         }
-      ]
-   }
+        ]
+    }
 }

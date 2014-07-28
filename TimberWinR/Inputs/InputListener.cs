@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Runtime.InteropServices;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,18 +12,36 @@ namespace TimberWinR.Inputs
     {
         public CancellationToken CancelToken { get; set; }
         public event Action<JObject> OnMessageRecieved;
-
+        private string _computerName;
+        private string _typeName;
        
-        public InputListener(CancellationToken token)
+        public InputListener(CancellationToken token, string typeName)
         {
-            this.CancelToken = token;          
+            this.CancelToken = token;
+            this._typeName = typeName;
+            this._computerName = System.Environment.MachineName + "." +
+                         Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                             @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
+                             .GetValue("Domain", "")
+                             .ToString();    
         }
 
+        private void AddDefaultFileds(JObject json)
+        {
+            if (json["type"] == null)
+                json.Add(new JProperty("type", _typeName));
+
+            if (json["host"] == null)
+                json.Add(new JProperty("host", _computerName));
+        }
 
         protected void ProcessJson(JObject json)
-        {           
+        {
             if (OnMessageRecieved != null)
-                OnMessageRecieved(json);
+            {
+                AddDefaultFileds(json);
+                OnMessageRecieved(json);               
+            }
         }
     }
 }

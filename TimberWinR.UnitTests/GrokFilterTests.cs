@@ -192,7 +192,6 @@ namespace TimberWinR.UnitTests
             c = Configuration.FromString(grokJson3);
             grok = c.Filters.First() as Grok;
             Assert.IsFalse(grok.Apply(json));
-
         }
 
         [Test]

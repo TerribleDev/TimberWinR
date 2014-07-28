@@ -26,7 +26,7 @@ namespace TimberWinR.Inputs
         private TimberWinR.Parser.WindowsEvent _arguments;
 
         public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
-            : base(cancelToken)
+            : base(cancelToken, "Win32-Eventlog")
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
@@ -55,6 +55,13 @@ namespace TimberWinR.Inputs
                 iCheckpoint = checkpointFileName,               
             };
 
+            string computerName = System.Environment.MachineName + "." +
+                           Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                               @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
+                               .GetValue("Domain", "")
+                               .ToString();
+
+
             // Create the query
             var query = string.Format("SELECT * FROM {0}", _arguments.Source);
 
@@ -76,13 +83,9 @@ namespace TimberWinR.Inputs
                             foreach (var field in _arguments.Fields)
                             {
                                 object v = record.getValue(field.Name);
-
-                                //if (field.FieldType == typeof(DateTime))
-                                //    v = field.ToDateTime(v).ToUniversalTime();
-
                                 json.Add(new JProperty(field.Name, v));
                             }
-                            json.Add(new JProperty("type", "Win32-Eventlog"));
+                                                      
                             ProcessJson(json);
                         }
                     }

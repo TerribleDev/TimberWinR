@@ -15,9 +15,12 @@ namespace TimberWinR.Inputs
         private readonly System.Net.Sockets.TcpListener _tcpListener;
         private Thread _listenThread;
         const int bufferSize = 16535;
+        private int _port;
 
-        public TcpInputListener(CancellationToken cancelToken, int port = 5140) : base(cancelToken)
-        {            
+        public TcpInputListener(CancellationToken cancelToken, int port = 5140)
+            : base(cancelToken, "Win32-Tcp")
+        {
+            _port = port;
             _tcpListener = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
             _listenThread = new Thread(new ThreadStart(ListenForClients));
             _listenThread.Start();
@@ -31,6 +34,8 @@ namespace TimberWinR.Inputs
         private void ListenForClients()
         {
             this._tcpListener.Start();
+
+            LogManager.GetCurrentClassLogger().Info("Tcp Input on Port {0} Ready", _port);
 
             while (!CancelToken.IsCancellationRequested)
             {
@@ -58,6 +63,12 @@ namespace TimberWinR.Inputs
             var tcpClient = (TcpClient)client;
             NetworkStream clientStream = tcpClient.GetStream();
 
+            string computerName = System.Environment.MachineName + "." +
+                                Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                                    @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
+                                    .GetValue("Domain", "")
+                                    .ToString();
+
             var message = new byte[bufferSize];           
             while (!CancelToken.IsCancellationRequested)
             {
@@ -83,7 +94,8 @@ namespace TimberWinR.Inputs
                 var encoder = new ASCIIEncoding();
                 var encodedMessage = encoder.GetString(message, 0, bytesRead);
 
-                ProcessJson(JObject.Parse(encodedMessage));
+                JObject json = JObject.Parse(encodedMessage);              
+                ProcessJson(json);
             }
             tcpClient.Close();
         }

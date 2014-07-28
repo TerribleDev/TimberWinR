@@ -2,18 +2,28 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Remoting.Channels;
 using System.Text;
+using Microsoft.CSharp;
 using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using TimberWinR.Outputs;
+
 
 namespace TimberWinR.Parser
 {
-    public abstract class LogstashFilter
+    interface IValidateSchema
+    {
+        void Validate();
+    }
+
+    public abstract class LogstashFilter : IValidateSchema
     {
         public abstract bool Apply(JObject json);
-
+       
         protected void RenameProperty(JObject json, string oldName, string newName)
         {
             JToken token = json[oldName];
@@ -24,6 +34,57 @@ namespace TimberWinR.Parser
             }
         }
 
+        protected bool EvaluateCondition(JObject json, string condition)
+        {
+            // Create a new instance of the C# compiler
+            var cond = condition;
+
+            IList<string> keys = json.Properties().Select(p => p.Name).ToList();
+            foreach (string key in keys)
+                cond = cond.Replace(string.Format("[{0}]", key), string.Format("\"{0}\"", json[key].ToString()));
+
+            var compiler = new CSharpCodeProvider();
+
+            // Create some parameters for the compiler
+            var parms = new System.CodeDom.Compiler.CompilerParameters
+            {
+                GenerateExecutable = false,
+                GenerateInMemory = true
+            };
+            parms.ReferencedAssemblies.Add("System.dll");
+            var code = string.Format(@" using System;
+                                        class EvaluatorClass
+                                        {{
+                                            public bool Evaluate()
+                                            {{
+                                                return {0};
+                                            }}               
+                                        }}", cond);
+
+            // Try to compile the string into an assembly
+            var results = compiler.CompileAssemblyFromSource(parms, new string[] { code });
+
+            // If there weren't any errors get an instance of "MyClass" and invoke
+            // the "Message" method on it
+            if (results.Errors.Count == 0)
+            {
+                var evClass = results.CompiledAssembly.CreateInstance("EvaluatorClass");
+                var result = evClass.GetType().
+                    GetMethod("Evaluate").
+                    Invoke(evClass, null);
+                return bool.Parse(result.ToString());
+            }
+            else
+            {
+                foreach (var e in results.Errors)
+                {
+                    LogManager.GetCurrentClassLogger().Error(e);
+                    LogManager.GetCurrentClassLogger().Error("Bad Code: {0}", code);
+                }
+            }
+
+            return false;
+        }
         protected void RemoveProperties(JToken token, string[] fields)
         {
             JContainer container = token as JContainer;
@@ -46,13 +107,11 @@ namespace TimberWinR.Parser
             }
         }
 
-
         protected void ReplaceProperty(JObject json, string propertyName, string propertyValue)
         {
             if (json[propertyName] != null)
                 json[propertyName] = propertyValue;
         }
-
 
         protected void AddOrModify(JObject json, string fieldName, string fieldValue)
         {
@@ -71,6 +130,9 @@ namespace TimberWinR.Parser
             }
             return fieldName;
         }
+
+        public abstract void Validate();
+   
     }
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -120,7 +182,7 @@ namespace TimberWinR.Parser
         }
     }
     
-    public class WindowsEvent
+    public class WindowsEvent : IValidateSchema
     {
         public enum FormatKinds
         {
@@ -183,9 +245,14 @@ namespace TimberWinR.Parser
             Fields.Add(new Field("Message", "string"));
             Fields.Add(new Field("Data", "string"));              
         }
+
+        public void Validate()
+        {
+
+        }
     }
    
-    public class Log
+    public class Log : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }
@@ -206,9 +273,30 @@ namespace TimberWinR.Parser
             Fields.Add(new Field("Index", "integer"));
             Fields.Add(new Field("Text", "string"));
         }
+
+        public void Validate()
+        {
+            
+        }
+    }
+
+    public class Tcp : IValidateSchema
+    {
+        [JsonProperty(PropertyName = "port")]
+        public int Port { get; set; }
+
+        public Tcp()
+        {
+            Port = 5140;
+        }
+
+        public void Validate()
+        {
+            
+        }
     }
     
-    public class IISW3CLog
+    public class IISW3CLog : IValidateSchema
     {
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
@@ -269,6 +357,37 @@ namespace TimberWinR.Parser
             Fields.Add(new Field("s-active-procs", "integer" ));
             Fields.Add(new Field("s-stopped-procs", "integer"));
         }
+
+        public void Validate()
+        {
+          
+        }
+    }
+
+    public partial class RedisOutput
+    {      
+        [JsonProperty(PropertyName = "host")]
+        public string[] Host { get; set; }
+        [JsonProperty(PropertyName = "index")]
+        public string Index { get; set; }
+        [JsonProperty(PropertyName = "port")]
+        public int Port { get; set; }
+        [JsonProperty(PropertyName = "timeout")]
+        public int Timeout { get; set; }
+
+        public RedisOutput()
+        {
+            Port = 6379;
+            Index = "logstash";
+            Host = new string[] {"localhost"};
+            Timeout = 10000;
+        }
+    }
+  
+    public class OutputTargets
+    {
+        [JsonProperty("Redis")]
+        public RedisOutput[] Redis { get; set; }
     }
 
     public class InputSources
@@ -279,12 +398,30 @@ namespace TimberWinR.Parser
         [JsonProperty("Logs")]
         public Log[] Logs { get; set; }
 
+        [JsonProperty("Tcp")]
+        public Tcp[] Tcps { get; set; }
+
         [JsonProperty("IISW3CLogs")]
         public IISW3CLog[] IISW3CLogs { get; set; }
     }
          
-    public partial class Grok : LogstashFilter
+    public partial class Grok : LogstashFilter, IValidateSchema
     {
+        public class GrokFilterException : Exception
+        {
+            public GrokFilterException()
+                : base("Grok filter missing required match, must be 2 array entries.")                   
+            {
+            }
+        }
+
+        public class GrokAddTagException : Exception
+        {
+            public GrokAddTagException()
+                : base("Grok filter add_tag requires tuples")
+            {
+            }
+        }
         [JsonProperty("condition")]
         public string Condition { get; set; }
 
@@ -304,24 +441,44 @@ namespace TimberWinR.Parser
         public string[] RemoveField { get; set; }    
 
         [JsonProperty("remove_tag")]
-        public string[] RemoveTag { get; set; }  
+        public string[] RemoveTag { get; set; }
+
+        public override void Validate()
+        {
+            if (Match == null || Match.Length != 2)
+                throw new GrokFilterException();
+
+            if (AddTag != null && AddTag.Length%2 != 0)
+                throw new GrokAddTagException();
+        }
     }
 
-    public class Date : LogstashFilter
+    public partial class DateFilter : LogstashFilter
     {
-        public string field { get; set; }
-        public string target { get; set; }
-        public bool convertToUTC { get; set; }
-        public List<string> Pattern { get; set; }
+        [JsonProperty("match")]
+        public string[] Match { get; set; }
 
-        public override bool Apply(JObject json)
+        [JsonProperty("target")]
+        public string[] Target { get; set; }
+
+        [JsonProperty("convertToUTC")]
+        public bool ConvertToUTC { get; set; }
+
+        [JsonProperty("pattern")]
+        public string[] Patterns { get; set; }
+
+        public override void Validate()
         {
-            return false;
+
         }
+
     }
 
     public partial class Mutate : LogstashFilter
     {
+        [JsonProperty("condition")]
+        public string Condition { get; set; }
+
         [JsonProperty("rename")]
         public string[] Rename { get; set; }
 
@@ -329,7 +486,12 @@ namespace TimberWinR.Parser
         public string[] Replace { get; set; }
 
         [JsonProperty("split")]
-        public string[] Split { get; set; }       
+        public string[] Split { get; set; }
+
+        public override void Validate()
+        {
+           
+        }
     }
     
     public class Filter
@@ -339,13 +501,20 @@ namespace TimberWinR.Parser
 
         [JsonProperty("mutate")]
         public Mutate Mutate { get; set; }
+
+        [JsonProperty("date")]
+        public DateFilter Date { get; set; }
     }
    
     public class TimberWinR
     {
         [JsonProperty("Inputs")]
         public InputSources Inputs { get; set; }
+        [JsonProperty("Filters")]
         public List<Filter> Filters { get; set; }
+        [JsonProperty("Outputs")]
+        public OutputTargets Outputs { get; set;  }
+
         public LogstashFilter[] AllFilters
         {
             get

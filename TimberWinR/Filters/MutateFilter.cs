@@ -13,6 +13,9 @@ namespace TimberWinR.Parser
      {
          public override bool Apply(JObject json)
          {
+             if (Condition != null && !EvaluateCondition(json, Condition))
+                 return false;
+
              ApplySplits(json);
              ApplyRenames(json);
              ApplyReplace(json);

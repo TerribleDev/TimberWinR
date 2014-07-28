@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using TimberWinR.Outputs;
@@ -22,7 +23,11 @@ namespace TimberWinR.ServiceHost
         {
             Arguments arguments = new Arguments();
 
+            var text = "Nov 21 17:27:53";
+            var pattern = "MMM dd HH:mm:ss";
 
+            var match = Regex.Match(text, pattern);
+            
             Type x = Type.GetType("string");
             Type x1 = Type.GetType("System.string");
 
@@ -95,8 +100,9 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
-            TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile, _args.JsonFile);
+            TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile, _args.JsonFile, _cancellationToken);
 
+#if false
             var outputRedis = new RedisOutput(manager, new string[] { "logaggregator.vistaprint.svc" }, _cancellationToken);
 
             _nlogListener = new TcpInputListener(_cancellationToken, 5140);
@@ -119,6 +125,7 @@ namespace TimberWinR.ServiceHost
                 var elistner = new TailFileInputListener(logConfig, _cancellationToken);
                 outputRedis.Connect(elistner);
             }
+#endif
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -17,6 +18,7 @@ using TimberWinR.Filters;
 
 using NLog;
 using TimberWinR.Parser;
+using Topshelf.Configurators;
 using IISW3CLog = TimberWinR.Parser.IISW3CLog;
 using WindowsEvent = TimberWinR.Parser.WindowsEvent;
 
@@ -25,14 +27,25 @@ namespace TimberWinR
     public class Configuration
     {
         private List<WindowsEvent> _events = new List<WindowsEvent>();
-
         public IEnumerable<WindowsEvent> Events
         {
             get { return _events; }
         }
 
-        private List<Log> _logs = new List<Log>();
+        private List<RedisOutput> _redisOutputs = new List<RedisOutput>();
+        public IEnumerable<RedisOutput> RedisOutputs
+        {
+            get { return _redisOutputs; }
+        }
 
+
+        private List<Tcp> _tcps = new List<Tcp>();
+        public IEnumerable<Tcp> Tcps
+        {
+            get { return _tcps; }
+        }       
+
+        private List<Log> _logs = new List<Log>();
         public IEnumerable<Log> Logs
         {
             get { return _logs; }
@@ -78,23 +91,47 @@ namespace TimberWinR
 
             if (x.TimberWinR.Inputs != null)
             {
-                c._events = x.TimberWinR.Inputs.WindowsEvents.ToList();
+                c._events = x.TimberWinR.Inputs.WindowsEvents.ToList();                
                 c._iisw3clogs = x.TimberWinR.Inputs.IISW3CLogs.ToList();
-                c._logs = x.TimberWinR.Inputs.Logs.ToList();       
+                c._logs = x.TimberWinR.Inputs.Logs.ToList();
+                c._redisOutputs = x.TimberWinR.Outputs.Redis.ToList();
+                c._tcps = x.TimberWinR.Inputs.Tcps.ToList();
             }
 
             if (x.TimberWinR.Filters != null)
                 c._filters = x.TimberWinR.AllFilters.ToList();
-               
 
+            c.Validate(c);
+
+            // Validate 
             return c;
         }
+
+        void Validate(Configuration c)
+        {
+            try
+            {
+                foreach (var e in c.Events)
+                    e.Validate();
+
+                foreach (var f in c.Filters)
+                    f.Validate();
+            }
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);
+                throw ex;
+            }          
+        }
+
         public Configuration()
         {
             _filters = new List<LogstashFilter>();
             _events = new List<WindowsEvent>();
             _iisw3clogs = new List<IISW3CLog>();
             _logs = new List<Log>();
+            _redisOutputs = new List<RedisOutput>();
+            _tcps = new List<Tcp>();
         }
 
         public static Object GetPropValue(String name, Object obj)

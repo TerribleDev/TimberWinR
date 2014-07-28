@@ -25,7 +25,7 @@ namespace TimberWinR.Inputs
 
 
         public IISW3CInputListener(TimberWinR.Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
-            : base(cancelToken)
+            : base(cancelToken, "Win32-IISLog")
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
@@ -92,8 +92,7 @@ namespace TimberWinR.Inputs
                                 }  
                                 else 
                                     json.Add(new JProperty(field.Name, v));
-                            }
-                            json.Add(new JProperty("type", "Win32-IISLog"));
+                            }                            
                             ProcessJson(json);
                         }
                     }

@@ -26,7 +26,7 @@ namespace TimberWinR.Inputs
         private TimberWinR.Parser.Log _arguments;
 
         public TailFileInputListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
-            : base(cancelToken)
+            : base(cancelToken, "Win32-FileLog")
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
@@ -49,12 +49,7 @@ namespace TimberWinR.Inputs
 
               // Create the query
             var query = string.Format("SELECT * FROM {0}", _arguments.Location);
-
-            string computerName = System.Environment.MachineName + "." +
-                                  Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                                      @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
-                                      .GetValue("Domain", "")
-                                      .ToString();
+          
 
             var firstQuery = true;
             // Execute the query
@@ -92,9 +87,7 @@ namespace TimberWinR.Inputs
                                 }
                                 else
                                     json.Add(new JProperty(field.Name, v));                                
-                            }
-                            json.Add(new JProperty("type", "Win32-FileLog"));
-                            json.Add(new JProperty("ComputerName", computerName));
+                            }                           
                             ProcessJson(json);
                         }
                     }
