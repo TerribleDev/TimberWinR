@@ -179,7 +179,7 @@ namespace TimberWinR.UnitTests
                 }
             }";
 
-            // Postitive Tests
+            // Positive Tests
             Configuration c = Configuration.FromString(grokJson1);
             Grok grok = c.Filters.First() as Grok;
             Assert.IsTrue(grok.Apply(json));
@@ -239,5 +239,115 @@ namespace TimberWinR.UnitTests
             Assert.IsTrue(json["tags"].Children().Count() == 1);            
             Assert.AreEqual(json["tags"][0].ToString(), "tag2");
         }
+
+        [Test]
+        public void TestMatchCount()
+        {
+            string grokJson = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""grok"":{  
+		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""remove_tag"":[  
+                            ""tag1""                          
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+            Configuration c = Configuration.FromString(grokJson);
+            Grok grok = c.Filters.First() as Grok;
+            Assert.AreEqual(2, grok.Match.Length);
+        }
+
+        [Test]
+        public void TestRemoveFieldCount()
+        {
+            string grokJson = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""grok"":{  
+		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""remove_field"":[  
+                            ""ComputerName""                          
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+            Configuration c = Configuration.FromString(grokJson);
+            Grok grok = c.Filters.First() as Grok;
+            Assert.IsTrue(grok.RemoveField.Length >= 1);
+        }
+
+        [Test]
+        public void TestAddFieldCount()
+        {
+            string grokJson = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""grok"":{  
+		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""remove_tag"":[  
+                            ""tag1""                          
+                        ],
+                        ""add_field"":[
+                            ""host"",
+                            ""%{ComputerName}""
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+            Configuration c = Configuration.FromString(grokJson);
+            Grok grok = c.Filters.First() as Grok;
+            Assert.IsTrue(grok.AddField.Length % 2 == 0);
+        }
+
+        [Test]
+        public void TestAddTagCount()
+        {
+            string grokJson = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""grok"":{  
+		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""add_tag"":[  
+                            ""rn_%{RecordNumber}"",
+                            ""bar""                          
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+            Configuration c = Configuration.FromString(grokJson);
+            Grok grok = c.Filters.First() as Grok;
+            Assert.IsTrue(grok.AddTag.Length >= 1);
+        }
+
     }
 }

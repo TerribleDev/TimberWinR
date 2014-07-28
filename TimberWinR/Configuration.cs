@@ -94,8 +94,13 @@ namespace TimberWinR
                 c._events = x.TimberWinR.Inputs.WindowsEvents.ToList();                
                 c._iisw3clogs = x.TimberWinR.Inputs.IISW3CLogs.ToList();
                 c._logs = x.TimberWinR.Inputs.Logs.ToList();
-                c._redisOutputs = x.TimberWinR.Outputs.Redis.ToList();
+             
                 c._tcps = x.TimberWinR.Inputs.Tcps.ToList();
+            }
+
+            if (x.TimberWinR.Outputs != null)
+            {
+                c._redisOutputs = x.TimberWinR.Outputs.Redis.ToList();
             }
 
             if (x.TimberWinR.Filters != null)

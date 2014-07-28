@@ -8,6 +8,7 @@ using TimberWinR;
 using TimberWinR.Inputs;
 using TimberWinR.Filters;
 using Newtonsoft.Json.Linq;
+using TimberWinR.Parser;
 
 namespace TimberWinR.UnitTests
 {
@@ -69,7 +70,55 @@ namespace TimberWinR.UnitTests
             catch (TimberWinR.Parser.Grok.GrokAddTagException ex)
             {
             }
-        }        
+        }
 
+        [Test]
+        public void TestRedisHostCount()
+        {
+            string redisJson = @"{  
+                ""TimberWinR"":
+                {        
+                    ""Outputs"":  
+	                {  
+		                ""Redis"":
+                        [{  
+                            ""host"": 
+                            [
+                                ""logaggregator.vistaprint.svc""
+                            ]                   
+		                }]
+	                }
+                }
+            }";
+
+
+            Configuration c = Configuration.FromString(redisJson);
+            RedisOutput redis = c.RedisOutputs.First() as RedisOutput;
+            Assert.IsTrue(redis.Host.Length >= 1);
+        }
+
+        [Test]
+        public void TestDateFilterMatchCount()
+        {
+            string dateJson = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""date"":{  
+		                ""match"":[  
+			                ""timestamp"",
+			                ""MMM  d HH:mm:sss"",
+                            ""MMM dd HH:mm:ss""
+		                ],              
+		            }
+	                }]
+                }
+            }";
+
+
+            Configuration c = Configuration.FromString(dateJson);
+            DateFilter date = c.Filters.First() as DateFilter;
+            Assert.IsTrue(date.Match.Length >= 2);
+        }      
     }
 }
