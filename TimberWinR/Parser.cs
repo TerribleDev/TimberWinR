@@ -24,6 +24,29 @@ namespace TimberWinR.Parser
             }
         }
 
+        protected void RemoveProperties(JToken token, string[] fields)
+        {
+            JContainer container = token as JContainer;
+            if (container == null) return;
+
+            List<JToken> removeList = new List<JToken>();
+            foreach (JToken el in container.Children())
+            {
+                JProperty p = el as JProperty;
+                if (p != null && fields.Contains(p.Name))
+                {
+                    removeList.Add(el);
+                }
+                RemoveProperties(el, fields);
+            }
+
+            foreach (JToken el in removeList)
+            {
+                el.Remove();
+            }
+        }
+
+
         protected void ReplaceProperty(JObject json, string propertyName, string propertyValue)
         {
             if (json[propertyName] != null)
@@ -265,6 +288,9 @@ namespace TimberWinR.Parser
         [JsonProperty("condition")]
         public string Condition { get; set; }
 
+        [JsonProperty("drop_if_match")]
+        public bool DropIfMatch { get; set; }
+
         [JsonProperty("match")]
         public string[] Match { get; set; }
 
@@ -272,7 +298,13 @@ namespace TimberWinR.Parser
         public string[] AddTag { get; set; }
 
         [JsonProperty("add_field")]
-        public string[] AddField { get; set; }      
+        public string[] AddField { get; set; }     
+         
+        [JsonProperty("remove_field")]
+        public string[] RemoveField { get; set; }    
+
+        [JsonProperty("remove_tag")]
+        public string[] RemoveTag { get; set; }  
     }
 
     public class Date : LogstashFilter

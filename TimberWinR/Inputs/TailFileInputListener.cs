@@ -53,7 +53,7 @@ namespace TimberWinR.Inputs
             string computerName = System.Environment.MachineName + "." +
                                   Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
                                       @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
-                                      .GetValue("Domain", ".")
+                                      .GetValue("Domain", "")
                                       .ToString();
 
             var firstQuery = true;

@@ -41,6 +41,8 @@ namespace TimberWinR.Parser
             {
                 AddFields(json);
                 AddTags(json);
+                RemoveFields(json);
+                RemoveTags(json);
                 return true;
             }
             return false;
@@ -138,6 +140,18 @@ namespace TimberWinR.Parser
             }
         }
 
+        private void RemoveFields(Newtonsoft.Json.Linq.JObject json)
+        {
+            if (RemoveField != null && RemoveField.Length > 0)
+            {
+                for (int i = 0; i < RemoveField.Length; i++)
+                {
+                    string fieldName = ExpandField(RemoveField[i], json);
+                    RemoveProperties(json, new string[] { fieldName });
+                }
+            }
+        }
+
         private void AddTags(Newtonsoft.Json.Linq.JObject json)
         {
             if (AddTag != null && AddTag.Length > 0)
@@ -155,6 +169,27 @@ namespace TimberWinR.Parser
                         a.Add(value);
                     }
                 }
+            }
+        }
+
+        private void RemoveTags(Newtonsoft.Json.Linq.JObject json)
+        {
+            if (RemoveTag != null && RemoveTag.Length > 0)
+            {
+                JToken tags = json["tags"];
+                if (tags != null)
+                {
+                    List<JToken> children = tags.Children().ToList();                                      
+                    for (int i = 0; i < RemoveTag.Length; i++)
+                    {
+                        string tagName = ExpandField(RemoveTag[i], json);       
+                        foreach(JToken token in children)
+                        {
+                            if (token.ToString() == tagName)
+                                token.Remove();
+                        }
+                    }                   
+                }               
             }
         }
     }
