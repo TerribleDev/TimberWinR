@@ -16,6 +16,9 @@ namespace TimberWinR.Parser
     {                               
         public override bool Apply(JObject json)
         {
+            if (Condition != null && !EvaluateCondition(json, Condition))
+                return false;
+
             if (Matches(json))
             {
                 ApplyFilter(json);
@@ -57,6 +60,12 @@ namespace TimberWinR.Parser
                 {
                     DateTime ts;
                     var exprArray = Match.Skip(1).ToArray();
+                     var resolver = new RegexGrokResolver();
+                    for (int i=0; i<exprArray.Length; i++)
+                    {
+                        var pattern = resolver.ResolveToRegex(exprArray[i]);
+                        exprArray[i] = pattern;
+                    }
                     if (DateTime.TryParseExact(text, exprArray, CultureInfo.InvariantCulture,DateTimeStyles.None, out ts))
                         AddOrModify(json, ts);                    
                 }

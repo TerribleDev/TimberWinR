@@ -105,6 +105,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""date"":{  
+                        ""target"": ""timestamp"",
 		                ""match"":[  
 			                ""timestamp"",
 			                ""MMM  d HH:mm:sss"",

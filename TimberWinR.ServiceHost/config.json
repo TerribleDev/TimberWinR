@@ -78,10 +78,11 @@
             },
             {
              "date":  {
+                    "condition": "[type] == \"Win32-IISLog\"",
                     "match": [
                         "timestamp",
                         "MMM  d HH:mm:sss",
-                        "MMM dd HH:mm:ss"
+                        "MMM dd HH:mm:ss"                       
                     ],
                     "target": "UtcTimestamp",
                     "convertToUTC":  true
@@ -89,8 +90,9 @@
             },
             {
                 "mutate": {      
-                    "_comment":  "Orion Rules",        
+                    "_comment": "Orion Rules",        
                     "rename": [
+                        "ComputerName", "Host",
                         "host", "Host",
                         "message","Message",
                         "type","Type",

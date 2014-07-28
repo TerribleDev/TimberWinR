@@ -471,6 +471,9 @@ namespace TimberWinR.Parser
             }
         }
 
+        [JsonProperty("condition")]
+        public string Condition { get; set; }
+
         [JsonProperty("match")]
         public string[] Match { get; set; }
 
