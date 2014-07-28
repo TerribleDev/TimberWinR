@@ -22,15 +22,7 @@ namespace TimberWinR.ServiceHost
         private static void Main(string[] args)
         {
             Arguments arguments = new Arguments();
-
-            var text = "Nov 21 17:27:53";
-            var pattern = "MMM dd HH:mm:ss";
-
-            var match = Regex.Match(text, pattern);
-            
-            Type x = Type.GetType("string");
-            Type x1 = Type.GetType("System.string");
-
+           
             HostFactory.Run(hostConfigurator =>
             {
                 string cmdLine = Environment.CommandLine;
@@ -74,7 +66,8 @@ namespace TimberWinR.ServiceHost
         readonly CancellationToken _cancellationToken;
         readonly Task _serviceTask;
         private readonly Arguments _args;
-        private TcpInputListener _nlogListener;
+      
+        private TimberWinR.Manager _manager;
 
         public TimberWinRService(Arguments args)
         {
@@ -91,8 +84,10 @@ namespace TimberWinR.ServiceHost
 
         public void Stop()
         {
-            _cancellationTokenSource.Cancel();
-            _nlogListener.Shutdown();
+            _cancellationTokenSource.Cancel();          
+            
+            if (_manager != null)
+                _manager.Shutdown();
         }
 
         /// <summary>
@@ -100,32 +95,7 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
-            TimberWinR.Manager manager = new TimberWinR.Manager(_args.ConfigFile, _args.JsonFile, _cancellationToken);
-
-#if false
-            var outputRedis = new RedisOutput(manager, new string[] { "logaggregator.vistaprint.svc" }, _cancellationToken);
-
-            _nlogListener = new TcpInputListener(_cancellationToken, 5140);
-            outputRedis.Connect(_nlogListener);
-
-            foreach (Parser.IISW3CLog iisw3cConfig in manager.Config.IISW3C)
-            {
-                var elistner = new IISW3CInputListener(iisw3cConfig, _cancellationToken);
-                outputRedis.Connect(elistner);
-            }
-
-            foreach (Parser.WindowsEvent eventConfig in manager.Config.Events)
-            {
-                var elistner = new WindowsEvtInputListener(eventConfig, _cancellationToken);
-                outputRedis.Connect(elistner);
-            }
-
-            foreach (var logConfig in manager.Config.Logs)
-            {
-                var elistner = new TailFileInputListener(logConfig, _cancellationToken);
-                outputRedis.Connect(elistner);
-            }
-#endif
+            _manager = new TimberWinR.Manager(_args.ConfigFile, _args.JsonFile, _cancellationToken);
         }
     }
 }

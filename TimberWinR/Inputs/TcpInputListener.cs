@@ -24,12 +24,16 @@ namespace TimberWinR.Inputs
             _tcpListener = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
             _listenThread = new Thread(new ThreadStart(ListenForClients));
             _listenThread.Start();
-        }      
-
-        public void Shutdown()
-        {
-            this._tcpListener.Stop();           
         }
+
+
+        public override void Shutdown()
+        {
+            this._tcpListener.Stop();
+            Finished();
+            base.Shutdown();            
+        }           
+        
 
         private void ListenForClients()
         {
@@ -62,13 +66,7 @@ namespace TimberWinR.Inputs
         {           
             var tcpClient = (TcpClient)client;
             NetworkStream clientStream = tcpClient.GetStream();
-
-            string computerName = System.Environment.MachineName + "." +
-                                Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                                    @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
-                                    .GetValue("Domain", "")
-                                    .ToString();
-
+          
             var message = new byte[bufferSize];           
             while (!CancelToken.IsCancellationRequested)
             {
@@ -98,6 +96,7 @@ namespace TimberWinR.Inputs
                 ProcessJson(json);
             }
             tcpClient.Close();
+            Finished();
         }
     }
 }

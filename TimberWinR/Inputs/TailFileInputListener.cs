@@ -34,16 +34,18 @@ namespace TimberWinR.Inputs
             task.Start();
         }
 
-        private void FileWatcher()
-        {            
-            var checkpointFileName = Path.Combine(System.IO.Path.GetTempPath(),
-                string.Format("{0}.lpc", Guid.NewGuid().ToString()));
+        public override void Shutdown()
+        {
+            base.Shutdown();
+        }
 
+        private void FileWatcher()
+        {                      
             var iFmt = new TextLineInputFormat()
             {
                 iCodepage = _arguments.CodePage,
                 splitLongLines = _arguments.SplitLongLines,
-                iCheckpoint = checkpointFileName,
+                iCheckpoint = CheckpointFileName,
                 recurse = _arguments.Recurse
             };
 
@@ -87,8 +89,10 @@ namespace TimberWinR.Inputs
                                 }
                                 else
                                     json.Add(new JProperty(field.Name, v));                                
-                            }                           
-                            ProcessJson(json);
+                            }
+                            string msg = json["Text"].ToString();
+                            if (!string.IsNullOrEmpty(msg))
+                                ProcessJson(json);
                         }
                     }
                     // Close the recordset
@@ -106,6 +110,8 @@ namespace TimberWinR.Inputs
                 firstQuery = false;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
+
+            Finished();
         }       
     }
 }

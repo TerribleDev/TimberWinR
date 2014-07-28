@@ -24,7 +24,7 @@ namespace TimberWinR.Inputs
     {      
         private int _pollingIntervalInSeconds = 1;
         private TimberWinR.Parser.WindowsEvent _arguments;
-
+      
         public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken, "Win32-Eventlog")
         {
@@ -34,13 +34,17 @@ namespace TimberWinR.Inputs
             task.Start();
         }
 
+        public override void Shutdown()
+        {
+            base.Shutdown();
+           
+        }
+
         private void EventWatcher()
         {
             var oLogQuery = new LogQuery();
 
-            var checkpointFileName = Path.Combine(System.IO.Path.GetTempPath(),
-                string.Format("{0}.lpc", Guid.NewGuid().ToString()));          
-          
+         
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
             {
@@ -52,15 +56,9 @@ namespace TimberWinR.Inputs
                 msgErrorMode =  _arguments.MsgErrorMode.ToString(),
                 stringsSep = _arguments.StringsSep,
                 resolveSIDs = _arguments.ResolveSIDS,
-                iCheckpoint = checkpointFileName,               
+                iCheckpoint = CheckpointFileName,               
             };
-
-            string computerName = System.Environment.MachineName + "." +
-                           Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                               @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
-                               .GetValue("Domain", "")
-                               .ToString();
-
+         
 
             // Create the query
             var query = string.Format("SELECT * FROM {0}", _arguments.Source);
@@ -99,6 +97,8 @@ namespace TimberWinR.Inputs
                 firstQuery = false;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
+
+            Finished();
         }       
     }
 }

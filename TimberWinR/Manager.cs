@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net.Sockets;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -19,11 +20,19 @@ namespace TimberWinR
     {
         public Configuration Config { get; set; }
         public List<OutputSender> Outputs { get; set; }
+        public List<TcpInputListener> Tcps { get; set; }
+        public List<InputListener> Listeners { get; set;  } 
+        public void Shutdown()
+        {
+            foreach (InputListener listener in Listeners)
+                listener.Shutdown();
+        }
 
         public Manager(string xmlConfigFile, string jsonConfigFile, CancellationToken cancelToken)
         {
-            Outputs = new List<OutputSender>();
-
+            Outputs = new List<OutputSender>();           
+            Listeners = new List<InputListener>();
+           
             var loggingConfiguration = new LoggingConfiguration();
 
             // Create our default targets
@@ -57,6 +66,7 @@ namespace TimberWinR
             foreach (Parser.IISW3CLog iisw3cConfig in Config.IISW3C)
             {
                 var elistner = new IISW3CInputListener(iisw3cConfig, cancelToken);
+                Listeners.Add(elistner);
                 foreach(var output in Outputs)
                     output.Connect(elistner);
             }
@@ -64,6 +74,7 @@ namespace TimberWinR
             foreach (Parser.WindowsEvent eventConfig in Config.Events)
             {
                 var elistner = new WindowsEvtInputListener(eventConfig, cancelToken);
+                Listeners.Add(elistner);
                 foreach (var output in Outputs)
                     output.Connect(elistner);
             }
@@ -71,6 +82,7 @@ namespace TimberWinR
             foreach (var logConfig in Config.Logs)
             {
                 var elistner = new TailFileInputListener(logConfig, cancelToken);
+                Listeners.Add(elistner);
                 foreach (var output in Outputs)
                     output.Connect(elistner);
             }
@@ -78,6 +90,7 @@ namespace TimberWinR
             foreach (var tcp in Config.Tcps)
             {
                 var elistner = new TcpInputListener(cancelToken, tcp.Port);
+                Listeners.Add(elistner);                
                 foreach (var output in Outputs)
                     output.Connect(elistner);
             }

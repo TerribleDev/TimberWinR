@@ -71,10 +71,10 @@ namespace TimberWinR.Parser
             if (ConvertToUTC)
                 ts = ts.ToUniversalTime();
 
-            //if (json[Target] == null)
-            //    json.Add(Target, ts);
-            //else
-            //    json[Target] = ts;
+            if (json[Target] == null)
+                json.Add(Target, ts);
+            else
+                json[Target] = ts;
         }
     }
 }

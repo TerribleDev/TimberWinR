@@ -33,20 +33,22 @@ namespace TimberWinR.Inputs
             task.Start();
         }
 
+        public override void Shutdown()
+        {
+            base.Shutdown();
+        }
+
         private void IISW3CWatcher()
         {
             var oLogQuery = new LogQuery();
-
-            var checkpointFileName = Path.Combine(System.IO.Path.GetTempPath(),
-                string.Format("{0}.lpc", Guid.NewGuid().ToString()));
-
+           
             var iFmt = new IISW3CLogInputFormat()
             {
                 codepage = _arguments.CodePage,
                 consolidateLogs = _arguments.ConsolidateLogs,
                 dirTime = _arguments.DirTime,
                 dQuotes = _arguments.DoubleQuotes,
-                iCheckpoint = checkpointFileName,               
+                iCheckpoint = CheckpointFileName,           
                 recurse = _arguments.Recurse,
                 useDoubleQuotes = _arguments.DoubleQuotes
             };
@@ -106,6 +108,8 @@ namespace TimberWinR.Inputs
                 firstQuery = false;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
+
+            Finished();
         }
     }
 }

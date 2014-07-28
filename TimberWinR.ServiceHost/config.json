@@ -35,20 +35,7 @@
                 }
             ]
         },
-        "Filters": [
-            {               
-                "grok": {
-                    "condition": "[type] == \"Win32-FileLog\"",
-                    "match": [
-                        "Text",
-                        ""
-                    ],
-                    "add_field": [
-                        "host",
-                        "%{ComputerName}"
-                    ]
-                }
-            },
+        "Filters": [          
             {
                 "grok": {
                     "condition": "[type] == \"Win32-Eventlog\"",
@@ -90,23 +77,28 @@
                 }
             },
             {
-                "mutate": {                   
-                    "rename": [
-                        "host", "Host",
-                        "message","Message",
-                        "SID", "Username"                 
-                    ]
-                }                
-            },
-            {
              "date":  {
                     "match": [
                         "timestamp",
                         "MMM  d HH:mm:sss",
                         "MMM dd HH:mm:ss"
-                    ]
+                    ],
+                    "target": "UtcTimestamp",
+                    "convertToUTC":  true
                 }
-            }
+            },
+            {
+                "mutate": {      
+                    "_comment":  "Orion Rules",        
+                    "rename": [
+                        "host", "Host",
+                        "message","Message",
+                        "type","Type",
+                        "SID", "Username"                 
+                    ]
+                }                
+            },
+           
         ]
     }
 }

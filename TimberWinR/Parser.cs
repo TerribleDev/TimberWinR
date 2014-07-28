@@ -455,11 +455,27 @@ namespace TimberWinR.Parser
 
     public partial class DateFilter : LogstashFilter
     {
+        public class DateFilterMatchException : Exception
+        {
+            public DateFilterMatchException()
+                : base("Date filter missing required match, must be 2 array entries.")
+            {
+            }
+        }
+
+        public class DateFilterTargetException : Exception
+        {
+            public DateFilterTargetException()
+                : base("Date filter missing target")
+            {
+            }
+        }
+
         [JsonProperty("match")]
         public string[] Match { get; set; }
 
         [JsonProperty("target")]
-        public string[] Target { get; set; }
+        public string Target { get; set; }
 
         [JsonProperty("convertToUTC")]
         public bool ConvertToUTC { get; set; }
@@ -469,9 +485,12 @@ namespace TimberWinR.Parser
 
         public override void Validate()
         {
+            if (Match == null || Match.Length < 2)
+                throw new DateFilterMatchException();
 
+            if (string.IsNullOrEmpty(Target))
+                throw new DateFilterTargetException();
         }
-
     }
 
     public partial class Mutate : LogstashFilter

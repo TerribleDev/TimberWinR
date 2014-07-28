@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.IO;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,14 @@ namespace TimberWinR.Inputs
         public event Action<JObject> OnMessageRecieved;
         private string _computerName;
         private string _typeName;
+        public AutoResetEvent FinishedEvent { get; set; }
+        public string CheckpointFileName { get; set; }
        
         public InputListener(CancellationToken token, string typeName)
         {
+            CheckpointFileName = Path.Combine(System.IO.Path.GetTempPath(), string.Format("{0}.lpc", Guid.NewGuid().ToString()));          
+          
+            this.FinishedEvent = new AutoResetEvent(false);
             this.CancelToken = token;
             this._typeName = typeName;
             this._computerName = System.Environment.MachineName + "." +
@@ -26,20 +32,40 @@ namespace TimberWinR.Inputs
                              .ToString();    
         }
 
-        private void AddDefaultFileds(JObject json)
+        public void Finished()
+        {
+            FinishedEvent.Set();
+        }
+        public virtual void Shutdown()
+        {
+            FinishedEvent.WaitOne();
+            try
+            {
+                if (File.Exists(CheckpointFileName))
+                    File.Delete(CheckpointFileName);
+            }
+            catch (Exception)
+            {               
+            }          
+        }
+
+        private void AddDefaultFields(JObject json)
         {
             if (json["type"] == null)
                 json.Add(new JProperty("type", _typeName));
 
             if (json["host"] == null)
                 json.Add(new JProperty("host", _computerName));
+
+            if (json["@timestamp"] == null)
+                json.Add(new JProperty("@timestamp", DateTime.UtcNow));
         }
 
         protected void ProcessJson(JObject json)
         {
             if (OnMessageRecieved != null)
             {
-                AddDefaultFileds(json);
+                AddDefaultFields(json);
                 OnMessageRecieved(json);               
             }
         }
