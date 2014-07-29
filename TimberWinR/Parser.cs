@@ -238,6 +238,7 @@ namespace TimberWinR.Parser
             FormatMsg = true;
             FullText = true;
             BinaryFormat = FormatKinds.ASC;
+            FullEventCode = false;
           
             Fields = new List<Field>();
             Fields.Add(new Field("EventLog", "string"));
