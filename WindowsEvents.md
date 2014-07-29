@@ -6,7 +6,7 @@ The following parameters are allowed when configuring WindowsEvents.
 
 | Parameter         |     Type       |  Description                                                             | Legal Values                  |  Default |
 | :---------------- |:---------------| :----------------------------------------------------------------------- | :---------------------------  | :-- |
-| *source*          | property:string |Windows event logs                                                       | Application,System,Security |     |
+| *source*          | property:string |Windows event logs                                                       | Application,System,Security |  System   |
 | *binaryFormat*    | property:string |Format of the "Data" binary field.                                       | ASC,HEX,PRINT               | **ASC** |
 | *msgErrorMode*    | property:string |Behavior when event messages or event category names cannot be resolved. |NULL,ERROR,MSG               | **MSG** |
 | *direction*       | property:string |Format of the "Data" binary field.                                       | FW,BW                        | **FW**  |

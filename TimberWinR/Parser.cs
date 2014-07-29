@@ -234,6 +234,7 @@ namespace TimberWinR.Parser
 
         public WindowsEvent()
         {
+            Source = "System";
             StringsSep = "|";
             FormatMsg = true;
             FullText = true;
