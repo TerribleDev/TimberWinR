@@ -15,6 +15,7 @@ The following parameters are allowed when configuring WindowsEvents.
 | *fullText*        | property:bool   |Retrieve the full text message                                           | true,false                   | **true** |
 | *resolveSIDS*     | property:bool   |Resolve SID values into full account names                               | true,false                   | **true** |
 | *formatMsg*       | property:bool   |Format the text message as a single line.                                | true,false                   | **true** |
+Example Input:
 ```json
 {
     "TimberWinR": {

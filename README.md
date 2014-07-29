@@ -17,28 +17,29 @@ the data from LogParser and ships it to Logstash via Redis.
 
 ## Sample Configuration
 TimberWinR reads a JSON configuration file, an example file is shown here:
-
-    {
-    "TimberWinR": {
-        "Inputs": {
-            "WindowsEvents": [
-                {
-                    "source": "System,Application",
-                    "binaryFormat": "PRINT",
-                    "resolveSIDS": true
-                }
-            ]
-        },
-        "Outputs": {
-            "Redis": [
-                { 
-                    "host": [
-                        "server1.host.com"
-                    ]
-                }
-            ]
-        }
+```json
+{
+"TimberWinR": {
+    "Inputs": {
+        "WindowsEvents": [
+            {
+                "source": "System,Application",
+                "binaryFormat": "PRINT",
+                "resolveSIDS": true
+            }
+        ]
+    },
+    "Outputs": {
+        "Redis": [
+            { 
+                "host": [
+                    "server1.host.com"
+                ]
+            }
+        ]
     }
+}
+```
 This configuration collects Events from the Windows Event Logs (System, Application) and forwards them
 to Redis.
 
