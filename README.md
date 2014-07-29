@@ -8,7 +8,7 @@ no JVM/JRuby is required, and LogParser does all the heavy lifting.    TimberWin
 the data from LogParser and ships it to Logstash via Redis.
 ## Supported Input Formats
 
- - [WindowsEvents](https://github.com/efontana/TimberWinR/WindowsEvents.md)
+ - [WindowsEvents](https://github.com/efontana/TimberWinR/blob/master/WindowsEvents.md)
  - IIS Logs (W3C)
  - LogFiles (Tailing of files)
  - TCP Port
