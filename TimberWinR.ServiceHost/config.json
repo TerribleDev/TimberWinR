@@ -28,9 +28,12 @@
         },
         "Outputs": {
             "Redis": [
-                {
+                { 
+                    "threads":  1,   
+                    "interval": 5000, 
+                    "batch_count":  500,              
                     "host": [
-                        "logaggregator.vistaprint.svc"
+                        "tstlexiceapp006.vistaprint.svc"
                     ]
                 }
             ]
@@ -42,7 +45,7 @@
                     "match": [
                         "Message",
                         ""
-                    ],
+                    ],                   
                     "remove_field": [
                         "ComputerName"                   
                     ]
@@ -78,13 +81,15 @@
             },
             {
              "date":  {
-                    "condition": "[type] == \"Win32-IISLog\"",
+                    "condition": "[type] == \"Win32-FileLog\"",
                     "match": [
                         "timestamp",
                         "MMM  d HH:mm:sss",
                         "MMM dd HH:mm:ss"                       
                     ],
-                    "target": "UtcTimestamp",
+                    "add_field":  [
+                        "UtcTimestamp"
+                    ],                
                     "convertToUTC":  true
                 }
             },
@@ -99,8 +104,7 @@
                         "SID", "Username"                 
                     ]
                 }                
-            },
-           
+            }           
         ]
     }
 }

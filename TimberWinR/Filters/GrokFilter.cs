@@ -40,7 +40,7 @@ namespace TimberWinR.Parser
             if (Matches(json))
             {
                 AddFields(json);
-                AddTags(json);
+                AddTags(json);               
                 RemoveFields(json);
                 RemoveTags(json);
                 return true;
@@ -90,6 +90,8 @@ namespace TimberWinR.Parser
                 }
             }
         }
+
+      
 
         private void RemoveFields(Newtonsoft.Json.Linq.JObject json)
         {

@@ -58,7 +58,7 @@ namespace TimberWinR
             {
                 foreach (var ro in Config.RedisOutputs)
                 {
-                    var redis = new RedisOutput(this, ro.Host, cancelToken, ro.Index, ro.Port, ro.Timeout);
+                    var redis = new RedisOutput(this, ro, cancelToken);
                     Outputs.Add(redis);
                 }
             }
@@ -108,7 +108,7 @@ namespace TimberWinR
             return new FileTarget
             {
                 ArchiveEvery = FileArchivePeriod.None,
-                ArchiveAboveSize = 10 * 1024 * 1024,
+                ArchiveAboveSize = 5 * 1024 * 1024,
                 MaxArchiveFiles = 5,
                 BufferSize = 10,
                 FileName = Path.Combine(logPath, "TimberWinR", "TimberWinR.txt"),

@@ -36,7 +36,7 @@ namespace TimberWinR.Inputs
         public override void Shutdown()
         {
             base.Shutdown();
-        }
+        }       
 
         private void IISW3CWatcher()
         {

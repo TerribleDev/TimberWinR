@@ -23,10 +23,12 @@ namespace TimberWinR.Outputs
         private readonly int _timeout;
         private readonly object _locker = new object();
         private readonly List<string> _jsonQueue;
-        readonly Task _consumerTask;
+       // readonly Task _consumerTask;
         private readonly string[] _redisHosts;
         private int _redisHostIndex;
         private TimberWinR.Manager _manager;
+        private readonly int _batchCount;
+        private readonly int _interval;
 
         /// <summary>
         /// Get the next client
@@ -50,9 +52,8 @@ namespace TimberWinR.Outputs
 
                     return client;
                 }
-                catch (Exception ex)
+                catch (Exception )
                 {
-
                 }
                 numTries++;
             }
@@ -60,18 +61,24 @@ namespace TimberWinR.Outputs
             return null;
         }
 
-        public RedisOutput(TimberWinR.Manager manager, string[] redisHosts, CancellationToken cancelToken, string logstashIndexName = "logstash", int port = 6379, int timeout = 10000)
+        public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutput ro, CancellationToken cancelToken) //string[] redisHosts, string logstashIndexName = "logstash", int port = 6379, int timeout = 10000, int batch_count = 10)
             : base(cancelToken)
         {
+            _batchCount = ro.BatchCount;
             _manager = manager;
             _redisHostIndex = 0;
-            _redisHosts = redisHosts;
+            _redisHosts = ro.Host;
             _jsonQueue = new List<string>();
-            _port = port;
-            _timeout = timeout;
-            _logstashIndexName = logstashIndexName;
-            _consumerTask = new Task(RedisSender, cancelToken);
-            _consumerTask.Start();
+            _port = ro.Port;
+            _timeout = ro.Timeout;
+            _logstashIndexName = ro.Index;
+            _interval = ro.Interval;
+
+            for (int i = 0; i < ro.NumThreads; i++)
+            {
+                var redisThread = new Task(RedisSender, cancelToken);
+                redisThread.Start();
+            }
         }
 
 
@@ -82,10 +89,10 @@ namespace TimberWinR.Outputs
         protected override void MessageReceivedHandler(JObject jsonMessage)
         {
             if (_manager.Config.Filters != null)
-                ProcessGroks(jsonMessage);
+                ApplyFilters(jsonMessage);
 
             var message = jsonMessage.ToString();
-            LogManager.GetCurrentClassLogger().Info(message);
+            LogManager.GetCurrentClassLogger().Trace(message);
 
             lock (_locker)
             {
@@ -93,11 +100,11 @@ namespace TimberWinR.Outputs
             }
         }
 
-        private void ProcessGroks(JObject json)
+        private void ApplyFilters(JObject json)
         {
-            foreach (var grok in _manager.Config.Filters)
+            foreach (var filter in _manager.Config.Filters)
             {
-                grok.Apply(json);
+                filter.Apply(json);
             }            
         }
 
@@ -111,8 +118,8 @@ namespace TimberWinR.Outputs
                 string[] messages;
                 lock (_locker)
                 {
-                    messages = _jsonQueue.ToArray();
-                    _jsonQueue.Clear();
+                    messages = _jsonQueue.Take(_batchCount).ToArray();
+                    _jsonQueue.RemoveRange(0, messages.Length);                   
                 }
 
                 if (messages.Length > 0)
@@ -128,15 +135,18 @@ namespace TimberWinR.Outputs
                                 if (client != null)
                                 {
                                     client.StartPipe();
+                                    LogManager.GetCurrentClassLogger()
+                                               .Info("Sending {0} Messages to {1}", messages.Length, client.Host);
 
                                     foreach (string jsonMessage in messages)
                                     {
                                         try
-                                        {
+                                        {                                           
                                             client.RPush(_logstashIndexName, jsonMessage);
                                         }
-                                        catch (SocketException)
+                                        catch (SocketException ex)
                                         {
+                                            LogManager.GetCurrentClassLogger().Warn(ex);
                                         }
                                     }
                                     client.EndPipe();
@@ -156,7 +166,7 @@ namespace TimberWinR.Outputs
                         }
                     }
                 }
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(_interval);
             }
         }
     }

@@ -121,6 +121,15 @@ namespace TimberWinR.Parser
                 json[fieldName] = fieldValue;
         }
 
+        protected void AddOrModify(JObject json, string fieldName, JToken token)
+        {
+            if (json[fieldName] == null)
+                json.Add(fieldName, token);
+            else
+                json[fieldName] = token;
+        }
+
+
         protected string ExpandField(string fieldName, JObject json)
         {
             foreach (var token in json.Children())
@@ -228,6 +237,8 @@ namespace TimberWinR.Parser
             StringsSep = "|";
             FormatMsg = true;
             FullText = true;
+            BinaryFormat = FormatKinds.ASC;
+          
             Fields = new List<Field>();
             Fields.Add(new Field("EventLog", "string"));
             Fields.Add(new Field("RecordNumber", "int"));
@@ -374,6 +385,12 @@ namespace TimberWinR.Parser
         public int Port { get; set; }
         [JsonProperty(PropertyName = "timeout")]
         public int Timeout { get; set; }
+        [JsonProperty(PropertyName = "batch_count")]
+        public int BatchCount { get; set; }
+        [JsonProperty(PropertyName = "threads")]
+        public int NumThreads { get; set; }
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
 
         public RedisOutput()
         {
@@ -381,6 +398,9 @@ namespace TimberWinR.Parser
             Index = "logstash";
             Host = new string[] {"localhost"};
             Timeout = 10000;
+            BatchCount = 10;
+            NumThreads = 1;
+            Interval = 5000;
         }
     }
   
@@ -435,7 +455,7 @@ namespace TimberWinR.Parser
         public string[] AddTag { get; set; }
 
         [JsonProperty("add_field")]
-        public string[] AddField { get; set; }     
+        public string[] AddField { get; set; }        
          
         [JsonProperty("remove_field")]
         public string[] RemoveField { get; set; }    
@@ -474,6 +494,9 @@ namespace TimberWinR.Parser
         [JsonProperty("condition")]
         public string Condition { get; set; }
 
+        [JsonProperty("locale")]
+        public string Locale { get; set; }
+
         [JsonProperty("match")]
         public string[] Match { get; set; }
 
@@ -486,6 +509,9 @@ namespace TimberWinR.Parser
         [JsonProperty("pattern")]
         public string[] Patterns { get; set; }
 
+        [JsonProperty("add_field")]
+        public string[] AddField { get; set; }           
+
         public override void Validate()
         {
             if (Match == null || Match.Length < 2)
@@ -493,6 +519,12 @@ namespace TimberWinR.Parser
 
             if (string.IsNullOrEmpty(Target))
                 throw new DateFilterTargetException();
+        }
+
+        public DateFilter()
+        {
+            Target = "timestamp";
+            Locale = "en-US";
         }
     }
 

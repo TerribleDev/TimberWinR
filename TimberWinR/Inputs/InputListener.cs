@@ -32,6 +32,22 @@ namespace TimberWinR.Inputs
                              .ToString();    
         }
 
+        protected string ToPrintable(string inputString)
+        {
+            string asAscii = Encoding.ASCII.GetString(
+                                   Encoding.Convert(
+                                       Encoding.UTF8,
+                                       Encoding.GetEncoding(
+                                           Encoding.ASCII.EncodingName,
+                                           new EncoderReplacementFallback(string.Empty),
+                                           new DecoderExceptionFallback()
+                                           ),
+                                       Encoding.UTF8.GetBytes(inputString)
+                                   )
+                               );
+            return asAscii;
+        }
+
         public void Finished()
         {
             FinishedEvent.Set();
@@ -56,6 +72,9 @@ namespace TimberWinR.Inputs
 
             if (json["host"] == null)
                 json.Add(new JProperty("host", _computerName));
+
+            if (json["@version"] == null)
+                json.Add(new JProperty("@version", 1));
 
             if (json["@timestamp"] == null)
                 json.Add(new JProperty("@timestamp", DateTime.UtcNow));

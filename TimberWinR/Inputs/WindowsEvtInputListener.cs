@@ -81,6 +81,8 @@ namespace TimberWinR.Inputs
                             foreach (var field in _arguments.Fields)
                             {
                                 object v = record.getValue(field.Name);
+                                if (field.Name == "Data")
+                                    v = ToPrintable(v.ToString());                               
                                 json.Add(new JProperty(field.Name, v));
                             }
                                                       

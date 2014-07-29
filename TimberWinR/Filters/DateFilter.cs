@@ -22,6 +22,7 @@ namespace TimberWinR.Parser
             if (Matches(json))
             {
                 ApplyFilter(json);
+                AddFields(json);
             }
            
             return true;
@@ -48,9 +49,28 @@ namespace TimberWinR.Parser
             }
         }
 
+        // copy_field "field1" -> "field2"
+        private void AddFields(Newtonsoft.Json.Linq.JObject json)
+        {
+            string srcField = Match[0];
+
+            if (AddField != null && AddField.Length > 0)
+            {
+                for (int i = 0; i < AddField.Length; i++)
+                {
+                    string dstField = ExpandField(AddField[i], json);                 
+                    if (json[srcField] != null)
+                        AddOrModify(json, dstField, json[srcField]);
+                }
+            }
+        }
+
+
         private bool Matches(Newtonsoft.Json.Linq.JObject json)
         {
-            string field = Match[0];            
+            string field = Match[0];
+
+            CultureInfo ci = new CultureInfo(Locale);
 
             JToken token = null;
             if (json.TryGetValue(field, out token))
@@ -66,7 +86,7 @@ namespace TimberWinR.Parser
                         var pattern = resolver.ResolveToRegex(exprArray[i]);
                         exprArray[i] = pattern;
                     }
-                    if (DateTime.TryParseExact(text, exprArray, CultureInfo.InvariantCulture,DateTimeStyles.None, out ts))
+                    if (DateTime.TryParseExact(text, exprArray, ci,DateTimeStyles.None, out ts))
                         AddOrModify(json, ts);                    
                 }
                 return true; // Empty field is no match
