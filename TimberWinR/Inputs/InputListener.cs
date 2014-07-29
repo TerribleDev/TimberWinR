@@ -77,7 +77,7 @@ namespace TimberWinR.Inputs
                 json.Add(new JProperty("@version", 1));
 
             if (json["@timestamp"] == null)
-                json.Add(new JProperty("@timestamp", DateTime.UtcNow));
+                json.Add(new JProperty("@timestamp", DateTime.UtcNow.ToString("o")));
         }
 
         protected void ProcessJson(JObject json)
