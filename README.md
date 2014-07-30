@@ -17,7 +17,7 @@ These are broken down into:
 The current supported Input format sources are:
  1. [Logs](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/Logs.md) (Files, a.k.a Tailing a file)
  2. Tcp (listens on a port for JSON messages)
- 3. IISW3C (Internet Information Services W3C Format)
+ 3. [IISW3C](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/IISW3CInput.md)(Internet Information Services W3C Format)
  4. [WindowsEvents](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/WindowsEvents.md)
 
 ## Filters

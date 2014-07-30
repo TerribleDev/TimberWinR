@@ -103,6 +103,7 @@
     <None Include="mdocs\GrokFilter.md" />
     <None Include="mdocs\MutateFilter.md" />
     <None Include="mdocs\Logs.md" />
+    <None Include="mdocs\IISW3CInput.md" />
     <None Include="mdocs\WindowsEvents.md" />
     <None Include="packages.config" />
   </ItemGroup>
