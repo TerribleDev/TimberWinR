@@ -21,7 +21,7 @@ For the above example, your grok filter would look something like this:
 %{NUMBER:duration} %{IP:client}
 
 
-## Mutate Operations
+## Grok Operations
 The following operations are allowed when mutating a field.
 
 | Operation       |     Type        | Description                                                            
@@ -46,13 +46,7 @@ The pattern for this could be:
 ```
 %{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}
 ```
-And if the message matches, then 5 fields would be added to the event:
- 1. client=55.3.244.1
- 2. method=GET
- 3. request=/index.html
- 4. bytes=15824
- 5. duration=0.043
-
+Given this configuration
 ```json
   "Filters": [     
     {
@@ -61,18 +55,26 @@ And if the message matches, then 5 fields would be added to the event:
                "message",
                "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}"
            ],
-           "add_tag": [
-               "rn_%{Index}",
-               "bar"
+           "add_tag": [               
+               "http_log"
            ],
            "add_field": [
-               "foo_%{logsource}",
-               "Hello dude from %{ComputerName}"
+               "verb", "%{method}"
            ]
         }           
     }     
   ]
 ```
+And if the message matches, then 6 fields would be added to the event:
+ 1. client=55.3.244.1
+ 2. method=GET
+ 3. request=/index.html
+ 4. bytes=15824
+ 5. duration=0.043
+ 6. verb=GET
+
+And the following tag will be added
+ 1. tag: { "http_log" }
 
 ### condition "C# expression"
 If present, the condition must evaluate to true in order for the remaining operations to be performed.  If there is no condition specified
