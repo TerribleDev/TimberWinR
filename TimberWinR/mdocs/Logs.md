@@ -30,8 +30,9 @@ Example Input: Monitors all files (recursively) located at C:\Logs1\ matching *.
 ```
 ## Fields
 After a successful parse of an event, the following fields are added:
+
 | Name | Type | Description |
-| ---- |:-----| :-----------------------------------------------------------------------|
+| ---- |:-----| :-----------|
 | LogFilename | STRING |Full path of the file containing this line | 
 | Index | INTEGER | Line number |
 | Text | STRING | Text line content  |
