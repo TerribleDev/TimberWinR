@@ -36,6 +36,7 @@ Example Input:
 ```
 ## Fields
 After a successful parse of an event, the following fields are added:
+
 | Name | Type | Description |
 | ---- |:-----| :-----------------------------------------------------------------------|
 | EventLog | STRING |Name of the Event Log or Event Log backup file containing this event 
