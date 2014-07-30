@@ -153,7 +153,7 @@ namespace TimberWinR.Parser
         public string To { get; set; }
         [JsonProperty(PropertyName = "type")]
         public string FieldType { get; set; }
-        
+
 
         public Type DataType
         {
@@ -505,9 +505,6 @@ namespace TimberWinR.Parser
         [JsonProperty("convertToUTC")]
         public bool ConvertToUTC { get; set; }
 
-        [JsonProperty("pattern")]
-        public string[] Patterns { get; set; }
-
         [JsonProperty("add_field")]
         public string[] AddField { get; set; }           
 
@@ -522,7 +519,7 @@ namespace TimberWinR.Parser
 
         public DateFilter()
         {
-            Target = "timestamp";
+            Target = "@timestamp";
             Locale = "en-US";
         }
     }

@@ -72,7 +72,7 @@
                     "match": [
                         "Text",
                         "%{SYSLOGLINE}"
-                    ],
+                    ],                   
                     "add_tag": [
                         "rn_%{RecordNumber}",
                         "bar"
@@ -84,12 +84,10 @@
                     "condition": "[type] == \"Win32-FileLog\"",
                     "match": [
                         "timestamp",
-                        "MMM  d HH:mm:sss",
-                        "MMM dd HH:mm:ss"                       
+                         "MMM  d HH:mm:sss",
+                         "MMM dd HH:mm:ss"                                         
                     ],
-                    "add_field":  [
-                        "UtcTimestamp"
-                    ],                
+                    "target": "UtcTimestamp",
                     "convertToUTC":  true
                 }
             },

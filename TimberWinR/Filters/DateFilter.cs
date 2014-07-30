@@ -20,34 +20,12 @@ namespace TimberWinR.Parser
                 return false;
 
             if (Matches(json))
-            {
-                ApplyFilter(json);
+            {                
                 AddFields(json);
             }
            
             return true;
-        }
-
-
-        private void ApplyFilter(JObject json)
-        {           
-            string text = json.ToString();
-            if (!string.IsNullOrEmpty(text))
-            {
-                DateTime ts;
-                if (Patterns == null || Patterns.Length == 0)
-                {
-                    if (DateTime.TryParse(text, out ts))
-                        AddOrModify(json, ts);
-                }
-                else
-                {
-                    if (DateTime.TryParseExact(text, Patterns.ToArray(), CultureInfo.InvariantCulture,
-                        DateTimeStyles.None, out ts))
-                        AddOrModify(json, ts);
-                }               
-            }
-        }
+        }   
 
         // copy_field "field1" -> "field2"
         private void AddFields(Newtonsoft.Json.Linq.JObject json)
@@ -80,20 +58,19 @@ namespace TimberWinR.Parser
                 {
                     DateTime ts;
                     var exprArray = Match.Skip(1).ToArray();
-                     var resolver = new RegexGrokResolver();
+                    var resolver = new RegexGrokResolver();
                     for (int i=0; i<exprArray.Length; i++)
                     {
                         var pattern = resolver.ResolveToRegex(exprArray[i]);
                         exprArray[i] = pattern;
                     }
-                    if (DateTime.TryParseExact(text, exprArray, ci,DateTimeStyles.None, out ts))
+                    if (DateTime.TryParseExact(text, exprArray, ci, DateTimeStyles.None, out ts))
                         AddOrModify(json, ts);                    
                 }
                 return true; // Empty field is no match
             }
             return false; // Not specified is failure
         }
-
 
         private void AddOrModify(JObject json, DateTime ts)
         {
