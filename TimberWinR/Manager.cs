@@ -28,7 +28,7 @@ namespace TimberWinR
                 listener.Shutdown();
         }
 
-        public Manager(string xmlConfigFile, string jsonConfigFile, CancellationToken cancelToken)
+        public Manager(string jsonConfigFile, CancellationToken cancelToken)
         {
             Outputs = new List<OutputSender>();           
             Listeners = new List<InputListener>();

@@ -34,8 +34,7 @@ namespace TimberWinR.ServiceHost
                     serviceConfigurator.WhenStopped(myService => myService.Stop());
                 });
 
-                hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
-                hostConfigurator.AddCommandLineDefinition("jsonFile", c => arguments.JsonFile = c);
+                hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);             
 
                 hostConfigurator.ApplyCommandLine();
                 hostConfigurator.RunAsLocalSystem();
@@ -51,7 +50,6 @@ namespace TimberWinR.ServiceHost
     internal class Arguments
     {
         public string ConfigFile { get; set; }
-        public string JsonFile { get; set; }
 
         public Arguments()
         {
@@ -95,7 +93,7 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
-            _manager = new TimberWinR.Manager(_args.ConfigFile, _args.JsonFile, _cancellationToken);
+            _manager = new TimberWinR.Manager(_args.ConfigFile, _cancellationToken);
         }
     }
 }

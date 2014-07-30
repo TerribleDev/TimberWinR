@@ -16,11 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimberWinR.UnitTests", "Tim
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1B2F600B-2400-45B9-A28E-CFC391D9EFA9}"
 	ProjectSection(SolutionItems) = preProject
-		mdocs\DateFilter.md = mdocs\DateFilter.md
-		Filters.md = Filters.md
-		mdocs\GrokFilter.md = mdocs\GrokFilter.md
 		LICENSE.txt = LICENSE.txt
-		mdocs\MutateFilter.md = mdocs\MutateFilter.md
 		Package.nuspec = Package.nuspec
 		README.md = README.md
 		WindowsEvents.md = WindowsEvents.md

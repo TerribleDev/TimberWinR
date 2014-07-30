@@ -98,6 +98,11 @@
     <None Include="configSchema.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="mdocs\DateFilter.md" />
+    <None Include="mdocs\Filters.md" />
+    <None Include="mdocs\GrokFilter.md" />
+    <None Include="mdocs\MutateFilter.md" />
+    <None Include="mdocs\WindowsEvents.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
