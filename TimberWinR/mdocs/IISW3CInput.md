@@ -15,12 +15,12 @@ The following parameters are allowed when configuring WindowsEvents.
 
 | Parameter         |     Type       |  Description                                                             | Details               |  Default |
 | :---------------- |:---------------| :----------------------------------------------------------------------- | :---------------------------  | :-- |
-| *iCodepage*       | property:integer |Codepage of the text file.                                              | 0 is the system codepage, -1 is UNICODE.                         | 0  |
-| *recurse*         | property:integer |Max subdirectory recursion level.                                       | 0 disables subdirectory recursion; -1 enables unlimited recursion. | 0 |
-| *minDateMod*      | property:datetime |Minimum file last modified date, in local time coordinates             | When this parameter is specified, the IISW3C input format processes only log files that have been modified after the specified date.  |  |
-| *dQuotes*       | property:boolean |Specifies that string values in the log are double-quoted.                | Log processors might generate W3C logs whose string values are enclosed in double-quotes.                      | false |
-| *dirTime*       | property:boolean |Use the value of the "#Date" directive for the "date" and/or "time" field values when these fields are not logged.               | When a log file is configured to not log the "date" and/or "time" fields, specifying "true" for this parameters causes the IISW3C input format to generate "date" and "time" values using the value of the last seen "#Date" directive.  | false |
-| *consolidateLogs*  | property:boolean |Return entries from all the input log files ordering by date and time. | When a location refers to log files from multiple IIS virtual sites, specifying true for this parameter causes the IISW3C input format to parse all the input log files in parallel, returning entries ordered by the values of the "date" and "time" fields in the log files; the input records returned will thus appear as if a single IISW3C log file was being parsed. Enabling this feature is equivalent to executing a query with an "ORDER BY date, time" clause on all the log files. However, the implementation of this feature leverages the pre-existing chronological order of entries in each log file, and it does not require the extensive memory resources otherwise required by the ORDER BY query clause.   | false |
+| *iCodepage*       | integer |Codepage of the text file.                                              | 0 is the system codepage, -1 is UNICODE.                         | 0  |
+| *recurse*         | integer |Max subdirectory recursion level.                                       | 0 disables subdirectory recursion; -1 enables unlimited recursion. | 0 |
+| *minDateMod*      | datetime |Minimum file last modified date, in local time coordinates             | When this parameter is specified, the IISW3C input format processes only log files that have been modified after the specified date.  |  |
+| *dQuotes*       | boolean |Specifies that string values in the log are double-quoted.                | Log processors might generate W3C logs whose string values are enclosed in double-quotes.                      | false |
+| *dirTime*       | boolean |Use the value of the "#Date" directive for the "date" and/or "time" field values when these fields are not logged.               | When a log file is configured to not log the "date" and/or "time" fields, specifying "true" for this parameters causes the IISW3C input format to generate "date" and "time" values using the value of the last seen "#Date" directive.  | false |
+| *consolidateLogs*  | boolean |Return entries from all the input log files ordering by date and time. | When a location refers to log files from multiple IIS virtual sites, specifying true for this parameter causes the IISW3C input format to parse all the input log files in parallel, returning entries ordered by the values of the "date" and "time" fields in the log files; the input records returned will thus appear as if a single IISW3C log file was being parsed. Enabling this feature is equivalent to executing a query with an "ORDER BY date, time" clause on all the log files. However, the implementation of this feature leverages the pre-existing chronological order of entries in each log file, and it does not require the extensive memory resources otherwise required by the ORDER BY query clause.   | false |
 
 Example Input:
 ```json
@@ -39,7 +39,8 @@ Example Input:
 
 
 ## Fields
-After a successful parse of an event, the following fields are added:
+After a successful parse of an event, the following fields are added [if configured to be logged](http://technet.microsoft.com/en-us/library/cc754702(v=ws.10).aspx)
+
 | Name | Type | Description |
 | ---- |:-----| :-----------------------------------------------------------------------|
 |LogFilename| STRING | Full path of the log file containing this entry |
