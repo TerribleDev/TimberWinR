@@ -101,6 +101,7 @@
     <None Include="mdocs\DateFilter.md" />
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GrokFilter.md" />
+    <None Include="mdocs\TcpInput.md" />
     <None Include="mdocs\MutateFilter.md" />
     <None Include="mdocs\Logs.md" />
     <None Include="mdocs\IISW3CInput.md" />

@@ -91,9 +91,14 @@ namespace TimberWinR.Inputs
                 //message has successfully been received
                 var encoder = new ASCIIEncoding();
                 var encodedMessage = encoder.GetString(message, 0, bytesRead);
-
-                JObject json = JObject.Parse(encodedMessage);              
-                ProcessJson(json);
+                try
+                {
+                    JObject json = JObject.Parse(encodedMessage);
+                    ProcessJson(json);
+                }
+                catch (Exception)
+                {                
+                }                
             }
             tcpClient.Close();
             Finished();

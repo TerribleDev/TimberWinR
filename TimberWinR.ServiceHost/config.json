@@ -10,18 +10,18 @@
             ],
              "Tcp": [
                 {
-                    "port": "5140"
+                    "_comment": "Output from NLog",   
+                    "port": 5140
                 }
             ],
             "Logs": [
-                {
-                    "name": "Syslogs1",
+                {                    
                     "location": "C:\\Logs1\\*.log"
                 }
             ],
             "IISW3CLogs": [
                 {
-                    "name": "Default site",
+                    "_comment": "Default site",                   
                     "location": "c:\\inetpub\\logs\\LogFiles\\W3SVC1\\*"
                 }
             ]

@@ -11,10 +11,11 @@ If the logging configuration of an IIS virtual site is updated, the structure of
 
 
 ## Parameters
-The following parameters are allowed when configuring WindowsEvents.
+The following parameters are allowed when configuring IISW3CLogs input.
 
 | Parameter         |     Type       |  Description                                                             | Details               |  Default |
 | :---------------- |:---------------| :----------------------------------------------------------------------- | :---------------------------  | :-- |
+| *location*        | string  |Location of log files(s) to monitor                                     | Path to text file(s) including wildcards, may be separated by commas |     |
 | *iCodepage*       | integer |Codepage of the text file.                                              | 0 is the system codepage, -1 is UNICODE.                         | 0  |
 | *recurse*         | integer |Max subdirectory recursion level.                                       | 0 disables subdirectory recursion; -1 enables unlimited recursion. | 0 |
 | *minDateMod*      | datetime |Minimum file last modified date, in local time coordinates             | When this parameter is specified, the IISW3C input format processes only log files that have been modified after the specified date.  |  |
@@ -39,7 +40,7 @@ Example Input:
 
 
 ## Fields
-After a successful parse of an event, the following fields are added [if configured to be logged](http://technet.microsoft.com/en-us/library/cc754702(v=ws.10).aspx)
+After a successful parse of an event, the following fields are added [(if configured to be logged)](http://technet.microsoft.com/en-us/library/cc754702(v=ws.10).aspx)
 
 | Name | Type | Description |
 | ---- |:-----| :-----------------------------------------------------------------------|
