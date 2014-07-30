@@ -6,12 +6,17 @@ See [Grok Patterns](https://github.com/elasticsearch/logstash/blob/v1.4.2/patter
 ## Grok Basics
 
 Grok works by combining text patterns into something that matches your logs.
-The syntax for a grok pattern is %{SYNTAX:SEMANTIC} The SYNTAX is the name of the pattern 
-that will match your text. For example, “3.44” will be matched by the NUMBER pattern and “55.3.244.1” 
-will be matched by the IP pattern. The syntax is how you match. The SEMANTIC is the identifier you 
-give to the piece of text being matched. For example, “3.44” could be the duration of an event, so you could 
+
+The syntax for a grok pattern is %{SYNTAX:SEMANTIC} 
+
+The SYNTAX is the name of the pattern that will match your text. For example, “3.44” will be matched by the NUMBER pattern and “55.3.244.1” 
+will be matched by the IP pattern. The syntax is how you match. 
+
+The SEMANTIC is the identifier you give to the piece of text being matched. For example, “3.44” could be the duration of an event, so you could 
 call it simply ‘duration’. Further, a string “55.3.244.1” might identify the ‘client’ 
-making a request.  For the above example, your grok filter would look something like this:
+making a request.  
+
+For the above example, your grok filter would look something like this:
 
 %{NUMBER:duration} %{IP:client}
 
@@ -41,7 +46,12 @@ The pattern for this could be:
 ```
 %{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}
 ```
-And if the message matches, then 5 fields would be added to the event: client, method, request, bytes and duration.
+And if the message matches, then 5 fields would be added to the event:
+ 1. client=55.3.244.1
+ 2. method=GET
+ 3. request=/index.html
+ 4. bytes=15824
+ 5. duration=0.043
 
 ```json
   "Filters": [     
