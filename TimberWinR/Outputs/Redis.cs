@@ -23,7 +23,7 @@ namespace TimberWinR.Outputs
         private readonly int _timeout;
         private readonly object _locker = new object();
         private readonly List<string> _jsonQueue;
-       // readonly Task _consumerTask;
+        // readonly Task _consumerTask;
         private readonly string[] _redisHosts;
         private int _redisHostIndex;
         private TimberWinR.Manager _manager;
@@ -52,7 +52,7 @@ namespace TimberWinR.Outputs
 
                     return client;
                 }
-                catch (Exception )
+                catch (Exception)
                 {
                 }
                 numTries++;
@@ -61,7 +61,7 @@ namespace TimberWinR.Outputs
             return null;
         }
 
-        public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutput ro, CancellationToken cancelToken) //string[] redisHosts, string logstashIndexName = "logstash", int port = 6379, int timeout = 10000, int batch_count = 10)
+        public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutput ro, CancellationToken cancelToken)
             : base(cancelToken)
         {
             _batchCount = ro.BatchCount;
@@ -105,7 +105,7 @@ namespace TimberWinR.Outputs
             foreach (var filter in _manager.Config.Filters)
             {
                 filter.Apply(json);
-            }            
+            }
         }
 
         // 
@@ -119,7 +119,7 @@ namespace TimberWinR.Outputs
                 lock (_locker)
                 {
                     messages = _jsonQueue.Take(_batchCount).ToArray();
-                    _jsonQueue.RemoveRange(0, messages.Length);                   
+                    _jsonQueue.RemoveRange(0, messages.Length);
                 }
 
                 if (messages.Length > 0)
@@ -141,7 +141,7 @@ namespace TimberWinR.Outputs
                                     foreach (string jsonMessage in messages)
                                     {
                                         try
-                                        {                                           
+                                        {
                                             client.RPush(_logstashIndexName, jsonMessage);
                                         }
                                         catch (SocketException ex)

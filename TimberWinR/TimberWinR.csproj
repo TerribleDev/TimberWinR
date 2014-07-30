@@ -76,7 +76,7 @@
     <Compile Include="Inputs\InputListener.cs" />
     <Compile Include="Inputs\ParameterDefinitions.cs" />
     <Compile Include="Inputs\TcpInputListener.cs" />
-    <Compile Include="Inputs\TailFileInputListener.cs" />
+    <Compile Include="Inputs\LogsListener.cs" />
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="Outputs\OutputSender.cs" />
@@ -102,6 +102,7 @@
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GrokFilter.md" />
     <None Include="mdocs\MutateFilter.md" />
+    <None Include="mdocs\Logs.md" />
     <None Include="mdocs\WindowsEvents.md" />
     <None Include="packages.config" />
   </ItemGroup>

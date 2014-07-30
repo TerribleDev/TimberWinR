@@ -275,7 +275,6 @@ namespace TimberWinR.Parser
         public int Recurse { get; set; }
         [JsonProperty(PropertyName = "splitLongLines")]
         public bool SplitLongLines { get; set; }
-
         [JsonProperty(PropertyName = "fields")]
         public List<Field> Fields { get; set; }
 
@@ -310,9 +309,7 @@ namespace TimberWinR.Parser
     }
     
     public class IISW3CLog : IValidateSchema
-    {
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
+    {       
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }
         [JsonProperty(PropertyName = "iCodepage")]

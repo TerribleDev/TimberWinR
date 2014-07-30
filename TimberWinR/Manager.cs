@@ -81,7 +81,7 @@ namespace TimberWinR
 
             foreach (var logConfig in Config.Logs)
             {
-                var elistner = new TailFileInputListener(logConfig, cancelToken);
+                var elistner = new LogsListener(logConfig, cancelToken);
                 Listeners.Add(elistner);
                 foreach (var output in Outputs)
                     output.Connect(elistner);

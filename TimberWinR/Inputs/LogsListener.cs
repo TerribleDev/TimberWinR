@@ -20,12 +20,12 @@ namespace TimberWinR.Inputs
     /// <summary>
     /// Tail a file.
     /// </summary>
-    public class TailFileInputListener : InputListener
+    public class LogsListener : InputListener
     {
-        private int _pollingIntervalInSeconds = 1;
+        private int _pollingIntervalInSeconds;
         private TimberWinR.Parser.Log _arguments;
 
-        public TailFileInputListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 3)
             : base(cancelToken, "Win32-FileLog")
         {
             _arguments = arguments;
@@ -50,8 +50,7 @@ namespace TimberWinR.Inputs
             };
 
               // Create the query
-            var query = string.Format("SELECT * FROM {0}", _arguments.Location);
-          
+            var query = string.Format("SELECT * FROM {0}", _arguments.Location);          
 
             var firstQuery = true;
             // Execute the query
