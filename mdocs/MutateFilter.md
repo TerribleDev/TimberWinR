@@ -7,14 +7,15 @@ The following operations are allowed when mutating a field.
 
 | Operation   |     Type        | Description                                                            
 | :-----------|:----------------|:-----------------------------------------------------------------------|
-| *condition* | property:string |Windows event logs
+| *condition* | property:string |C# Expression
 | *rename*    | property:array  |Rename one or more fields                                       
 | *replace*   | property:array  |Replace a field with a new value.  The new value can include %{foo} strings to help you build a new value from other parts of the event.                                   
 | *split*     | property:array  |Separator between values of the "Strings" field.   
 
 ## Details
 ### condition "C# expression"
-If present, the condition must evaluate to true in order for the remaining operations to be performed.
+If present, the condition must evaluate to true in order for the remaining operations to be performed.  If there is no condition specified
+then the operation(s) will be executed in order.
 ```json
   "Filters": [     
     {
