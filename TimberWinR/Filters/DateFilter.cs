@@ -48,7 +48,7 @@ namespace TimberWinR.Parser
         {
             string field = Match[0];
 
-            CultureInfo ci = new CultureInfo(Locale);
+            CultureInfo ci = CultureInfo.CreateSpecificCulture(Locale);
 
             JToken token = null;
             if (json.TryGetValue(field, out token))
