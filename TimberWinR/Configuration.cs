@@ -58,6 +58,13 @@ namespace TimberWinR
             get { return _iisw3clogs; }
         }
 
+
+        private List<Stdin> _stdins = new List<Stdin>();
+        public IEnumerable<Stdin> Stdins
+        {
+            get { return _stdins; }
+        }
+
         private List<LogstashFilter> _filters = new List<LogstashFilter>();
 
         public IEnumerable<LogstashFilter> Filters
@@ -95,6 +102,8 @@ namespace TimberWinR
                     c._events = x.TimberWinR.Inputs.WindowsEvents.ToList();
                 if (x.TimberWinR.Inputs.IISW3CLogs != null)
                     c._iisw3clogs = x.TimberWinR.Inputs.IISW3CLogs.ToList();
+                if (x.TimberWinR.Inputs.Stdins != null)
+                    c._stdins = x.TimberWinR.Inputs.Stdins.ToList();
                 if (x.TimberWinR.Inputs.Logs != null)
                     c._logs = x.TimberWinR.Inputs.Logs.ToList();
                 if (x.TimberWinR.Inputs.Tcps != null)

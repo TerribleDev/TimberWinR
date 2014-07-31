@@ -19,6 +19,7 @@ The current supported Input format sources are:
  2. [Tcp](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/TcpInput.md) (listens on a port for JSON messages)
  3. [IISW3C](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/IISW3CInput.md)(Internet Information Services W3C Format)
  4. [WindowsEvents](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/WindowsEvents.md) (Windows Event Viewer)
+ 5. [Stdin](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/StdInput.md) (Standard Input for Debugging)
 
 ## Filters
 The current list of supported filters are:

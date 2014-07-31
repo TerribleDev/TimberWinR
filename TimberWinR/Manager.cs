@@ -107,6 +107,16 @@ namespace TimberWinR
                 foreach (var output in Outputs)
                     output.Connect(elistner);
             }
+
+
+            foreach (var tcp in Config.Stdins)
+            {
+                var elistner = new StdinListener(cancelToken);
+                Listeners.Add(elistner);
+                foreach (var output in Outputs)
+                    output.Connect(elistner);
+            }
+
         }
 
         /// <summary>

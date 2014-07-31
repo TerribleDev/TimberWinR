@@ -275,6 +275,14 @@ namespace TimberWinR.Parser
         }
     }
    
+    public class Stdin : IValidateSchema
+    {
+        public void Validate()
+        {
+           
+        }
+    }
+
     public class Log : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
@@ -432,6 +440,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("IISW3CLogs")]
         public IISW3CLog[] IISW3CLogs { get; set; }
+
+        [JsonProperty("Stdin")]
+        public Stdin[] Stdins { get; set; }
     }
          
     public partial class Grok : LogstashFilter, IValidateSchema

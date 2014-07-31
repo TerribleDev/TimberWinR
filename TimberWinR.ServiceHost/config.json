@@ -1,6 +1,11 @@
 ﻿{
     "TimberWinR": {
         "Inputs": {
+            "Stdin": [
+                {
+                    "codec":  "json"
+                }
+            ],
             "WindowsEvents": [
                 {
                     "source": "System,Application",

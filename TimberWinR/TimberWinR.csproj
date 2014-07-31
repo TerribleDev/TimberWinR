@@ -74,6 +74,7 @@
     <Compile Include="Inputs\InputBase.cs" />
     <Compile Include="Inputs\InputListener.cs" />
     <Compile Include="Inputs\ParameterDefinitions.cs" />
+    <Compile Include="Inputs\StdinListener.cs" />
     <Compile Include="Inputs\TcpInputListener.cs" />
     <Compile Include="Inputs\LogsListener.cs" />
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
