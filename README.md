@@ -83,4 +83,17 @@ TimberWinR.ServiceHost.exe stop
 
 Alternatively you can use the Services Control Panel.
 ### Usage
+```
+TimberWinR.ServiceHost.exe [options]
+
+Options:
+-logDir:        Specifies the directory where TimberWinR will write its log file TimberWinR.txt
+                Default is -logDir:"C:\logs"
+-logLevel:      Specifies the logging level for TimberWinR
+                Legal Values: Trace|Debug|Info|Warn|Error|Fatal|Off
+                Default is -logDir:Info
+-configFile:    Specifies the path to the JSON config files
+                Default is -configFile:default.json
+```
+
 
