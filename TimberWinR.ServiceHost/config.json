@@ -15,18 +15,6 @@
                 }
             ]
         },
-        "Outputs": {
-            "Redis": [
-                { 
-                    "threads":  1,   
-                    "interval": 5000, 
-                    "batch_count":  500,              
-                    "host": [
-                        "tstlexiceapp006.vistaprint.svc"
-                    ]
-                }
-            ]
-        },
         "Filters": [          
             {
                 "grok": {
@@ -92,6 +80,18 @@
                     ]
                 }                
             }           
-        ]
+        ],
+        "Outputs": {
+            "Redis": [
+                { 
+                    "threads":  1,   
+                    "interval": 5000, 
+                    "batch_count":  500,              
+                    "host": [
+                        "tstlexiceapp006.vistaprint.svc"
+                    ]
+                }
+            ]
+        }       
     }
 }

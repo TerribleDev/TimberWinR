@@ -3,7 +3,7 @@ TimberWinR
 A Native Windows to Redis Logstash Agent which runs as a service.
 ## Why have TimberWinR?
 TimberWinR is a native .NET implementation utilizing Microsoft's [LogParser](http://technet.microsoft.com/en-us/scriptcenter/dd919274.aspx).  This means
-no JVM/JRuby is required, and LogParser does all the heavy lifting.    TimberWinR collects
+no JVM/JRuby is required, and LogParser does all the heavy lifting.  TimberWinR collects
 the data from LogParser and ships it to Logstash via Redis.
 
 ## Basics
@@ -18,7 +18,7 @@ The current supported Input format sources are:
  1. [Logs](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/Logs.md) (Files, a.k.a Tailing a file)
  2. [Tcp](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/TcpInput.md) (listens on a port for JSON messages)
  3. [IISW3C](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/IISW3CInput.md)(Internet Information Services W3C Format)
- 4. [WindowsEvents](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/WindowsEvents.md)
+ 4. [WindowsEvents](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/WindowsEvents.md) (Windows Event Viewer)
 
 ## Filters
 The current list of supported filters are:
@@ -47,19 +47,48 @@ TimberWinR reads a JSON configuration file, an example file is shown here:
             }
         ]
     },
+    "Filters": [          
+        {
+            "grok": {
+                "condition": "[type] == \"Win32-Eventlog\"",
+                "match": [
+                    "Message",
+                    ""
+                ],                   
+                "remove_field": [
+                    "ComputerName"                   
+                ]
+            }
+        }
+    ],
     "Outputs": {
         "Redis": [
             { 
+                "_comment": "Shuffle these hosts",
                 "host": [
-                    "server1.host.com"
+                   "server1.host.com", 
+                   "server2.host.com"
                 ]
             }
         ]
     }
 }
 ```
-This configuration collects Events from the Windows Event Logs (System, Application) and forwards them
-to Redis.
+This configuration:
+ 1. Inputs: Events from the Windows Event Logs (System, Application)
+ 2. Filters: Removes the ComputerName field
+ 3. Sends the event to Redis services (server1.host.com, server2.host.com) in a shuffling manner (balanced).
+
+## Installation
+You must first install LogParser, then install TimberWinR.   Install LogParser from here:
+
+[Install LogParser](http://www.microsoft.com/en-us/download/details.aspx?id=24659) from Microsoft.
+
+After installing, follow the remaining directions here.
+## Running Interactively
+```
+TimberWinR.ServiceHost.exe -configFile:myconfig.json -logLevel:Debug
+```
 
 ## Installation as a Windows Service
 TimberWinR uses [TopShelf](http://topshelf-project.com/) to install as a service, so all the documentation
