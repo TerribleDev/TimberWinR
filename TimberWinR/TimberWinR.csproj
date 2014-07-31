@@ -102,6 +102,7 @@
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GrokFilter.md" />
     <None Include="mdocs\RedisOutput.md" />
+    <None Include="mdocs\StdinInput.md" />
     <None Include="mdocs\TcpInput.md" />
     <None Include="mdocs\MutateFilter.md" />
     <None Include="mdocs\Logs.md" />

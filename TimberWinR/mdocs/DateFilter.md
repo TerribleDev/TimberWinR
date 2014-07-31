@@ -17,8 +17,8 @@ file input, the timestamp is set to the time of each read.
 ## Date Parameters
 The following parameters and operations are allowed when using the Date filter.
 
-| Operation       |     Type        | Description    | Default                                                        
-| :---------------|:----------------|:-----------------------------------------------------------------------|
+| Operation       |     Type        | Description    | Default     |                                                   
+| :---------------|:----------------|:---------------|:------------|
 | *add_field*       | array  |If the filter is successful, add an arbitrary field to this event.  Tag names can be dynamic and include parts of the event using the %{field} syntax.  |  |
 | *condition*     | string |C# expression | |
 | *convertToUTC*  | boolean  |Converts time to UTC | false |
