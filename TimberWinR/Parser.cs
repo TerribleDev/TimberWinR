@@ -52,9 +52,17 @@ namespace TimberWinR.Parser
                 GenerateInMemory = true
             };
             parms.ReferencedAssemblies.Add("System.dll");
+            parms.ReferencedAssemblies.Add("System.Core.dll");
+            parms.ReferencedAssemblies.Add("Newtonsoft.Json.dll");
+
             var code = string.Format(@" using System;
+                                        using System.Linq;
+                                        using Newtonsoft.Json;
+                                        using Newtonsoft.Json.Linq;
+
                                         class EvaluatorClass
                                         {{
+                                            public JObject json {{ get; set; }}
                                             public bool Evaluate()
                                             {{
                                                 return {0};
@@ -69,6 +77,8 @@ namespace TimberWinR.Parser
             if (results.Errors.Count == 0)
             {
                 var evClass = results.CompiledAssembly.CreateInstance("EvaluatorClass");
+                evClass.GetType().GetProperty("json").SetValue(evClass, json, null);
+
                 var result = evClass.GetType().
                     GetMethod("Evaluate").
                     Invoke(evClass, null);

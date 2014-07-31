@@ -124,8 +124,8 @@ namespace TimberWinR
                 ArchiveAboveSize = 5 * 1024 * 1024,
                 MaxArchiveFiles = 5,
                 BufferSize = 10,
-                FileName = Path.Combine(logPath, "TimberWinR", "TimberWinR.txt"),
-                ArchiveFileName = Path.Combine(logPath, "log-{#######}.txt"),
+                FileName = Path.Combine(logPath, "TimberWinR", "TimberWinR.log"),
+                ArchiveFileName = Path.Combine(logPath, "TimberWinR_log-{#######}.log"),
             };
         }
 

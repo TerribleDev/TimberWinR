@@ -61,3 +61,26 @@ TimberWinR reads a JSON configuration file, an example file is shown here:
 This configuration collects Events from the Windows Event Logs (System, Application) and forwards them
 to Redis.
 
+## Installation as a Windows Service
+TimberWinR uses [TopShelf](http://topshelf-project.com/) to install as a service, so all the documentation
+for installing and configuring the service is show here [TopShelf Doc](http://docs.topshelf-project.com/en/latest/)
+
+Specifically the command line options are listed here in [Topshelf Command-Line Reference](http://docs.topshelf-project.com/en/latest/overview/commandline.html) guide.
+
+Install and set to Automatically Start the service:
+```
+; Install Service (will autostart on reboot)
+TimberWinR.ServiceHost.exe install --autostart
+; Start the Service
+TimberWinR.ServiceHost.exe start
+```
+
+To Start/Stop the Service from the Command Line
+```
+TimberWinR.ServiceHost.exe start
+TimberWinR.ServiceHost.exe stop
+```
+
+Alternatively you can use the Services Control Panel.
+### Usage
+

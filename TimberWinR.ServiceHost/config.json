@@ -70,7 +70,7 @@
             },
             {
              "date":  {
-                    "condition": "[type] == \"Win32-FileLog\"",
+                    "condition": "json[\"timestamp\"] != null && [type] == \"Win32-FileLog\"",
                     "match": [
                         "timestamp",
                          "MMM  d HH:mm:sss",
