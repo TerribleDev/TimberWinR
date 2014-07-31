@@ -27,7 +27,7 @@ namespace TimberWinR.Inputs
       
         public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken, "Win32-Eventlog")
-        {
+        {          
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
             var task = new Task(EventWatcher, cancelToken);
@@ -36,15 +36,15 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
-            base.Shutdown();
-           
+            base.Shutdown();           
         }
 
         private void EventWatcher()
         {
             var oLogQuery = new LogQuery();
 
-         
+            LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");
+
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
             {
@@ -69,7 +69,7 @@ namespace TimberWinR.Inputs
             {
                 try
                 {
-                    var rs = oLogQuery.Execute(query, iFmt);
+                    var rs = oLogQuery.Execute(query, iFmt);                 
                     // Browse the recordset
                     for (; !rs.atEnd(); rs.moveNext())
                     {

@@ -65,7 +65,7 @@ namespace TimberWinR.Inputs
             }          
         }
 
-        private void AddDefaultFields(JObject json)
+        protected virtual void AddDefaultFields(JObject json)
         {
             if (json["type"] == null)
                 json.Add(new JProperty("type", _typeName));
@@ -76,8 +76,13 @@ namespace TimberWinR.Inputs
             if (json["@version"] == null)
                 json.Add(new JProperty("@version", 1));
 
+            DateTime utc = DateTime.UtcNow;
+
             if (json["@timestamp"] == null)
-                json.Add(new JProperty("@timestamp", DateTime.UtcNow.ToString("o")));
+                json.Add(new JProperty("@timestamp", utc.ToString("o")));
+
+            if (json["UtcTimestamp"] == null)
+                json.Add(new JProperty("UtcTimestamp", utc.ToString("o")));
         }
 
         protected void ProcessJson(JObject json)

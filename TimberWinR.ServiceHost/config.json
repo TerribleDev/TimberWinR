@@ -13,17 +13,6 @@
                     "_comment": "Output from NLog",   
                     "port": 5140
                 }
-            ],
-            "Logs": [
-                {                    
-                    "location": "C:\\Logs1\\*.log"
-                }
-            ],
-            "IISW3CLogs": [
-                {
-                    "_comment": "Default site",                   
-                    "location": "c:\\inetpub\\logs\\LogFiles\\W3SVC1\\*"
-                }
             ]
         },
         "Outputs": {

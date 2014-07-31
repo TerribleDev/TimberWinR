@@ -13,6 +13,7 @@ using TimberWinR.Inputs;
 
 using Topshelf;
 using Topshelf.HostConfigurators;
+using Topshelf.Logging;
 using Topshelf.ServiceConfigurators;
 
 namespace TimberWinR.ServiceHost
@@ -34,7 +35,8 @@ namespace TimberWinR.ServiceHost
                     serviceConfigurator.WhenStopped(myService => myService.Stop());
                 });
 
-                hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);             
+                hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
+                hostConfigurator.AddCommandLineDefinition("logLevel", c => arguments.LogLevel = c);    
 
                 hostConfigurator.ApplyCommandLine();
                 hostConfigurator.RunAsLocalSystem();
@@ -50,10 +52,14 @@ namespace TimberWinR.ServiceHost
     internal class Arguments
     {
         public string ConfigFile { get; set; }
+        public string LogLevel { get; set; }
+        public string LogfileDir { get; set; }
 
         public Arguments()
         {
-            ConfigFile = string.Empty;
+            ConfigFile = "default.json";
+            LogLevel = "Info";
+            LogfileDir = @"C:\logs";
         }
     }
 
@@ -93,7 +99,7 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
-            _manager = new TimberWinR.Manager(_args.ConfigFile, _cancellationToken);
+            _manager = new TimberWinR.Manager(_args.ConfigFile, _args.LogLevel, _args.LogfileDir, _cancellationToken);
         }
     }
 }

@@ -108,6 +108,7 @@
     <None Include="mdocs\IISW3CInput.md" />
     <None Include="mdocs\WindowsEvents.md" />
     <None Include="packages.config" />
+    <None Include="TimberWinR.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

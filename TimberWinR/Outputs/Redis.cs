@@ -92,7 +92,7 @@ namespace TimberWinR.Outputs
                 ApplyFilters(jsonMessage);
 
             var message = jsonMessage.ToString();
-            LogManager.GetCurrentClassLogger().Trace(message);
+            LogManager.GetCurrentClassLogger().Debug(message);
 
             lock (_locker)
             {
@@ -136,7 +136,7 @@ namespace TimberWinR.Outputs
                                 {
                                     client.StartPipe();
                                     LogManager.GetCurrentClassLogger()
-                                               .Info("Sending {0} Messages to {1}", messages.Length, client.Host);
+                                               .Debug("Sending {0} Messages to {1}", messages.Length, client.Host);
 
                                     foreach (string jsonMessage in messages)
                                     {

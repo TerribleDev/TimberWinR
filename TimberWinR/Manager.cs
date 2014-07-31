@@ -24,11 +24,13 @@ namespace TimberWinR
         public List<InputListener> Listeners { get; set;  } 
         public void Shutdown()
         {
+            LogManager.GetCurrentClassLogger().Info("Shutting Down");
+
             foreach (InputListener listener in Listeners)
                 listener.Shutdown();
         }
 
-        public Manager(string jsonConfigFile, CancellationToken cancelToken)
+        public Manager(string jsonConfigFile, string logLevel, string logfileDir, CancellationToken cancelToken)
         {
             Outputs = new List<OutputSender>();           
             Listeners = new List<InputListener>();
@@ -38,19 +40,30 @@ namespace TimberWinR
             // Create our default targets
             var coloredConsoleTarget = new ColoredConsoleTarget();
 
-            Target fileTarget = CreateDefaultFileTarget("c:\\logs");
+            Target fileTarget = CreateDefaultFileTarget(logfileDir);
 
             loggingConfiguration.AddTarget("Console", coloredConsoleTarget);
             loggingConfiguration.AddTarget("DailyFile", fileTarget);
 
+            // The LogLevel.Trace means has to be at least Trace to show up on console
             loggingConfiguration.LoggingRules.Add(new LoggingRule("*", LogLevel.Trace, coloredConsoleTarget));
-            loggingConfiguration.LoggingRules.Add(new LoggingRule("*", LogLevel.Info, fileTarget));
+            // LogLevel.Debug means has to be at least Debug to show up in logfile
+            loggingConfiguration.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, fileTarget));
           
             LogManager.Configuration = loggingConfiguration;
-            LogManager.EnableLogging();  
-            
-            LogManager.GetCurrentClassLogger().Info("Initialized");
+            LogManager.EnableLogging();
+
+            LogManager.GlobalThreshold = LogLevel.FromString(logLevel);
+
+            FileInfo fi = new FileInfo(jsonConfigFile);
+         
+            LogManager.GetCurrentClassLogger().Info("Initialized, Reading Config: {0}", fi.FullName);
+            LogManager.GetCurrentClassLogger().Info("Log Directory {0}", logfileDir);
+            LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);
         
+            if (!fi.Exists)
+                throw new FileNotFoundException("Missing config file", jsonConfigFile);
+          
             // Read the Configuration file
             Config = Configuration.FromFile(jsonConfigFile);
 
