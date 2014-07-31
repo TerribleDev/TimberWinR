@@ -86,6 +86,8 @@ You must first install LogParser, then install TimberWinR.   Install LogParser f
 
 After installing, follow the remaining directions here.
 ## Running Interactively
+You can run TimberWinR interactively when you are developing your JSON config file, to do so use the
+following options:
 ```
 TimberWinR.ServiceHost.exe -configFile:myconfig.json -logLevel:Debug
 ```
