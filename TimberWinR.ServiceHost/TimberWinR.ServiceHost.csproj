@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="RapidRegex.Core">
-      <HintPath>..\packages\RapidRegex.Core.1.0.0.0\lib\net40\RapidRegex.Core.dll</HintPath>
+      <HintPath>..\packages\RapidRegex.Core.1.0.0.2\lib\net40\RapidRegex.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,7 +56,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="binaries\TimberWinR-1.0.0.0.zip" />
-    <None Include="packages.config" />
+    <Content Include="default.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="TimberWinR.ServiceHost.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TimberWinR\TimberWinR.csproj">

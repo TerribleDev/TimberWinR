@@ -128,4 +128,28 @@ Options:
                 Default is -configFile:default.json
 ```
 
+### Quickstart Guide
+If you really just want to try it out, grab the binary distribution, extract the .zip file
+into a directory, e.g.  C:\TimberWinR
+
+Grab the [JSON example file](https://github.com/efontana/TimberWinR/blob/master/TimberWinR.ServiceHost/default.json) and place it into C:\TimberWinR\default.json. 
+Edit the default.json file and change the Redis instance to match yours, replace 'tstlexiceapp006.vistaprint.svc' with the IP or DNS name
+of the machine running redis.  Fire up the collector, enable the verbose debugging to see some Windows Events.
+
+```
+TimberWinR.ServiceHost.Exe -configFile:default.json -logLevel:Debug
+```
+
+You should see 
+
+
+To run it as a service
+```
+TimberWinR.ServiceHost.exe install --autostart
+TimberWinR.ServiceHost.exe start
+```
+
+
+
+
 

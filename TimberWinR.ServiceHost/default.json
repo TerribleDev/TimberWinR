@@ -1,0 +1,30 @@
+﻿{
+    "TimberWinR": {
+        "Inputs": {           
+            "WindowsEvents": [
+                {
+                    "source": "System,Application",
+                    "binaryFormat": "PRINT",
+                    "resolveSIDS": true
+                }
+            ],
+             "Tcp": [
+                {
+                    "_comment": "Output from NLog",   
+                    "port": 5140
+                }
+            ]
+        },      
+        "Outputs": {
+            "Redis": [
+                { 
+                    "_comment":  "Change the host to your Redis instance",   
+                    "port":  6379,                           
+                    "host": [
+                        "tstlexiceapp006.vistaprint.svc"
+                    ]
+                }
+            ]
+        }       
+    }
+}

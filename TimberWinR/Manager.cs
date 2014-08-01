@@ -55,15 +55,15 @@ namespace TimberWinR
 
             LogManager.GlobalThreshold = LogLevel.FromString(logLevel);
 
-            FileInfo fi = new FileInfo(jsonConfigFile);
-         
+            var fi = new FileInfo(jsonConfigFile);
+            if (!fi.Exists)
+                throw new FileNotFoundException("Missing config file", jsonConfigFile);
+        
             LogManager.GetCurrentClassLogger().Info("Initialized, Reading Config: {0}", fi.FullName);
             LogManager.GetCurrentClassLogger().Info("Log Directory {0}", logfileDir);
             LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);
         
-            if (!fi.Exists)
-                throw new FileNotFoundException("Missing config file", jsonConfigFile);
-          
+            
             // Read the Configuration file
             Config = Configuration.FromFile(jsonConfigFile);
 
