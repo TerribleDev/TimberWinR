@@ -55,6 +55,7 @@
     <Content Include="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="binaries\TimberWinR-1.0.0.0.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
