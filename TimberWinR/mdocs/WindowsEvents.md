@@ -18,6 +18,15 @@ The following parameters are allowed when configuring WindowsEvents.
 | *fullText*        | bool   |Retrieve the full text message                                           | true,false                   | **true** |
 | *resolveSIDS*     | bool   |Resolve SID values into full account names                               | true,false                   | **true** |
 | *formatMsg*       | bool   |Format the text message as a single line.                                | true,false                   | **true** |
+
+### source format
+The source indicates where to collect the event(s) from, it can be of these form(s): 
+When specifying a windows path, make sure to escape the backslash(s).
+```
+"source": "System, Application, Security"
+"source": "D:\\MyEVTLogs\\*.evt"
+"source": "System, D:\\MyEVTLogs\\System.evt"
+```
 Example Input:
 ```json
 {
@@ -39,7 +48,7 @@ After a successful parse of an event, the following fields are added:
 
 | Name | Type | Description |
 | ---- |:-----| :-----------------------------------------------------------------------|
-| EventLog | STRING |Name of the Event Log or Event Log backup file containing this event 
+| EventLog | STRING |Name of the Event Log or Event Log backup file containing this event
 | RecordNumber | INTEGER | Index of this event in the Event Log or Event Log backup file containing this event  |
 | TimeGenerated | TIMESTAMP | The date and time at which the event was generated (local time)  |
 | TimeWritten | TIMESTAMP | The date and time at which the event was logged (local time)  |
@@ -54,3 +63,4 @@ After a successful parse of an event, the following fields are added:
 | SID | STRING | The Security Identifier associated with the event  |
 | Message | STRING | The full event message  |
 | Data | STRING | The binary data associated with the event  |
+
