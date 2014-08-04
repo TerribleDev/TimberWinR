@@ -23,6 +23,6 @@ There are no Parameters at this time.
 A field: "type": "Win32-Stdin" is automatically appended, and the entire JSON is passed on vertabim
 | Name | Type | Description |
 | ---- |:-----| :-----------------------------------------------------------------------|
-| type | STRING |Win32-Stdin 
+| type | STRING |Win32-Stdin |
 | message | STRING | The message typed in  |
 
