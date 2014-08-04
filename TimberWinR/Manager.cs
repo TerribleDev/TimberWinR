@@ -95,6 +95,14 @@ namespace TimberWinR
                     Outputs.Add(els);
                 }
             }
+            if (Config.StdoutOutputs != null)
+            {
+                foreach (var ro in Config.StdoutOutputs)
+                {
+                    var stdout = new StdoutOutput(this, ro, cancelToken);
+                    Outputs.Add(stdout);
+                }
+            }
 
             foreach (Parser.IISW3CLog iisw3cConfig in Config.IISW3C)
             {

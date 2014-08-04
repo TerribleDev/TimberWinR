@@ -45,6 +45,11 @@ namespace TimberWinR
             get { return _elasticsearchOutputs; }
         }
 
+        private List<StdoutOutput> _stdoutOutputs = new List<StdoutOutput>();
+        public IEnumerable<StdoutOutput> StdoutOutputs
+        {
+            get { return _stdoutOutputs; }
+        }
 
         private List<Tcp> _tcps = new List<Tcp>();
         public IEnumerable<Tcp> Tcps
@@ -136,9 +141,10 @@ namespace TimberWinR
             {
                 if (x.TimberWinR.Outputs.Redis != null)
                     c._redisOutputs = x.TimberWinR.Outputs.Redis.ToList();
-
                 if (x.TimberWinR.Outputs.Elasticsearch != null)
                     c._elasticsearchOutputs = x.TimberWinR.Outputs.Elasticsearch.ToList();
+                if (x.TimberWinR.Outputs.Stdout != null)
+                    c._stdoutOutputs = x.TimberWinR.Outputs.Stdout.ToList();
             }         
 
             if (x.TimberWinR.Filters != null)
@@ -175,6 +181,7 @@ namespace TimberWinR
             _logs = new List<Log>();
             _redisOutputs = new List<RedisOutput>();
             _elasticsearchOutputs = new List<ElasticsearchOutput>();
+            _stdoutOutputs = new List<StdoutOutput>();
             _tcps = new List<Tcp>();
         }
 

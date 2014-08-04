@@ -1,0 +1,29 @@
+{
+    "TimberWinR": {
+        "Inputs": {           
+            "Stdin": [
+                {
+                }
+            ]
+        },      
+        "Outputs": {
+            "Stdout": [
+                { 
+                }
+            ]
+        },
+		"Filters": [          
+            {
+                "grok": {
+                    "match": [
+                        "message",
+                        ""
+                    ],                   
+                    "add_field": [
+                        "ComputerName", "test"                   
+                    ]
+                }
+            }
+		]
+    }
+}

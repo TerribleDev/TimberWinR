@@ -31,6 +31,7 @@ namespace TimberWinR.Outputs
             _timeout = eo.Timeout;
             _manager = manager;
             _port = eo.Port;
+            _interval = eo.Interval;
             _host = eo.Host;
             _index = eo.Index;
             _hostIndex = 0;

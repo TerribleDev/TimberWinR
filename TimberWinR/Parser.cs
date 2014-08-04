@@ -406,6 +406,8 @@ namespace TimberWinR.Parser
         public int NumThreads { get; set; }
         [JsonProperty(PropertyName = "protocol")]
         public string Protocol { get; set; }
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
         
         public ElasticsearchOutput()
         {
@@ -414,7 +416,8 @@ namespace TimberWinR.Parser
             Index = "";
             Host = new string[] { "localhost" };
             Timeout = 10000;          
-            NumThreads = 1;          
+            NumThreads = 1;
+            Interval = 1000;
         }
     }
 
@@ -446,7 +449,18 @@ namespace TimberWinR.Parser
             Interval = 5000;
         }
     }
-  
+
+    public class StdoutOutput
+    {
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
+
+        public StdoutOutput()
+        {
+            Interval = 1000;
+        }
+    }
+
     public class OutputTargets
     {
         [JsonProperty("Redis")]
@@ -454,6 +468,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("Elasticsearch")]
         public ElasticsearchOutput[] Elasticsearch { get; set; }
+
+        [JsonProperty("Stdout")]
+        public StdoutOutput[] Stdout { get; set; }
     }
 
     public class InputSources
