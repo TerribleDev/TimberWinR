@@ -1,4 +1,4 @@
-# Input: Stdin
+# Output: Stdout
 
 The Stdout output will write to the console (Console.WriteLine) and display a json structure of the received message attributes. Useful for quickly viewing and testing the inputs and filters of a setup.
 
