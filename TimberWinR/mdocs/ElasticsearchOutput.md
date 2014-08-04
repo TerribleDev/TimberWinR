@@ -11,7 +11,7 @@ The following parameters are allowed when configuring the Redis output.
 | *interval*    | integer  | Interval in milliseconds to sleep during batch sends        | Interval       | 5000 |
 | *index*       | string   | The index name to use                                       | index used/created | logstash-yyyy.dd.mm |
 | *host*        | [string] | The hostname(s) of your Elasticsearch server(s) | IP or DNS name |  |
-| *port*        | integer  | Redis port number                                           | This port must be open  | 6379  |
+| *port*        | integer  | Redis port number                                           | This port must be open  | 9200  |
 
 Example Input:
 ```json
