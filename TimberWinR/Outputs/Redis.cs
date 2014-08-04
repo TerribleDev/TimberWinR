@@ -81,7 +81,6 @@ namespace TimberWinR.Outputs
             }
         }
 
-
         /// <summary>
         /// Forward on Json message to Redis Logstash queue
         /// </summary>

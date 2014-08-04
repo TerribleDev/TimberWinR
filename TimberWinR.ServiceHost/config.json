@@ -63,7 +63,7 @@
             },
             {
              "date":  {
-                    "condition": "json[\"timestamp\"] != null && [type] == \"Win32-FileLog\"",
+                    "condition": "[type] == \"Win32-FileLog\"",
                     "match": [
                         "timestamp",
                          "MMM  d HH:mm:sss",
@@ -77,10 +77,7 @@
                 "mutate": {      
                     "_comment": "Orion Rules",        
                     "rename": [
-                        "ComputerName", "Host",
-                        "host", "Host",
-                        "message","Message",
-                        "type","Type",
+                        "ComputerName", "Host",                                          
                         "SID", "Username"                 
                     ]
                 }                
@@ -96,7 +93,16 @@
                         "tstlexiceapp006.vistaprint.svc"
                     ]
                 }
-            ]
+            ],            
+            "Elasticsearch": [
+                { 
+                    "threads":  1,   
+                    "interval": 5000,                          
+                    "host": [
+                        "tstlexiceapp003.vistaprint.svc"
+                    ]
+                }
+            ]                           
         }       
     }
 }

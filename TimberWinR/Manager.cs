@@ -74,6 +74,15 @@ namespace TimberWinR
                     var redis = new RedisOutput(this, ro, cancelToken);
                     Outputs.Add(redis);
                 }
+              
+            }
+            if (Config.ElasticsearchOutputs != null)
+            {
+                foreach (var ro in Config.ElasticsearchOutputs)
+                {
+                    var els = new ElasticsearchOutput(this, ro, cancelToken);
+                    Outputs.Add(els);
+                }
             }
 
             foreach (Parser.IISW3CLog iisw3cConfig in Config.IISW3C)

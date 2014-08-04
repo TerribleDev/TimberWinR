@@ -37,6 +37,7 @@ namespace TimberWinR.Inputs
                     string msg = ToPrintable(line);
                     JObject jo = new JObject();
                     jo["message"] = msg;
+                    AddDefaultFields(jo);                                    
                     ProcessJson(jo);
                 }
                 else              

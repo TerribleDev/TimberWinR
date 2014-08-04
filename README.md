@@ -1,10 +1,11 @@
 TimberWinR
 ==========
-A Native Windows to Redis Logstash Agent which runs as a service.
+A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
+
 ## Why have TimberWinR?
 TimberWinR is a native .NET implementation utilizing Microsoft's [LogParser](http://technet.microsoft.com/en-us/scriptcenter/dd919274.aspx).  This means
 no JVM/JRuby is required, and LogParser does all the heavy lifting.  TimberWinR collects
-the data from LogParser and ships it to Logstash via Redis.
+the data from LogParser and ships it to Logstash via Redis (or can ship direcly to Elasticsearch)
 
 ## Basics
 TimberWinR uses a configuration file to control how the logs are collected, filtered and shipped off.  
@@ -33,6 +34,7 @@ represented as a JSON Property or Array.
 
 ## Supported Output Formats
 1. [Redis](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/RedisOutput.md)
+1. [Elasticsearch](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/ElasticsearchOutput.md)
 
 ## Sample Configuration
 TimberWinR reads a JSON configuration file, an example file is shown here:

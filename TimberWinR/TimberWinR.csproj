@@ -49,6 +49,9 @@
     <Reference Include="RapidRegex.Core">
       <HintPath>..\packages\RapidRegex.Core.1.0.0.2\lib\net40\RapidRegex.Core.dll</HintPath>
     </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -78,6 +81,7 @@
     <Compile Include="Inputs\LogsListener.cs" />
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
     <Compile Include="Manager.cs" />
+    <Compile Include="Outputs\Elasticsearch.cs" />
     <Compile Include="Outputs\OutputSender.cs" />
     <Compile Include="Outputs\Redis.cs" />
     <Compile Include="Parser.cs" />

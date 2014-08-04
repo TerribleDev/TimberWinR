@@ -392,7 +392,33 @@ namespace TimberWinR.Parser
         }
     }
 
-    public partial class RedisOutput
+    public class ElasticsearchOutput
+    {
+        [JsonProperty(PropertyName = "host")]
+        public string[] Host { get; set; }
+        [JsonProperty(PropertyName = "index")]
+        public string Index { get; set; }
+        [JsonProperty(PropertyName = "port")]
+        public int Port { get; set; }
+        [JsonProperty(PropertyName = "timeout")]
+        public int Timeout { get; set; }
+        [JsonProperty(PropertyName = "threads")]
+        public int NumThreads { get; set; }
+        [JsonProperty(PropertyName = "protocol")]
+        public string Protocol { get; set; }
+        
+        public ElasticsearchOutput()
+        {
+            Protocol = "http";
+            Port = 9200;
+            Index = "";
+            Host = new string[] { "localhost" };
+            Timeout = 10000;          
+            NumThreads = 1;          
+        }
+    }
+
+    public class RedisOutput
     {      
         [JsonProperty(PropertyName = "host")]
         public string[] Host { get; set; }
@@ -425,6 +451,9 @@ namespace TimberWinR.Parser
     {
         [JsonProperty("Redis")]
         public RedisOutput[] Redis { get; set; }
+
+        [JsonProperty("Elasticsearch")]
+        public ElasticsearchOutput[] Elasticsearch { get; set; }
     }
 
     public class InputSources
