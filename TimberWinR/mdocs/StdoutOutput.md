@@ -8,7 +8,7 @@ There are no Parameters at this time.
 ```json
 {
     "TimberWinR": {
-        "Inputs": {
+        "Outputs": {
             "Stdout": [
                 {
                     "_comment": "Output to Console"                  
