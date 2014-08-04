@@ -34,7 +34,7 @@ namespace TimberWinR.ServiceHost
                     serviceConfigurator.WhenStarted(myService => myService.Start());
                     serviceConfigurator.WhenStopped(myService => myService.Stop());
                 });
-
+               
                 hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
                 hostConfigurator.AddCommandLineDefinition("logLevel", c => arguments.LogLevel = c);    
 

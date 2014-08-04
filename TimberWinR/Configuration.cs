@@ -79,24 +79,39 @@ namespace TimberWinR
             get { return _filters; }
         }
 
-        public static Configuration FromFile(string jsonConfFile)
-        {
-            Configuration c = new Configuration();
 
+        public static Configuration FromDirectory(string jsonDirectory)
+        {
+            Configuration c = null;
+
+            foreach (string jsonConfFile in Directory.GetFiles(jsonDirectory, "*.json"))
+            {
+                if (!string.IsNullOrEmpty(jsonConfFile))
+                {
+                    c = FromFile(jsonConfFile, c);
+                }
+            }
+
+            return c;
+        }
+
+        public static Configuration FromFile(string jsonConfFile, Configuration c = null)
+        {           
             if (!string.IsNullOrEmpty(jsonConfFile))
             {
                 string json = File.ReadAllText(jsonConfFile);
 
-                return FromString(json);
+                return FromString(json, c);
             }
 
             return null;
         }
 
-        public static Configuration FromString(string json)
+        public static Configuration FromString(string json, Configuration c = null)
         {
-            Configuration c = new Configuration();
-
+            if (c == null)
+                c = new Configuration();
+            
             JsonSerializer serializer = new JsonSerializer();
             TextReader re = new StringReader(json);
             JsonTextReader reader = new JsonTextReader(re);
@@ -125,7 +140,6 @@ namespace TimberWinR
                 if (x.TimberWinR.Outputs.Elasticsearch != null)
                     c._elasticsearchOutputs = x.TimberWinR.Outputs.Elasticsearch.ToList();
             }         
-
 
             if (x.TimberWinR.Filters != null)
                 c._filters = x.TimberWinR.AllFilters.ToList();
