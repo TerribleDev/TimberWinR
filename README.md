@@ -126,9 +126,13 @@ Options:
 -logLevel:      Specifies the logging level for TimberWinR
                 Legal Values: Trace|Debug|Info|Warn|Error|Fatal|Off
                 Default is -logDir:Info
--configFile:    Specifies the path to the JSON config files
+-configFile:    Specifies the path to the JSON config file, or directory which contains .json file(s).
                 Default is -configFile:default.json
 ```
+#### -configFile
+This may be a single .json file or a directory containing .json file(s).  If it is a directory, all
+files will be read and processed, the order in which the files will be processed will match the alphabetical
+order on disk.
 
 ### Quickstart Guide
 If you really just want to try it out, grab the binary distribution, extract the .zip file
