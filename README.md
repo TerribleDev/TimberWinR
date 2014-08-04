@@ -34,7 +34,8 @@ represented as a JSON Property or Array.
 
 ## Supported Output Formats
 1. [Redis](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/RedisOutput.md)
-1. [Elasticsearch](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/ElasticsearchOutput.md)
+2. [Elasticsearch](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/ElasticsearchOutput.md)
+3. [Stdout](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/StdoutOutput.md)
 
 ## Sample Configuration
 TimberWinR reads a JSON configuration file, an example file is shown here:
