@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer", "Installer\Installer.vdproj", "{71EAE23D-FAC3-4141-9557-028FB96565F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,8 @@ Global
 		{4410C95C-B22F-4B68-B132-84545AAA7A31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4410C95C-B22F-4B68-B132-84545AAA7A31}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4410C95C-B22F-4B68-B132-84545AAA7A31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71EAE23D-FAC3-4141-9557-028FB96565F8}.Debug|Any CPU.ActiveCfg = Debug
+		{71EAE23D-FAC3-4141-9557-028FB96565F8}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
