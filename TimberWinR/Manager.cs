@@ -59,11 +59,13 @@ namespace TimberWinR
             // Is it a directory?
             if (Directory.Exists(jsonConfigFile))
             {
-                Config = Configuration.FromDirectory(jsonConfigFile);
                 LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", jsonConfigFile);
+                Config = Configuration.FromDirectory(jsonConfigFile);              
             }
             else
             {
+                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From File: {0}", jsonConfigFile);
+
                 var fi = new FileInfo(jsonConfigFile);
 
                 if (!fi.Exists)

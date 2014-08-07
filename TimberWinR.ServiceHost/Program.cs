@@ -36,7 +36,8 @@ namespace TimberWinR.ServiceHost
                 });
                
                 hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
-                hostConfigurator.AddCommandLineDefinition("logLevel", c => arguments.LogLevel = c);    
+                hostConfigurator.AddCommandLineDefinition("logLevel", c => arguments.LogLevel = c);
+                hostConfigurator.AddCommandLineDefinition("logDir", c => arguments.LogfileDir = c);    
 
                 hostConfigurator.ApplyCommandLine();
                 hostConfigurator.RunAsLocalSystem();

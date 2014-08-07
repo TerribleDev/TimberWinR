@@ -106,12 +106,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F7997D5DC4D27D0859699C68A19B4274"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_7BCB868A2CAA4D33BE94750D68006132"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -157,6 +151,12 @@
         "OwnerKey" = "8:_98642F03DFBEE1CE810E683399B503CA"
         "MsmSig" = "8:_UNDEFINED"
         }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_F7997D5DC4D27D0859699C68A19B4274"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -165,7 +165,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:Debug\\Installer.msi"
+        "OutputFilename" = "8:Debug\\TimberWinR-1.1.0.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -175,13 +175,29 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.5"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.5 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.5"
+                    }
+                }
+            }
         }
         "Release"
         {
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\Installer.msi"
+        "OutputFilename" = "8:Release\\TimberWinR-1.1.0.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -191,6 +207,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
@@ -199,7 +223,7 @@
         {
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_1AF00E3D0BF342E0B27D1286AAF50918"
             {
-            "Name" = "8:Primary output from TimberWinR.ServiceHost (Active)"
+            "Name" = "8:Service Install"
             "Condition" = "8:"
             "Object" = "8:_7BCB868A2CAA4D33BE94750D68006132"
             "FileType" = "3:2"
@@ -211,44 +235,58 @@
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_35606DFD709D464CAF3CF5B5B7E89A52"
+            {
+            "Name" = "8:Setup Config Path"
+            "Condition" = "8:"
+            "Object" = "8:_7BCB868A2CAA4D33BE94750D68006132"
+            "FileType" = "3:2"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:2"
+            "Identifier" = "8:_B3BE21EE_6D61_41A5_841F_42DE009A4CBD"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:/configFile=\"[CONFIGFILE]\" /logdir=\"[LOGDIR]\""
+            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_57135C50CEA24E3C9D356E7ABCBC9671"
             {
-            "Name" = "8:Primary output from TimberWinR.ServiceHost (Active)"
+            "Name" = "8:Stop Service"
             "Condition" = "8:"
             "Object" = "8:_7BCB868A2CAA4D33BE94750D68006132"
             "FileType" = "3:2"
             "InstallAction" = "3:4"
             "Arguments" = "8:stop"
             "EntryPoint" = "8:"
-            "Sequence" = "3:2"
+            "Sequence" = "3:1"
             "Identifier" = "8:_B30B9234_9E99_4218_ABDF_55E5948259E3"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_639BE1FAFE984C5A8AEEA2240422F1A2"
             {
-            "Name" = "8:Primary output from TimberWinR.ServiceHost (Active)"
+            "Name" = "8:Start Service"
             "Condition" = "8:"
             "Object" = "8:_7BCB868A2CAA4D33BE94750D68006132"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
             "Arguments" = "8:start"
             "EntryPoint" = "8:"
-            "Sequence" = "3:2"
+            "Sequence" = "3:3"
             "Identifier" = "8:_EA07A56B_5CC6_45F3_B610_24D63C0111B2"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_AF7EB1BB260845F1806BD079A8212C6F"
             {
-            "Name" = "8:Primary output from TimberWinR.ServiceHost (Active)"
+            "Name" = "8:Uninstall Service"
             "Condition" = "8:"
             "Object" = "8:_7BCB868A2CAA4D33BE94750D68006132"
             "FileType" = "3:2"
             "InstallAction" = "3:4"
             "Arguments" = "8:uninstall"
             "EntryPoint" = "8:"
-            "Sequence" = "3:1"
+            "Sequence" = "3:2"
             "Identifier" = "8:_8224C98F_5305_468F_B717_C41E5E696513"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -581,7 +619,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:TimberWinR"
         "ProductCode" = "8:{6A92C26D-917E-4B93-80CA-5CF1FD3C4FC4}"
-        "PackageCode" = "8:{DF28AD86-47D2-417E-B2C2-D0FCB92EF21F}"
+        "PackageCode" = "8:{E45032FC-7473-4294-BAB9-EA73A78548EA}"
         "UpgradeCode" = "8:{B2219A12-A350-4DF0-B12D-F1C0BD16FF64}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

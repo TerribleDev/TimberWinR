@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -13,9 +14,8 @@ namespace TimberWinR.Inputs
     public class TcpInputListener : InputListener
     {
         private readonly System.Net.Sockets.TcpListener _tcpListener;
-        private Thread _listenThread;
-        const int bufferSize = 16535;
-        private int _port;
+        private Thread _listenThread;       
+        private readonly int _port;
 
         public TcpInputListener(CancellationToken cancelToken, int port = 5140)
             : base(cancelToken, "Win32-Tcp")
@@ -66,41 +66,24 @@ namespace TimberWinR.Inputs
         {           
             var tcpClient = (TcpClient)client;
             NetworkStream clientStream = tcpClient.GetStream();
-          
-            var message = new byte[bufferSize];           
-            while (!CancelToken.IsCancellationRequested)
+            var stream = new StreamReader(clientStream);          
+           
+            string line;
+            while ((line = stream.ReadLine()) != null)
             {
-                var bytesRead = 0;
                 try
                 {
-                    //blocks until a client sends a message                  
-                    bytesRead = clientStream.Read(message, 0, bufferSize);
-                }
-                catch
-                {
-                    //a socket error has occured
-                    break;
-                }
-
-                if (bytesRead == 0)
-                {
-                    //the client has disconnected from the server
-                    break;
-                }
-
-                //message has successfully been received
-                var encoder = new ASCIIEncoding();
-                var encodedMessage = encoder.GetString(message, 0, bytesRead);
-                try
-                {
-                    JObject json = JObject.Parse(encodedMessage);
+                    JObject json = JObject.Parse(line);
                     ProcessJson(json);
                 }
                 catch (Exception)
-                {                
-                }                
+                {
+                }
+                if (CancelToken.IsCancellationRequested)
+                    break;
             }
-            tcpClient.Close();
+            clientStream.Close(); 
+            tcpClient.Close();          
             Finished();
         }
     }
