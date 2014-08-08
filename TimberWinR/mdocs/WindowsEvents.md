@@ -12,7 +12,7 @@ The following parameters are allowed when configuring WindowsEvents.
 | *source*          | string |Windows event logs                                                       | Application,System,Security |  System   |
 | *binaryFormat*    | string |Format of the "Data" binary field.                                       | ASC,HEX,PRINT               | **ASC** |
 | *msgErrorMode*    | string |Behavior when event messages or event category names cannot be resolved. |NULL,ERROR,MSG               | **MSG** |
-| *direction*       | string |Format of the "Data" binary field.                                       | FW,BW                        | **FW**  |
+| *direction*       | string |Direction to scan the event logs                                         | FW,BW                        | **FW**  |
 | *stringsSep*      | string |Separator between values of the "Strings" field.                         | any string                   | vertical bar |
 | *fullEventCode*   | bool   |Return the full event ID code instead of the friendly code.              | true,false                   | **false** |
 | *fullText*        | bool   |Retrieve the full text message                                           | true,false                   | **true** |
