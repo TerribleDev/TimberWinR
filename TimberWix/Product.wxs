@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="TimberWinR" Language="1033" Version="1.0.0.0" Manufacturer="Vistaprint" UpgradeCode="5c2b6a95-34d5-4131-8fb0-5c97214df942">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <Property Id="CONFIGFILE">default.json</Property>
+    <Property Id="LOGDIR">c:\logs</Property>
+    <Property Id="LOGLEVEL">Info</Property>
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="TimberWinR" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="TimberWinR" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="ProductComponent" Guid="1BDEC5F3-5E9F-4E2E-8B1B-30E7968A99E1">
+        <File Id="TimberWinR.ServiceHost.exe" Name="$(var.TimberWinR.ServiceHost.TargetFileName)" Source="$(var.TimberWinR.ServiceHost.TargetPath)" />
+        <File Id="TimberWinR.ServiceHost.exe.config" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.ServiceHost.exe.config" />
+        <File Id="Interop.MSUtil.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Interop.MSUtil.dll"  />
+        <File Id="csredis.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\csredis.dll"  />
+        <File Id="Newtonsoft.Json.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Newtonsoft.Json.dll"  />
+        <File Id="Nlog.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Nlog.dll"  />
+        <File Id="RestSharp.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RestSharp.dll"  />
+        <File Id="RapidRegex.Core.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RapidRegex.Core.dll"  />
+        <File Id="TimberWinR.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.dll"  />
+        <File Id="Topshelf.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Topshelf.dll"  />
+      </Component>
+    </ComponentGroup>
+
+    <InstallExecuteSequence>
+      <Custom Action='ManagedInstall' After="InstallFiles">NOT Installed</Custom>
+      <Custom Action='ManagedInstall2' After="ManagedInstall">NOT Installed</Custom>
+      <Custom Action='ManagedUnInstall' Before="RemoveFiles">Installed</Custom>
+    </InstallExecuteSequence>
+
+    <CustomAction Id="ManagedInstall"
+      Directory="INSTALLFOLDER"
+      Impersonate="yes"
+      Execute="deferred"
+      ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" install --autostart -configFile "[CONFIGFILE]" -logDir "[LOGDIR]" -logLevel "[LOGLEVEL]"'
+      Return='check'>      
+    </CustomAction>
+
+    <CustomAction Id="ManagedInstall2"
+      Directory="INSTALLFOLDER"
+      Impersonate="yes"
+      Execute="deferred"
+      ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" start'
+      Return='check'>      
+    </CustomAction>
+
+    <CustomAction Id="ManagedUnInstall"
+     Directory="INSTALLFOLDER"
+     Impersonate="yes"
+     Execute="deferred"
+     ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" uninstall'
+     Return='check'>
+    </CustomAction>
+
+
+  </Fragment>
+</Wix>

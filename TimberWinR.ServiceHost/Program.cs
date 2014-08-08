@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 using TimberWinR.Outputs;
 using TimberWinR.ServiceHost;
 using TimberWinR.Inputs;
@@ -46,7 +47,35 @@ namespace TimberWinR.ServiceHost
                 hostConfigurator.SetDisplayName("TimberWinR");
                 hostConfigurator.SetDescription("TimberWinR using Topshelf");
                 hostConfigurator.SetServiceName("TimberWinR");
+
+                hostConfigurator.AfterInstall(() =>
+                {
+                    const string keyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
+                    const string keyName = "ImagePath";
+
+                    var currentValue = Registry.GetValue(keyPath, keyName, "").ToString();
+                    if (!string.IsNullOrEmpty(currentValue))
+                    {
+                        AddServiceParameter("-configFile", arguments.ConfigFile);
+                        AddServiceParameter("-logLevel", arguments.LogLevel);
+                        AddServiceParameter("-logDir", arguments.LogfileDir);
+                    }
+                });
             });
+        }
+
+        private static void AddServiceParameter(string paramName, string value)
+        {
+            string keyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
+            string keyName = "ImagePath";
+
+            string currentValue = Registry.GetValue(keyPath, keyName, "").ToString();
+
+            if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0} ", paramName)))           
+            {
+                currentValue += string.Format(" {0} \"{1}\"", paramName, value.Replace("\\\\", "\\"));               
+                Registry.SetValue(keyPath, keyName, currentValue);               
+            }
         }
     }
 
