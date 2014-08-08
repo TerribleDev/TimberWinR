@@ -37,7 +37,7 @@ namespace TimberWinR.UnitTests
                 Configuration c = Configuration.FromString(grokJson);
                 Assert.IsTrue(false, "Should have thrown an exception");
             }
-            catch (TimberWinR.Parser.Grok.GrokFilterException ex)
+            catch (TimberWinR.Parser.Grok.GrokFilterException)
             {               
             }          
         }
@@ -67,7 +67,7 @@ namespace TimberWinR.UnitTests
                 Configuration c = Configuration.FromString(grokJson);
                 Assert.IsTrue(false, "Should have thrown an exception");
             }
-            catch (TimberWinR.Parser.Grok.GrokAddTagException ex)
+            catch (TimberWinR.Parser.Grok.GrokAddTagException)
             {
             }
         }
