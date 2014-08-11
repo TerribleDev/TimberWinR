@@ -67,8 +67,9 @@ namespace TimberWinR.UnitTests
                 Configuration c = Configuration.FromString(grokJson);
                 Assert.IsTrue(false, "Should have thrown an exception");
             }
-            catch (TimberWinR.Parser.Grok.GrokAddTagException)
+            catch (TimberWinR.Parser.Grok.GrokAddTagException ex)
             {
+                Assert.AreEqual(ex.Message, "Grok filter add_tag requires tuples");
             }
         }
 
