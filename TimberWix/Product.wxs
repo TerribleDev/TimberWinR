@@ -48,7 +48,7 @@
       Impersonate="yes"
       Execute="deferred"
       ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" install --autostart -configFile "[CONFIGFILE]" -logDir "[LOGDIR]" -logLevel "[LOGLEVEL]"'
-      Return='check'>      
+      Return='ignore'>      
     </CustomAction>
 
     <CustomAction Id="ManagedInstall2"
@@ -56,7 +56,7 @@
       Impersonate="yes"
       Execute="deferred"
       ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" start'
-      Return='check'>      
+      Return='ignore'>      
     </CustomAction>
 
     <CustomAction Id="ManagedUnInstall"
@@ -64,7 +64,7 @@
      Impersonate="yes"
      Execute="deferred"
      ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" uninstall'
-     Return='check'>
+     Return='ignore'>
     </CustomAction>
 
 
