@@ -40,7 +40,7 @@
     <InstallExecuteSequence>
       <Custom Action='ManagedInstall' After="InstallFiles">NOT Installed</Custom>
       <Custom Action='ManagedInstall2' After="ManagedInstall">NOT Installed</Custom>
-      <Custom Action='ManagedUnInstall' Before="RemoveFiles">Installed</Custom>
+      <Custom Action='ManagedUnInstall' Before="RemoveFiles">(NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")</Custom>
     </InstallExecuteSequence>
 
     <CustomAction Id="ManagedInstall"
