@@ -22,7 +22,7 @@
     </WixVariables>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
-    <LinkerAdditionalOptions>
+    <LinkerAdditionalOptions>    
     </LinkerAdditionalOptions>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -50,11 +50,62 @@
   <PropertyGroup>
     <PreBuildEvent />
   </PropertyGroup>
+  <Target Name="BeforeBuild">
+    <!-- Read the version from the to-be-installed .exe -->   
+    <GetAssemblyIdentity AssemblyFiles="..\TimberWinR.ServiceHost\bin\$(Configuration)\TimberWinR.ServiceHost.exe">
+      <Output TaskParameter="Assemblies" ItemName="AsmInfo" />
+    </GetAssemblyIdentity>
+    <!-- Create the MSBuild property $(VersionNumber) -->
+    <CreateProperty Value="%(AsmInfo.Version)">
+      <Output TaskParameter="Value" PropertyName="VersionNumber" />
+    </CreateProperty>
+
+    <!-- Create the WiX preprocessor variable $(var.VersionNumber) -->
+    <CreateProperty Value="$(DefineConstants);VersionNumber=$(VersionNumber)">
+      <Output TaskParameter="Value" PropertyName="DefineConstants" />
+    </CreateProperty>
+
+    <!-- Update the MSBuild properties $(TargetName), etc. -->
+    <CreateProperty Value="$(SolutionName)-$(Platform)-$(VersionNumber)">
+      <Output TaskParameter="Value" PropertyName="TargetName" />
+    </CreateProperty>
+    <CreateProperty Value="$(TargetName)$(TargetExt)">
+      <Output TaskParameter="Value" PropertyName="TargetFileName" />
+    </CreateProperty>
+    <CreateProperty Value="$(TargetName)$(TargetPdbExt)">
+      <Output TaskParameter="Value" PropertyName="TargetPdbName" />
+    </CreateProperty>
+    <CreateProperty Value="$(TargetDir)$(TargetFileName)">
+      <Output TaskParameter="Value" PropertyName="TargetPath" />
+    </CreateProperty>
+    <CreateProperty Value="$(TargetPdbDir)$(TargetPdbName)">
+      <Output TaskParameter="Value" PropertyName="TargetPdbPath" />
+    </CreateProperty>
+
+    <!-- Update the MSBuild property from which candle.exe args are derived -->
+    <CreateProperty Value="
+    Configuration=$(ConfigurationName);
+    OutDir=$(OutDir);
+    Platform=$(PlatformName);
+    ProjectDir=$(ProjectDir);
+    ProjectExt=$(ProjectExt);
+    ProjectFileName=$(ProjectFileName);
+    ProjectName=$(ProjectName);
+    ProjectPath=$(ProjectPath);
+    TargetDir=$(TargetDir);
+    TargetExt=$(TargetExt);
+    TargetFileName=$(TargetFileName);
+    TargetName=$(TargetName);
+    TargetPath=$(TargetPath);
+  ">
+      <Output TaskParameter="Value" PropertyName="ProjectDefineConstants" />
+    </CreateProperty>
+  </Target>
+  
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.
-	<Target Name="BeforeBuild">
-  </Target>
+	
 	<Target Name="AfterBuild">
 	</Target>
 	-->

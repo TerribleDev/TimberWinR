@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="TimberWinR" Language="1033" Version="1.1.0.0" Manufacturer="Vistaprint" UpgradeCode="5c2b6a95-34d5-4131-8fb0-5c97214df942">
+  <Product Id="*" Name="TimberWinR" Language="1033" Version="$(var.VersionNumber)" Manufacturer="Vistaprint" UpgradeCode="5c2b6a95-34d5-4131-8fb0-5c97214df942">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
     <Property Id="CONFIGFILE">default.json</Property>
     <Property Id="LOGDIR">c:\logs</Property>
