@@ -74,7 +74,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="TimberWinR.ServiceHost.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TimberWinR\TimberWinR.csproj">
