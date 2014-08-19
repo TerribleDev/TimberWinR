@@ -13,31 +13,44 @@ namespace TimberWinR.Inputs
 {
     public class TcpInputListener : InputListener
     {
-        private readonly System.Net.Sockets.TcpListener _tcpListener;
-        private Thread _listenThread;       
+        private readonly System.Net.Sockets.TcpListener _tcpListenerV4;
+        private readonly System.Net.Sockets.TcpListener _tcpListenerV6;
+        private Thread _listenThreadV4;
+        private Thread _listenThreadV6;
         private readonly int _port;
 
         public TcpInputListener(CancellationToken cancelToken, int port = 5140)
             : base(cancelToken, "Win32-Tcp")
         {
             _port = port;
-            _tcpListener = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
-            _listenThread = new Thread(new ThreadStart(ListenForClients));
-            _listenThread.Start();
+            LogManager.GetCurrentClassLogger().Info("Tcp Input on Port: {0}", _port);
+
+            _tcpListenerV6 = new System.Net.Sockets.TcpListener(IPAddress.IPv6Any, port);
+            _tcpListenerV4 = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
+
+            _listenThreadV4 = new Thread(new ParameterizedThreadStart(ListenForClients));
+            _listenThreadV4.Start(_tcpListenerV4);
+
+            _listenThreadV6 = new Thread(new ParameterizedThreadStart(ListenForClients));
+            _listenThreadV6.Start(_tcpListenerV6);
         }
 
 
         public override void Shutdown()
         {
-            this._tcpListener.Stop();
-            Finished();
-            base.Shutdown();            
-        }           
-        
+            this._tcpListenerV4.Stop();
+            this._tcpListenerV6.Stop();
 
-        private void ListenForClients()
+            Finished();
+            base.Shutdown();
+        }
+
+
+        private void ListenForClients(object olistener)
         {
-            this._tcpListener.Start();
+            System.Net.Sockets.TcpListener listener = olistener as System.Net.Sockets.TcpListener;
+
+            listener.Start();
 
             LogManager.GetCurrentClassLogger().Info("Tcp Input on Port {0} Ready", _port);
 
@@ -46,19 +59,19 @@ namespace TimberWinR.Inputs
                 try
                 {
                     //blocks until a client has connected to the server
-                    TcpClient client = this._tcpListener.AcceptTcpClient();                   
-                  
+                    TcpClient client = listener.AcceptTcpClient();
+
                     // Wait for a client, spin up a thread.
                     var clientThread = new Thread(new ParameterizedThreadStart(HandleNewClient));
                     clientThread.Start(client);
-                }                  
+                }
                 catch (SocketException ex)
                 {
-                    if (ex.SocketErrorCode == SocketError.Interrupted)                        
+                    if (ex.SocketErrorCode == SocketError.Interrupted)
                         break;
-                    else                    
-                        LogManager.GetCurrentClassLogger().Error(ex);                    
-                }               
+                    else
+                        LogManager.GetCurrentClassLogger().Error(ex);
+                }
             }
         }
 
@@ -66,8 +79,9 @@ namespace TimberWinR.Inputs
         {
             var tcpClient = (TcpClient)client;
             NetworkStream clientStream = null;
-            do
-            {             
+           
+            try
+            {
                 clientStream = tcpClient.GetStream();
                 var stream = new StreamReader(clientStream);
                 string line;
@@ -85,10 +99,16 @@ namespace TimberWinR.Inputs
                     if (CancelToken.IsCancellationRequested)
                         break;
                 }
-            } while (!CancelToken.IsCancellationRequested);          
-            
-            clientStream.Close(); 
-            tcpClient.Close();          
+            }
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error("Tcp Exception", ex);
+            }
+         
+            if (clientStream != null)
+                clientStream.Close();
+
+            tcpClient.Close();
             Finished();
         }
     }
