@@ -63,25 +63,30 @@ namespace TimberWinR.Inputs
         }
 
         private void HandleNewClient(object client)
-        {           
+        {
             var tcpClient = (TcpClient)client;
-            NetworkStream clientStream = tcpClient.GetStream();
-            var stream = new StreamReader(clientStream);          
-           
-            string line;
-            while ((line = stream.ReadLine()) != null)
-            {
-                try
+            NetworkStream clientStream = null;
+            do
+            {             
+                clientStream = tcpClient.GetStream();
+                var stream = new StreamReader(clientStream);
+                string line;
+                while ((line = stream.ReadLine()) != null)
                 {
-                    JObject json = JObject.Parse(line);
-                    ProcessJson(json);
+                    try
+                    {
+                        JObject json = JObject.Parse(line);
+                        ProcessJson(json);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogManager.GetCurrentClassLogger().Error(ex);
+                    }
+                    if (CancelToken.IsCancellationRequested)
+                        break;
                 }
-                catch (Exception)
-                {
-                }
-                if (CancelToken.IsCancellationRequested)
-                    break;
-            }
+            } while (!CancelToken.IsCancellationRequested);          
+            
             clientStream.Close(); 
             tcpClient.Close();          
             Finished();
