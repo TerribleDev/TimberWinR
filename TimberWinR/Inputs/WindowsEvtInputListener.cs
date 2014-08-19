@@ -91,12 +91,14 @@ namespace TimberWinR.Inputs
                     }
                     // Close the recordset
                     rs.close();
+                    firstQuery = false;
                 }
                 catch (Exception ex)
                 {
-                    LogManager.GetCurrentClassLogger().Error(ex);
-                }
-                firstQuery = false;
+                    LogManager.GetCurrentClassLogger().Error("WindowsEventListener", ex);
+                    firstQuery = true;
+                    oLogQuery = new LogQuery();
+                }               
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
 
