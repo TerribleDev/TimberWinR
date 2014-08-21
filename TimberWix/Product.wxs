@@ -5,7 +5,7 @@
     <Property Id="CONFIGFILE">default.json</Property>
     <Property Id="LOGDIR">c:\logs</Property>
     <Property Id="LOGLEVEL">Info</Property>
-    
+    <Property Id="DIAGPORT">5141</Property>
     <!--
 				We need to be able to uninstall a newer version from an older version.
 				The default reinstallmode is "omus", of which the 'o' means "reinstall if missing or older"
@@ -58,7 +58,7 @@
       Directory="INSTALLFOLDER"
       Impersonate="yes"
       Execute="deferred"
-      ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" install --autostart -configFile "[CONFIGFILE]" -logDir "[LOGDIR]" -logLevel "[LOGLEVEL]"'
+      ExeCommand='"[INSTALLFOLDER]TimberWinR.ServiceHost.exe" install --autostart -configFile "[CONFIGFILE]" -logDir "[LOGDIR]" -logLevel "[LOGLEVEL]" -diagnosticPort:[DIAGPORT]'
       Return='check'>      
     </CustomAction>
 

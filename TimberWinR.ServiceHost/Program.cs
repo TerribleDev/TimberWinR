@@ -38,7 +38,8 @@ namespace TimberWinR.ServiceHost
                
                 hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
                 hostConfigurator.AddCommandLineDefinition("logLevel", c => arguments.LogLevel = c);
-                hostConfigurator.AddCommandLineDefinition("logDir", c => arguments.LogfileDir = c);    
+                hostConfigurator.AddCommandLineDefinition("logDir", c => arguments.LogfileDir = c);
+                hostConfigurator.AddCommandLineDefinition("diagnosticPort", c => arguments.DiagnosticPort = int.Parse(c));    
 
                 hostConfigurator.ApplyCommandLine();
                 hostConfigurator.RunAsLocalSystem();
@@ -59,6 +60,8 @@ namespace TimberWinR.ServiceHost
                         AddServiceParameter("-configFile", arguments.ConfigFile);
                         AddServiceParameter("-logLevel", arguments.LogLevel);
                         AddServiceParameter("-logDir", arguments.LogfileDir);
+                        if (arguments.DiagnosticPort > 0)
+                            AddServiceParameter("-diagnosticPort", arguments.DiagnosticPort);
                     }
                 });
             });
@@ -77,6 +80,21 @@ namespace TimberWinR.ServiceHost
                 Registry.SetValue(keyPath, keyName, currentValue);               
             }
         }
+
+        private static void AddServiceParameter(string paramName, int value)
+        {
+            string keyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
+            string keyName = "ImagePath";
+
+            string currentValue = Registry.GetValue(keyPath, keyName, "").ToString();
+
+            if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0}:", paramName)))
+            {
+                currentValue += string.Format(" {0}:{1}", paramName, value);
+                Registry.SetValue(keyPath, keyName, currentValue);
+            }
+        }
+
     }
 
     internal class Arguments
@@ -84,9 +102,11 @@ namespace TimberWinR.ServiceHost
         public string ConfigFile { get; set; }
         public string LogLevel { get; set; }
         public string LogfileDir { get; set; }
+        public int DiagnosticPort { get; set; }
 
         public Arguments()
         {
+            DiagnosticPort = 5141;
             ConfigFile = "default.json";
             LogLevel = "Info";
             LogfileDir = @"C:\logs";
@@ -100,7 +120,7 @@ namespace TimberWinR.ServiceHost
         readonly CancellationToken _cancellationToken;
         readonly Task _serviceTask;
         private readonly Arguments _args;
-      
+        private TimberWinR.Diagnostics.Diagnostics _diags;
         private TimberWinR.Manager _manager;
 
         public TimberWinRService(Arguments args)
@@ -108,7 +128,7 @@ namespace TimberWinR.ServiceHost
             _args = args;
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
-            _serviceTask = new Task(RunService, _cancellationToken);
+            _serviceTask = new Task(RunService, _cancellationToken);           
         }
 
         public void Start()
@@ -118,8 +138,10 @@ namespace TimberWinR.ServiceHost
 
         public void Stop()
         {
-            _cancellationTokenSource.Cancel();          
-            
+            _cancellationTokenSource.Cancel();
+            if (_diags != null)
+             _diags.Shutdown();
+
             if (_manager != null)
                 _manager.Shutdown();
         }
@@ -130,6 +152,8 @@ namespace TimberWinR.ServiceHost
         private void RunService()
         {
             _manager = new TimberWinR.Manager(_args.ConfigFile, _args.LogLevel, _args.LogfileDir, _cancellationToken);
+            if (_args.DiagnosticPort > 0)
+                _diags = new Diagnostics.Diagnostics(_manager, _cancellationToken, _args.DiagnosticPort);
         }
     }
 }

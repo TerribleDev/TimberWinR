@@ -14,16 +14,28 @@ namespace TimberWinR.Outputs
         private readonly int _interval;
         private readonly object _locker = new object();
         private readonly List<JObject> _jsonQueue;
+        private long _sentMessages;
 
         public StdoutOutput(TimberWinR.Manager manager, Parser.StdoutOutput eo, CancellationToken cancelToken)
             : base(cancelToken)
         {
+            _sentMessages = 0;
             _manager = manager;
             _interval = eo.Interval;
             _jsonQueue = new List<JObject>();
 
             var elsThread = new Task(StdoutSender, cancelToken);
             elsThread.Start();
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("stdout",
+                    new JObject(
+                        new JProperty("sent_messages", _sentMessages))));
+                      
+            return json;
         }
 
         // 
@@ -37,7 +49,7 @@ namespace TimberWinR.Outputs
                 lock (_locker)
                 {
                     messages = _jsonQueue.Take(1).ToArray();
-                    _jsonQueue.RemoveRange(0, messages.Length);
+                    _jsonQueue.RemoveRange(0, messages.Length);                  
                 }
 
                 if (messages.Length > 0)
@@ -47,6 +59,7 @@ namespace TimberWinR.Outputs
                         foreach (JObject obj in messages)
                         {
                             Console.WriteLine(obj.ToString());
+                            _sentMessages++;
                         }
                     }
                     catch (Exception ex)

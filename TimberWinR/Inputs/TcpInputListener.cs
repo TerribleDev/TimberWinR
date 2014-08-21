@@ -18,12 +18,27 @@ namespace TimberWinR.Inputs
         private Thread _listenThreadV4;
         private Thread _listenThreadV6;
         private readonly int _port;
+        private long _receivedMessages;
+
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("tcp",
+                    new JObject(
+                        new JProperty("port", _port),
+                        new JProperty("messages", _receivedMessages)
+                        )));
+
+            return json;
+        }
 
         public TcpInputListener(CancellationToken cancelToken, int port = 5140)
             : base(cancelToken, "Win32-Tcp")
         {
             _port = port;
-            LogManager.GetCurrentClassLogger().Info("Tcp Input on Port: {0}", _port);
+          
+            LogManager.GetCurrentClassLogger().Info("Tcp Input(v4/v6) on Port {0} Ready", _port);
+
 
             _tcpListenerV6 = new System.Net.Sockets.TcpListener(IPAddress.IPv6Any, port);
             _tcpListenerV4 = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
@@ -52,8 +67,7 @@ namespace TimberWinR.Inputs
 
             listener.Start();
 
-            LogManager.GetCurrentClassLogger().Info("Tcp Input on Port {0} Ready", _port);
-
+          
             while (!CancelToken.IsCancellationRequested)
             {
                 try
@@ -79,7 +93,7 @@ namespace TimberWinR.Inputs
         {
             var tcpClient = (TcpClient)client;
             NetworkStream clientStream = null;
-           
+
             try
             {
                 clientStream = tcpClient.GetStream();
@@ -91,6 +105,7 @@ namespace TimberWinR.Inputs
                     {
                         JObject json = JObject.Parse(line);
                         ProcessJson(json);
+                        _receivedMessages++;
                     }
                     catch (Exception ex)
                     {
@@ -104,7 +119,7 @@ namespace TimberWinR.Inputs
             {
                 LogManager.GetCurrentClassLogger().Error("Tcp Exception", ex);
             }
-         
+
             if (clientStream != null)
                 clientStream.Close();
 

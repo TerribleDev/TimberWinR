@@ -21,13 +21,14 @@ namespace TimberWinR.Inputs
     /// Listen to Windows Event Log
     /// </summary>
     public class WindowsEvtInputListener : InputListener
-    {      
+    {
         private int _pollingIntervalInSeconds = 1;
         private TimberWinR.Parser.WindowsEvent _arguments;
-      
+        private long _receivedMessages;
+
         public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken, "Win32-Eventlog")
-        {          
+        {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
             var task = new Task(EventWatcher, cancelToken);
@@ -36,7 +37,26 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
-            base.Shutdown();           
+            base.Shutdown();
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("windows_events",
+                    new JObject(
+                        new JProperty("messages", _receivedMessages),
+                        new JProperty("binaryFormat", _arguments.BinaryFormat.ToString()),
+                        new JProperty("direction", _arguments.Direction.ToString()),
+                        new JProperty("formatMsg", _arguments.FormatMsg),
+                        new JProperty("fullEventCode", _arguments.FullEventCode),
+                        new JProperty("fullText", _arguments.FullText),
+                        new JProperty("msgErrorMode", _arguments.MsgErrorMode.ToString()),
+                        new JProperty("stringsSep", _arguments.StringsSep),
+                        new JProperty("resolveSIDs", _arguments.ResolveSIDS),
+                        new JProperty("iCheckpoint", CheckpointFileName),
+                        new JProperty("source", _arguments.Source))));
+            return json;
         }
 
         private void EventWatcher()
@@ -53,12 +73,12 @@ namespace TimberWinR.Inputs
                 formatMsg = _arguments.FormatMsg,
                 fullEventCode = _arguments.FullEventCode,
                 fullText = _arguments.FullText,
-                msgErrorMode =  _arguments.MsgErrorMode.ToString(),
+                msgErrorMode = _arguments.MsgErrorMode.ToString(),
                 stringsSep = _arguments.StringsSep,
                 resolveSIDs = _arguments.ResolveSIDS,
-                iCheckpoint = CheckpointFileName,               
+                iCheckpoint = CheckpointFileName,
             };
-         
+
 
             // Create the query
             var query = string.Format("SELECT * FROM {0}", _arguments.Source);
@@ -69,7 +89,7 @@ namespace TimberWinR.Inputs
             {
                 try
                 {
-                    var rs = oLogQuery.Execute(query, iFmt);                 
+                    var rs = oLogQuery.Execute(query, iFmt);
                     // Browse the recordset
                     for (; !rs.atEnd(); rs.moveNext())
                     {
@@ -82,11 +102,12 @@ namespace TimberWinR.Inputs
                             {
                                 object v = record.getValue(field.Name);
                                 if (field.Name == "Data")
-                                    v = ToPrintable(v.ToString());                               
+                                    v = ToPrintable(v.ToString());
                                 json.Add(new JProperty(field.Name, v));
                             }
-                                                      
+
                             ProcessJson(json);
+                            _receivedMessages++;
                         }
                     }
                     // Close the recordset
@@ -98,11 +119,11 @@ namespace TimberWinR.Inputs
                     LogManager.GetCurrentClassLogger().Error("WindowsEventListener", ex);
                     firstQuery = true;
                     oLogQuery = new LogQuery();
-                }               
+                }
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
 
             Finished();
-        }       
+        }
     }
 }

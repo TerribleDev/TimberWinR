@@ -104,6 +104,7 @@ namespace TimberWinR
         {           
             if (!string.IsNullOrEmpty(jsonConfFile))
             {
+                LogManager.GetCurrentClassLogger().Info("Reading Configuration From {0}", jsonConfFile);
                 string json = File.ReadAllText(jsonConfFile);
 
                 return FromString(json, c);
