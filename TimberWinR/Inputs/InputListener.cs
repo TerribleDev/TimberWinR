@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using NLog;
 
 namespace TimberWinR.Inputs
 {
@@ -17,7 +18,14 @@ namespace TimberWinR.Inputs
         private string _typeName;
         public AutoResetEvent FinishedEvent { get; set; }
         public string CheckpointFileName { get; set; }
-       
+
+        public string InputType
+        {
+            get { return _typeName; }
+        }
+
+        public abstract JObject ToJson();
+
         public InputListener(CancellationToken token, string typeName)
         {
             CheckpointFileName = Path.Combine(System.IO.Path.GetTempPath(), string.Format("{0}.lpc", Guid.NewGuid().ToString()));          
@@ -60,8 +68,9 @@ namespace TimberWinR.Inputs
                 if (File.Exists(CheckpointFileName))
                     File.Delete(CheckpointFileName);
             }
-            catch (Exception)
-            {               
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error("Error Deleting Checkpoint File", ex);
             }          
         }
 

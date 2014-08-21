@@ -22,12 +22,13 @@ namespace TimberWinR.Inputs
     {
         private int _pollingIntervalInSeconds = 1;
         private TimberWinR.Parser.IISW3CLog _arguments;
-
+        private long _receivedMessages;
 
         public IISW3CInputListener(TimberWinR.Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
             : base(cancelToken, "Win32-IISLog")
         {
             _arguments = arguments;
+            _receivedMessages = 0;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
             var task = new Task(IISW3CWatcher, cancelToken);
             task.Start();
@@ -36,19 +37,37 @@ namespace TimberWinR.Inputs
         public override void Shutdown()
         {
             base.Shutdown();
-        }       
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("iisw3c",
+                    new JObject(
+                        new JProperty("messages", _receivedMessages),
+                        new JProperty("location", _arguments.Location),
+                        new JProperty("codepage", _arguments.CodePage),
+                        new JProperty("consolidateLogs", _arguments.ConsolidateLogs),
+                        new JProperty("dirTime", _arguments.DirTime),
+                        new JProperty("dQuotes", _arguments.DoubleQuotes),
+                        new JProperty("recurse", _arguments.Recurse),
+                        new JProperty("useDoubleQuotes", _arguments.DoubleQuotes)
+                        )));
+            return json;
+        }
+
 
         private void IISW3CWatcher()
         {
             var oLogQuery = new LogQuery();
-           
+
             var iFmt = new IISW3CLogInputFormat()
             {
                 codepage = _arguments.CodePage,
                 consolidateLogs = _arguments.ConsolidateLogs,
                 dirTime = _arguments.DirTime,
                 dQuotes = _arguments.DoubleQuotes,
-                iCheckpoint = CheckpointFileName,           
+                iCheckpoint = CheckpointFileName,
                 recurse = _arguments.Recurse,
                 useDoubleQuotes = _arguments.DoubleQuotes
             };
@@ -67,7 +86,7 @@ namespace TimberWinR.Inputs
                 {
                     var rs = oLogQuery.Execute(query, iFmt);
                     Dictionary<string, int> colMap = new Dictionary<string, int>();
-                    for (int col=0; col<rs.getColumnCount(); col++)
+                    for (int col = 0; col < rs.getColumnCount(); col++)
                     {
                         string colName = rs.getColumnName(col);
                         colMap[colName] = col;
@@ -86,16 +105,17 @@ namespace TimberWinR.Inputs
                                 if (!colMap.ContainsKey(field.Name))
                                     continue;
 
-                                object v = record.getValue(field.Name);                               
+                                object v = record.getValue(field.Name);
                                 if (field.DataType == typeof(DateTime))
                                 {
                                     DateTime dt = DateTime.Parse(v.ToString());
                                     json.Add(new JProperty(field.Name, dt));
-                                }  
-                                else 
+                                }
+                                else
                                     json.Add(new JProperty(field.Name, v));
-                            }                            
+                            }
                             ProcessJson(json);
+                            _receivedMessages++;
                         }
                     }
                     // Close the recordset

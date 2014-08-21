@@ -29,6 +29,11 @@ namespace TimberWinR.Outputs
         private TimberWinR.Manager _manager;
         private readonly int _batchCount;
         private readonly int _interval;
+        private readonly int _numThreads;
+
+        private long _sentMessages;
+        private long _errorCount;
+        private long _redisDepth;
 
         /// <summary>
         /// Get the next client
@@ -61,9 +66,33 @@ namespace TimberWinR.Outputs
             return null;
         }
 
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("redis",
+                    new JObject(
+                        new JProperty("host", string.Join(",", _redisHosts)),
+                        new JProperty("errors", _errorCount),
+                        new JProperty("redis_depth", _redisDepth),
+                        new JProperty("sent_messages", _sentMessages),
+                        new JProperty("queued_messages", _jsonQueue.Count),
+                        new JProperty("port", _port),
+                        new JProperty("interval", _interval),
+                        new JProperty("threads", _numThreads),
+                        new JProperty("batchcount", _batchCount),
+                        new JProperty("index", _logstashIndexName),
+                        new JProperty("hosts",
+                            new JArray(
+                                from h in _redisHosts
+                                select new JObject(
+                                    new JProperty("host", h)))))));
+            return json;
+        }
+
         public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutput ro, CancellationToken cancelToken)
             : base(cancelToken)
         {
+            _redisDepth = 0;
             _batchCount = ro.BatchCount;
             _manager = manager;
             _redisHostIndex = 0;
@@ -73,12 +102,19 @@ namespace TimberWinR.Outputs
             _timeout = ro.Timeout;
             _logstashIndexName = ro.Index;
             _interval = ro.Interval;
+            _numThreads = ro.NumThreads;
+            _errorCount = 0;
 
             for (int i = 0; i < ro.NumThreads; i++)
             {
                 var redisThread = new Task(RedisSender, cancelToken);
                 redisThread.Start();
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Redis Host: {0} Port: {1}, Threads: {2}, Interval: {3}, BatchCount: {4}", string.Join(",", _redisHosts) , _port, _numThreads, _interval, _batchCount);
         }
 
         /// <summary>
@@ -119,6 +155,8 @@ namespace TimberWinR.Outputs
                 {
                     messages = _jsonQueue.Take(_batchCount).ToArray();
                     _jsonQueue.RemoveRange(0, messages.Length);
+                    if (messages.Length > 0)
+                        _manager.IncrementMessageCount(messages.Length);
                 }
 
                 if (messages.Length > 0)
@@ -141,11 +179,13 @@ namespace TimberWinR.Outputs
                                     {
                                         try
                                         {
-                                            client.RPush(_logstashIndexName, jsonMessage);
+                                           _redisDepth = client.RPush(_logstashIndexName, jsonMessage);
+                                           _sentMessages++;
                                         }
                                         catch (SocketException ex)
                                         {
                                             LogManager.GetCurrentClassLogger().Warn(ex);
+                                            Interlocked.Increment(ref _errorCount);
                                         }
                                     }
                                     client.EndPipe();
@@ -153,6 +193,7 @@ namespace TimberWinR.Outputs
                                 }
                                 else
                                 {
+                                    Interlocked.Increment(ref _errorCount);
                                     LogManager.GetCurrentClassLogger()
                                         .Fatal("Unable to connect with any Redis hosts, {0}",
                                             String.Join(",", _redisHosts));
@@ -162,6 +203,7 @@ namespace TimberWinR.Outputs
                         catch (Exception ex)
                         {
                             LogManager.GetCurrentClassLogger().Error(ex);
+                            Interlocked.Increment(ref _errorCount);
                         }
                     }
                 }

@@ -23,10 +23,16 @@ namespace TimberWinR.Outputs
         private readonly int _timeout;
         private readonly object _locker = new object();
         private readonly List<JObject> _jsonQueue;
+        private readonly int _numThreads;
+        private long _sentMessages;
+        private long _errorCount;
 
         public ElasticsearchOutput(TimberWinR.Manager manager, Parser.ElasticsearchOutput eo, CancellationToken cancelToken)
             : base(cancelToken)
         {
+            _sentMessages = 0;
+            _errorCount = 0;
+
             _protocol = eo.Protocol;
             _timeout = eo.Timeout;
             _manager = manager;
@@ -36,6 +42,8 @@ namespace TimberWinR.Outputs
             _index = eo.Index;
             _hostIndex = 0;
             _jsonQueue = new List<JObject>();
+            _numThreads = eo.NumThreads;
+
             for (int i = 0; i < eo.NumThreads; i++)
             {
                 var elsThread = new Task(ElasticsearchSender, cancelToken);
@@ -43,6 +51,25 @@ namespace TimberWinR.Outputs
             }
         }
 
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("elasticsearch",
+                    new JObject(
+                        new JProperty("host", string.Join(",", _host)),
+                        new JProperty("errors", _errorCount),                       
+                        new JProperty("sent_messages", _sentMessages),
+                        new JProperty("queued_messages", _jsonQueue.Count),
+                        new JProperty("port", _port),
+                        new JProperty("interval", _interval),
+                        new JProperty("threads", _numThreads),                                             
+                        new JProperty("hosts",
+                            new JArray(
+                                from h in _host
+                                select new JObject(
+                                    new JProperty("host", h)))))));
+            return json;
+        }
         // 
         // Pull off messages from the Queue, batch them up and send them all across
         // 
@@ -55,6 +82,8 @@ namespace TimberWinR.Outputs
                 {
                     messages = _jsonQueue.Take(1).ToArray();
                     _jsonQueue.RemoveRange(0, messages.Length);
+                    if (messages.Length > 0)
+                        _manager.IncrementMessageCount(messages.Length);
                 }
 
                 if (messages.Length > 0)
@@ -96,12 +125,18 @@ namespace TimberWinR.Outputs
                                             {
                                                 LogManager.GetCurrentClassLogger()
                                                     .Error("Failed to send: {0}", response.ErrorMessage);
+                                                Interlocked.Increment(ref _errorCount);
+                                            }
+                                            else
+                                            {
+                                                _sentMessages++;
                                             }
                                         });
                                     }
                                     catch (Exception error)
                                     {
                                         LogManager.GetCurrentClassLogger().Error(error);
+                                        Interlocked.Increment(ref _errorCount);
                                     }
                                 }
                             }
@@ -110,12 +145,14 @@ namespace TimberWinR.Outputs
                                 LogManager.GetCurrentClassLogger()
                                     .Fatal("Unable to connect with any Elasticsearch hosts, {0}",
                                         String.Join(",", _host));
+                                Interlocked.Increment(ref _errorCount);
                             }
                           
                         }
                         catch (Exception ex)
                         {
                             LogManager.GetCurrentClassLogger().Error(ex);
+                            Interlocked.Increment(ref _errorCount);
                         }
                     }
                 }

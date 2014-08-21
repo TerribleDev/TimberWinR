@@ -20,6 +20,13 @@ namespace TimberWinR.Inputs
             _listenThread.Start();
         }
 
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("stdin", "enabled"));                 
+            return json;
+        }
+
         public override void Shutdown()
         {           
             base.Shutdown();

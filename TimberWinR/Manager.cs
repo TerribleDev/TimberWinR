@@ -21,7 +21,24 @@ namespace TimberWinR
         public Configuration Config { get; set; }
         public List<OutputSender> Outputs { get; set; }
         public List<TcpInputListener> Tcps { get; set; }
-        public List<InputListener> Listeners { get; set;  } 
+        public List<InputListener> Listeners { get; set;  }
+        public DateTime StartedOn { get; set; }
+        public string JsonConfig { get; set; }
+        public string LogfileDir { get; set; }
+
+        public int NumConnections {
+            get { return numConnections; }
+        }
+
+        public int NumMessages
+        {
+            get { return numMessages; }
+        }
+
+        private static int numConnections;
+        private static int numMessages;
+
+     
         public void Shutdown()
         {
             LogManager.GetCurrentClassLogger().Info("Shutting Down");
@@ -30,8 +47,22 @@ namespace TimberWinR
                 listener.Shutdown();
         }
 
+
+        public void IncrementMessageCount(int count = 1)
+        {            
+            Interlocked.Add(ref numMessages, count);
+        }
+    
         public Manager(string jsonConfigFile, string logLevel, string logfileDir, CancellationToken cancelToken)
         {
+            StartedOn = DateTime.UtcNow;
+
+            JsonConfig = jsonConfigFile;
+            LogfileDir = logfileDir;
+
+            numMessages = 0;
+            numConnections = 0;
+
             Outputs = new List<OutputSender>();           
             Listeners = new List<InputListener>();
            
@@ -59,15 +90,16 @@ namespace TimberWinR
             // Is it a directory?
             if (Directory.Exists(jsonConfigFile))
             {
-                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", jsonConfigFile);
+                DirectoryInfo di = new DirectoryInfo(jsonConfigFile);
+                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", di.FullName);
                 Config = Configuration.FromDirectory(jsonConfigFile);              
             }
             else
             {
-                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From File: {0}", jsonConfigFile);
-
                 var fi = new FileInfo(jsonConfigFile);
 
+                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From File: {0}", fi.FullName);
+               
                 if (!fi.Exists)
                     throw new FileNotFoundException("Missing config file", jsonConfigFile);
 

@@ -24,6 +24,7 @@ namespace TimberWinR.Outputs
             listener.OnMessageRecieved += MessageReceivedHandler;            
         }
 
+        public abstract JObject ToJson();
         protected abstract void MessageReceivedHandler(JObject jsonMessage);
     }
 }

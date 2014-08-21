@@ -24,10 +24,12 @@ namespace TimberWinR.Inputs
     {
         private int _pollingIntervalInSeconds;
         private TimberWinR.Parser.Log _arguments;
-
+        private long _receivedMessages;
+       
         public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 3)
             : base(cancelToken, "Win32-FileLog")
         {
+            _receivedMessages = 0;
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
             var task = new Task(FileWatcher, cancelToken);
@@ -37,6 +39,20 @@ namespace TimberWinR.Inputs
         public override void Shutdown()
         {
             base.Shutdown();
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                new JProperty("log",
+                    new JObject(
+                        new JProperty("messages", _receivedMessages),
+                        new JProperty("location", _arguments.Location),
+                        new JProperty("codepage", _arguments.CodePage),
+                        new JProperty("splitLongLines", _arguments.SplitLongLines),                     
+                        new JProperty("recurse", _arguments.Recurse)
+                        )));
+            return json;
         }
 
         private void FileWatcher()
@@ -81,17 +97,20 @@ namespace TimberWinR.Inputs
                                     continue;
 
                                 object v = record.getValue(field.Name);
-                                if (field.DataType == typeof(DateTime))
+                                if (field.DataType == typeof (DateTime))
                                 {
                                     DateTime dt = DateTime.Parse(v.ToString());
                                     json.Add(new JProperty(field.Name, dt));
                                 }
                                 else
-                                    json.Add(new JProperty(field.Name, v));                                
+                                    json.Add(new JProperty(field.Name, v));
                             }
                             string msg = json["Text"].ToString();
                             if (!string.IsNullOrEmpty(msg))
+                            {
                                 ProcessJson(json);
+                                _receivedMessages++;
+                            }
                         }
                     }
                     // Close the recordset
