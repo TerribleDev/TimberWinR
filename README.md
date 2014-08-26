@@ -122,13 +122,15 @@ Alternatively you can use the Services Control Panel.
 TimberWinR.ServiceHost.exe [options]
 
 Options:
--logDir:        Specifies the directory where TimberWinR will write its log file TimberWinR.txt
-                Default is -logDir:"C:\logs"
--logLevel:      Specifies the logging level for TimberWinR
-                Legal Values: Trace|Debug|Info|Warn|Error|Fatal|Off
-                Default is -logDir:Info
--configFile:    Specifies the path to the JSON config file, or directory which contains .json file(s).
-                Default is -configFile:default.json
+-logDir:           Specifies the directory where TimberWinR will write its log file TimberWinR.txt
+                   Default is -logDir:"C:\logs"
+-logLevel:         Specifies the logging level for TimberWinR
+                   Legal Values: Trace|Debug|Info|Warn|Error|Fatal|Off
+                   Default is -logDir:Info
+-configFile:       Specifies the path to the JSON config file, or directory which contains .json file(s).
+                   Default is -configFile:default.json
+-diagnosticPort:   Specifies the diagnostic port which can be used to get a health check of the service.
+                   Default Port is 5142, A value of 0 will disable it.
 ```
 #### -configFile
 This may be a single .json file or a directory containing .json file(s).  If it is a directory, all
