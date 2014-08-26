@@ -106,7 +106,7 @@ namespace TimberWinR.Diagnostics
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error("Tcp Exception", ex);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
 
         }

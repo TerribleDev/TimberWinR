@@ -70,7 +70,7 @@ namespace TimberWinR.Inputs
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error("Error Deleting Checkpoint File", ex);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }          
         }
 

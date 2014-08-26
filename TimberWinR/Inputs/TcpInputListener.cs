@@ -117,7 +117,7 @@ namespace TimberWinR.Inputs
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error("Tcp Exception", ex);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
 
             if (clientStream != null)

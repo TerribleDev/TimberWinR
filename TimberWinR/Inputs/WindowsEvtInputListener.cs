@@ -116,7 +116,7 @@ namespace TimberWinR.Inputs
                 }
                 catch (Exception ex)
                 {
-                    LogManager.GetCurrentClassLogger().Error("WindowsEventListener", ex);
+                    LogManager.GetCurrentClassLogger().Error(ex);
                     firstQuery = true;
                     oLogQuery = new LogQuery();
                 }

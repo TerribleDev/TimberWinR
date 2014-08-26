@@ -21,6 +21,9 @@ namespace TimberWinR.ServiceHost
 {
     internal class Program
     {
+        const string KeyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
+        const string KeyName = "ImagePath";
+        
         private static void Main(string[] args)
         {
             Arguments arguments = new Arguments();
@@ -50,11 +53,8 @@ namespace TimberWinR.ServiceHost
                 hostConfigurator.SetServiceName("TimberWinR");
 
                 hostConfigurator.AfterInstall(() =>
-                {
-                    const string keyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
-                    const string keyName = "ImagePath";
-
-                    var currentValue = Registry.GetValue(keyPath, keyName, "").ToString();
+                { 
+                    var currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
                     if (!string.IsNullOrEmpty(currentValue))
                     {
                         AddServiceParameter("-configFile", arguments.ConfigFile);
@@ -69,29 +69,25 @@ namespace TimberWinR.ServiceHost
 
         private static void AddServiceParameter(string paramName, string value)
         {
-            string keyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
-            string keyName = "ImagePath";
-
-            string currentValue = Registry.GetValue(keyPath, keyName, "").ToString();
+         
+            string currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
 
             if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0} ", paramName)))           
             {
                 currentValue += string.Format(" {0} \"{1}\"", paramName, value.Replace("\\\\", "\\"));               
-                Registry.SetValue(keyPath, keyName, currentValue);               
+                Registry.SetValue(KeyPath, KeyName, currentValue);               
             }
         }
 
         private static void AddServiceParameter(string paramName, int value)
         {
-            string keyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
-            string keyName = "ImagePath";
-
-            string currentValue = Registry.GetValue(keyPath, keyName, "").ToString();
+    
+            string currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
 
             if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0}:", paramName)))
             {
                 currentValue += string.Format(" {0}:{1}", paramName, value);
-                Registry.SetValue(keyPath, keyName, currentValue);
+                Registry.SetValue(KeyPath, KeyName, currentValue);
             }
         }
 
