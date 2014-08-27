@@ -160,6 +160,12 @@ TimberWinR.ServiceHost.exe start
 ```
 
 ### Builds ###
-Builds are here.
+TimberWinR is distributed as an installable package via Chocolatey.
+
+[TimbeWinR Chocolatey](https://chocolatey.org/packages/TimberWinR)
+
+
+![alt tag](https://raw.github.com/efontana/TimberWinR/master/chocolatey.png)
+
 Soon
 
