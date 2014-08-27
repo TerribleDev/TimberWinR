@@ -4,7 +4,7 @@ build:
   verbosity: minimal
 
 after_build:
-	showenv.bat
+	- cmd: showenv.bat
 
 assembly_info:
   patch: true
