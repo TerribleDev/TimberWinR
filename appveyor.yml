@@ -3,6 +3,9 @@ version: 1.2.{build}
 build:
   verbosity: minimal
 
+after_build:
+	showenv.bat
+
 assembly_info:
   patch: true
   file: AssemblyInfo.*
