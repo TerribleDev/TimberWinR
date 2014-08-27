@@ -6,6 +6,8 @@
     <Property Id="LOGDIR">c:\logs</Property>
     <Property Id="LOGLEVEL">Info</Property>
     <Property Id="DIAGPORT">5141</Property>
+    <UIRef Id="WixUI_InstallDir" />
+    
     <!--
 				We need to be able to uninstall a newer version from an older version.
 				The default reinstallmode is "omus", of which the 'o' means "reinstall if missing or older"
@@ -30,15 +32,19 @@
         <Directory Id="INSTALLFOLDER" Name="TimberWinR" />
       </Directory>
     </Directory>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
   </Fragment>
 
+   
   <Fragment>
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="ProductComponent" Guid="1BDEC5F3-5E9F-4E2E-8B1B-30E7968A99E1">
-        <File Id="TimberWinR.ServiceHost.exe" Name="$(var.TimberWinR.ServiceHost.TargetFileName)" Source="$(var.TimberWinR.ServiceHost.TargetPath)" />
+           <File Id="TimberWinR.ServiceHost.exe" Name="$(var.TimberWinR.ServiceHost.TargetFileName)" Source="$(var.TimberWinR.ServiceHost.TargetPath)" />
         <File Id="TimberWinR.ServiceHost.exe.config" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.ServiceHost.exe.config" />
         <File Id="Interop.MSUtil.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Interop.MSUtil.dll"  />
         <File Id="csredis.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\csredis.dll"  />
+        <File Id="default.json" Source="$(var.TimberWinR.ServiceHost.TargetDir)\default.json"  />
         <File Id="Newtonsoft.Json.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Newtonsoft.Json.dll"  />
         <File Id="Nlog.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Nlog.dll"  />
         <File Id="RestSharp.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RestSharp.dll"  />
