@@ -5,7 +5,7 @@
     <!-- Read this before publishing packages to chocolatey.org: https://github.com/chocolatey/chocolatey/wiki/CreatePackages -->
     <id>TimberWinR</id>
     <title>TimberWinR</title>
-    <version>${version}</version>
+    <version>${version}.0</version>
     <authors>efontana</authors>
     <owners>Eric Fontana</owners>
     <summary>TimberWinR Shipper</summary>
