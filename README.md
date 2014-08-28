@@ -160,12 +160,23 @@ TimberWinR.ServiceHost.exe start
 ```
 
 ### Builds ###
-TimberWinR is distributed as an installable package via Chocolatey.
+TimberWinR is distributed as an installable package via Chocolatey, and it is dependent on 
 
 [TimbeWinR Chocolatey](https://chocolatey.org/packages/TimberWinR)
 
-
 ![alt tag](https://raw.github.com/efontana/TimberWinR/master/chocolatey.png)
 
-Soon
+#### Notes ####
+After you install it via Chocolatey, you will have a folder:
+```
+C:\Program Files (x86)\TimberWinR
+```
+TimberWinR will be configured to read the file default.json located in the folder above.  You can edit this file
+to customize your installation.
 
+Use these commands to Stop/Start the service.
+
+```
+sc stop TimberWinR ; stop the service
+sc start TimberWinR; start the service
+```
