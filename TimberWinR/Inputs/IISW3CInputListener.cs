@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
@@ -11,6 +12,7 @@ using Interop.MSUtil;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NLog;
+using TimberWinR.Parser;
 using LogQuery = Interop.MSUtil.LogQueryClassClass;
 using IISW3CLogInputFormat = Interop.MSUtil.COMIISW3CInputContextClassClass;
 using LogRecordSet = Interop.MSUtil.ILogRecordset;
@@ -20,18 +22,21 @@ namespace TimberWinR.Inputs
 {
     public class IISW3CInputListener : InputListener
     {
-        private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Parser.IISW3CLog _arguments;
+        private readonly int _pollingIntervalInSeconds;
+        private readonly TimberWinR.Parser.IISW3CLog _arguments;
         private long _receivedMessages;
 
-        public IISW3CInputListener(TimberWinR.Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public IISW3CInputListener(TimberWinR.Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
             : base(cancelToken, "Win32-IISLog")
         {
             _arguments = arguments;
             _receivedMessages = 0;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
-            var task = new Task(IISW3CWatcher, cancelToken);
-            task.Start();
+            foreach (string loc in _arguments.Location.Split(','))
+            {
+                string hive = loc.Trim();
+                Task.Factory.StartNew(() => IISW3CWatcher(loc));
+            }
         }
 
         public override void Shutdown()
@@ -57,17 +62,18 @@ namespace TimberWinR.Inputs
         }
 
 
-        private void IISW3CWatcher()
+        private void IISW3CWatcher(string location)
         {
+            LogManager.GetCurrentClassLogger().Info("IISW3Listener Ready For {0}", location);
+
             var oLogQuery = new LogQuery();
 
             var iFmt = new IISW3CLogInputFormat()
             {
                 codepage = _arguments.CodePage,
-                consolidateLogs = _arguments.ConsolidateLogs,
+                consolidateLogs = true,
                 dirTime = _arguments.DirTime,
-                dQuotes = _arguments.DoubleQuotes,
-                iCheckpoint = CheckpointFileName,
+                dQuotes = _arguments.DoubleQuotes,               
                 recurse = _arguments.Recurse,
                 useDoubleQuotes = _arguments.DoubleQuotes
             };
@@ -75,28 +81,48 @@ namespace TimberWinR.Inputs
             if (_arguments.MinDateMod.HasValue)
                 iFmt.minDateMod = _arguments.MinDateMod.Value.ToString("yyyy-MM-dd hh:mm:ss");
 
-            // Create the query
-            var query = string.Format("SELECT * FROM {0}", _arguments.Location);
-
-            var firstQuery = true;
+            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();
+         
+          
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
             {
                 try
                 {
-                    var rs = oLogQuery.Execute(query, iFmt);
-                    Dictionary<string, int> colMap = new Dictionary<string, int>();
-                    for (int col = 0; col < rs.getColumnCount(); col++)
+                    oLogQuery = new LogQuery();
+
+                    var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", location);
+                    var rsfiles = oLogQuery.Execute(qfiles, iFmt);
+                    for (; !rsfiles.atEnd(); rsfiles.moveNext())
                     {
-                        string colName = rs.getColumnName(col);
-                        colMap[colName] = col;
+                        var record = rsfiles.getRecord();
+                        string fileName = record.getValue("LogFilename") as string;
+                        if (!logFileMaxRecords.ContainsKey(fileName))
+                        {
+                            var qcount = string.Format("SELECT max(LogRow) as MaxRecordNumber FROM {0}", fileName);
+                            var rcount = oLogQuery.Execute(qcount, iFmt);
+                            var qr = rcount.getRecord();
+                            var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
+                            logFileMaxRecords[fileName] = lrn;
+                        }
                     }
 
-                    // Browse the recordset
-                    for (; !rs.atEnd(); rs.moveNext())
+                 
+                    foreach (string fileName in logFileMaxRecords.Keys.ToList())
                     {
-                        // We want to "tail" the log, so skip the first query results.
-                        if (!firstQuery)
+                        var lastRecordNumber = logFileMaxRecords[fileName];
+                        var query = string.Format("SELECT * FROM '{0}' Where LogRow > {1}", fileName, lastRecordNumber);
+
+                        var rs = oLogQuery.Execute(query, iFmt);
+                        var colMap = new Dictionary<string, int>();
+                        for (int col = 0; col < rs.getColumnCount(); col++)
+                        {
+                            string colName = rs.getColumnName(col);
+                            colMap[colName] = col;
+                        }
+
+                        // Browse the recordset
+                        for (; !rs.atEnd(); rs.moveNext())
                         {
                             var record = rs.getRecord();
                             var json = new JObject();
@@ -106,7 +132,7 @@ namespace TimberWinR.Inputs
                                     continue;
 
                                 object v = record.getValue(field.Name);
-                                if (field.DataType == typeof(DateTime))
+                                if (field.DataType == typeof (DateTime))
                                 {
                                     DateTime dt = DateTime.Parse(v.ToString());
                                     json.Add(new JProperty(field.Name, dt));
@@ -116,16 +142,20 @@ namespace TimberWinR.Inputs
                             }
                             ProcessJson(json);
                             _receivedMessages++;
+                            var lrn = (Int64)record.getValueEx("LogRow");
+                            logFileMaxRecords[fileName] = lrn;
+                            record = null;
+                            json = null;
                         }
+                        // Close the recordset
+                        rs.close();
                     }
-                    // Close the recordset
-                    rs.close();
                 }
                 catch (Exception ex)
                 {
                     LogManager.GetCurrentClassLogger().Error(ex);
                 }
-                firstQuery = false;
+               
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
 
