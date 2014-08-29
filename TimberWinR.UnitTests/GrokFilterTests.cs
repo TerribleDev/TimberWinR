@@ -30,7 +30,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -79,7 +79,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -129,7 +129,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -147,7 +147,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type].Contains(\""Win32-FileLog\"")"",
+		                ""condition"": ""\""[type]\"".Contains(\""Win32-FileLog\"")"",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -166,7 +166,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type].Contains(\""Win32-Filelog\"")"",
+		                ""condition"": ""\""[type]\"".Contains(\""Win32-Filelog\"")"",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -217,7 +217,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -248,7 +248,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -274,7 +274,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -300,7 +300,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"
@@ -330,7 +330,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""[type] == \""Win32-FileLog\"""",
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
 			                """"

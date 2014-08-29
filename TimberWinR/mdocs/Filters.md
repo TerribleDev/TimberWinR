@@ -12,7 +12,7 @@ Example Input:
  "Filters": [          
     {
         "grok": {
-            "condition": "[type] == \"Win32-Eventlog\"",
+            "condition": "\"[type]\" == \"Win32-Eventlog\"",
             "match": [
                 "Message",
                 ""
@@ -35,7 +35,7 @@ Example Input:
     },
     {
         "date":  {
-            "condition": "[type] == \"Win32-FileLog\"",
+            "condition": "\"[type]\" == \"Win32-FileLog\"",
             "match": [
                 "timestamp",
                 "MMM  d HH:mm:sss",

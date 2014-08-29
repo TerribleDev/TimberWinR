@@ -41,7 +41,7 @@ namespace TimberWinR.Parser
 
             IList<string> keys = json.Properties().Select(p => p.Name).ToList();
             foreach (string key in keys)
-                cond = cond.Replace(string.Format("[{0}]", key), string.Format("\"{0}\"", json[key].ToString()));
+                cond = cond.Replace(string.Format("[{0}]", key), string.Format("{0}", json[key].ToString()));
 
             var compiler = new CSharpCodeProvider();
 
@@ -511,7 +511,7 @@ namespace TimberWinR.Parser
         [JsonProperty("condition")]
         public string Condition { get; set; }
 
-        [JsonProperty("drop_if_match")]
+        [JsonProperty("drop")]
         public bool DropIfMatch { get; set; }
 
         [JsonProperty("match")]

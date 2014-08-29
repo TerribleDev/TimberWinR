@@ -34,7 +34,7 @@ Given this configuration
   "Filters": [     
     {
 	   "date":  {
-          "condition": "[type] == \"Win32-FileLog\"",
+          "condition": "\"[type]\" == \"Win32-FileLog\"",
           "match": [
               "timestamp",
               "MMM  d HH:mm:sss",
@@ -56,7 +56,7 @@ then the operation(s) will be executed in order.
   "Filters": [     
     {
 		"grok": {      			
-		    "condition": "[type] == \"Win32-EventLog\""
+		    "condition": "\"[type]\" == \"Win32-EventLog\""
 			"add_field": [
 				"ComputerName", "%{Host}"				              
 			]
@@ -72,7 +72,7 @@ The fields must be in pairs with fieldName first and value second.
   "Filters": [     
     {
 	   "date":  {
-          "condition": "[type] == \"Win32-FileLog\"",
+          "condition": "\"[type]\" == \"Win32-FileLog\"",
           "match": [
               "timestamp",
               "MMM  d HH:mm:sss",
@@ -92,7 +92,7 @@ If true and the filter matches, the time parsed will be converted to UTC
   "Filters": [     
     {
 	   "date":  {
-          "condition": "[type] == \"Win32-FileLog\"",
+          "condition": "\"[type]\" == \"Win32-FileLog\"",
           "match": [
               "timestamp",
               "MMM  d HH:mm:sss",

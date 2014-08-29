@@ -20,7 +20,7 @@ then the operation(s) will be executed in order.
   "Filters": [     
     {
 		"mutate": {      			
-		    "condition": "[type] == \"Win32-EventLog\""
+		    "condition": "\"[type]\" == \"Win32-EventLog\""
 			"rename": [
 				"ComputerName", "Host"				              
 			]

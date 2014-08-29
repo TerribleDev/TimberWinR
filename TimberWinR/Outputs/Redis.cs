@@ -124,7 +124,10 @@ namespace TimberWinR.Outputs
         protected override void MessageReceivedHandler(JObject jsonMessage)
         {
             if (_manager.Config.Filters != null)
-                ApplyFilters(jsonMessage);
+            {
+                if (ApplyFilters(jsonMessage))
+                    return;
+            }
 
             var message = jsonMessage.ToString();
             LogManager.GetCurrentClassLogger().Debug(message);
@@ -135,12 +138,18 @@ namespace TimberWinR.Outputs
             }
         }
 
-        private void ApplyFilters(JObject json)
+        private bool ApplyFilters(JObject json)
         {
+            bool drop = false;
             foreach (var filter in _manager.Config.Filters)
             {
-                filter.Apply(json);
+                if (!filter.Apply(json))
+                {
+                    LogManager.GetCurrentClassLogger().Debug("Dropping: {0}", json.ToString());
+                    drop = true;
+                }
             }
+            return drop;
         }
 
         // 

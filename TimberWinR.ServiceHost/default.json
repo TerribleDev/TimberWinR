@@ -3,7 +3,7 @@
         "Inputs": {           
             "WindowsEvents": [
                 {
-                    "source": "Application",
+                    "source": "Application,System",
                     "binaryFormat": "PRINT",
                     "resolveSIDS": true
                 }
@@ -15,13 +15,25 @@
                 }
             ]
         },      
+        "Filters":[  
+	        {  
+		        "grok":{  
+		            "condition": "[EventTypeName] == \"Information Event\"",
+		            "match":[  
+			            "Text",
+			            ""
+		            ],
+                    "drop": "true"                    
+		        }
+	        }]
+        },
         "Outputs": {
             "Redis": [
                 { 
                     "_comment":  "Change the host to your Redis instance",   
                     "port":  6379,                           
                     "host": [
-                        "tstlexiceapp006.vistaprint.svc"
+                        "logaggregator.vistaprint.svc"
                     ]
                 }
             ]

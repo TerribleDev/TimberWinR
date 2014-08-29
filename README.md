@@ -54,7 +54,7 @@ TimberWinR reads a JSON configuration file, an example file is shown here:
     "Filters": [          
         {
             "grok": {
-                "condition": "[type] == \"Win32-Eventlog\"",
+                "condition": "\"[type]\" == \"Win32-Eventlog\"",
                 "match": [
                     "Message",
                     ""

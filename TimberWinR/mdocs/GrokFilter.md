@@ -83,7 +83,7 @@ then the operation(s) will be executed in order.
   "Filters": [     
     {
 		"grok": {      			
-		    "condition": "[type] == \"Win32-EventLog\""
+		    "condition": "\"[type]\" == \"Win32-EventLog\""
 			"add_field": [
 				"ComputerName", "%{Host}"				              
 			]

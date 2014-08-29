@@ -39,15 +39,18 @@ namespace TimberWinR.Parser
 
             if (Matches(json))
             {
+                if (DropIfMatch)
+                    return false;
+
                 AddFields(json);
                 AddTags(json);               
                 RemoveFields(json);
-                RemoveTags(json);
+                RemoveTags(json);                
                 return true;
             }
             return false;
         }
-
+      
         private bool Matches(Newtonsoft.Json.Linq.JObject json)
         {
             string field = Match[0];

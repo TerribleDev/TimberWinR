@@ -68,6 +68,7 @@ namespace TimberWinR.Inputs
             LogQuery oLogQuery = new LogQuery();          
 
             LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");
+            
 
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
@@ -81,50 +82,71 @@ namespace TimberWinR.Inputs
                 stringsSep = _arguments.StringsSep,
                 resolveSIDs = _arguments.ResolveSIDS
             };
-
-            var qcount  = string.Format("SELECT max(RecordNumber) as MaxRecordNumber FROM {0}", location);
-            var rcount = oLogQuery.Execute(qcount, iFmt);
-            var qr = rcount.getRecord();
-            var lastRecordNumber = qr.getValueEx("MaxRecordNumber");
-         
+          
             oLogQuery = null;
-                    
+
+            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();         
+        
+       
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
             {
                 try
                 {
+                    oLogQuery = new LogQuery();
+
                     Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
-                    oLogQuery = new LogQuery();
-                    var query = string.Format("SELECT * FROM {0} where RecordNumber > {1}", location, lastRecordNumber);
-                    
-                    var rs = oLogQuery.Execute(query, iFmt);
-                    // Browse the recordset
-                    for (; !rs.atEnd(); rs.moveNext())
-                    {                      
-                       
-                        var record = rs.getRecord();
-                        var json = new JObject();
-                        foreach (var field in _arguments.Fields)
+                    var qfiles = string.Format("SELECT Distinct [EventLog] FROM {0}", location);
+                    var rsfiles = oLogQuery.Execute(qfiles, iFmt);
+                    for (; !rsfiles.atEnd(); rsfiles.moveNext())
+                    {
+                        var record = rsfiles.getRecord();
+                        string logName = record.getValue("EventLog") as string;
+                        if (!logFileMaxRecords.ContainsKey(logName))
                         {
-                            object v = record.getValue(field.Name);
-                            if (field.Name == "Data")
-                                v = ToPrintable(v.ToString());
-                            json.Add(new JProperty(field.Name, v));
+                            var qcount = string.Format("SELECT max(RecordNumber) as MaxRecordNumber FROM {0}", logName);
+                            var rcount = oLogQuery.Execute(qcount, iFmt);
+                            var qr = rcount.getRecord();
+                            var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
+                            logFileMaxRecords[logName] = lrn;
                         }
-
-                        lastRecordNumber = record.getValueEx("RecordNumber");
-
-                        record = null;
-                        ProcessJson(json);
-                        _receivedMessages++;
-                        json = null;
-                        
                     }
-                    // Close the recordset
-                    rs.close();
-                    rs = null;                                      
+
+                 
+                    foreach (string fileName in logFileMaxRecords.Keys.ToList())
+                    {
+                        var lastRecordNumber = logFileMaxRecords[fileName];
+                        var query = string.Format("SELECT * FROM {0} where RecordNumber > {1}", location, lastRecordNumber);
+
+                        var rs = oLogQuery.Execute(query, iFmt);
+                        // Browse the recordset
+                        for (; !rs.atEnd(); rs.moveNext())
+                        {
+
+                            var record = rs.getRecord();
+                            var json = new JObject();
+                            foreach (var field in _arguments.Fields)
+                            {
+                                object v = record.getValue(field.Name);
+                                if (field.Name == "Data")
+                                    v = ToPrintable(v.ToString());
+                                json.Add(new JProperty(field.Name, v));
+                            }
+
+                            var lrn = (Int64)record.getValueEx("RecordNumber");
+                            logFileMaxRecords[fileName] = lrn;
+
+                            record = null;
+                            ProcessJson(json);
+                            _receivedMessages++;
+                            json = null;
+
+                        }
+                        // Close the recordset
+                        rs.close();
+                        rs = null;
+                    }
                 }
                 catch (Exception ex)
                 {
