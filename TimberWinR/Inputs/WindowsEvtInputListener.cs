@@ -65,7 +65,7 @@ namespace TimberWinR.Inputs
 
         private void EventWatcher(string location)
         {
-            LogQuery oLogQuery = new LogQuery();
+            LogQuery oLogQuery = new LogQuery();          
 
             LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");
 
@@ -94,6 +94,8 @@ namespace TimberWinR.Inputs
             {
                 try
                 {
+                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+
                     oLogQuery = new LogQuery();
                     var query = string.Format("SELECT * FROM {0} where RecordNumber > {1}", location, lastRecordNumber);
                     
@@ -128,6 +130,8 @@ namespace TimberWinR.Inputs
                 {
                     LogManager.GetCurrentClassLogger().Error(ex);                                     
                 }
+
+                Thread.CurrentThread.Priority = ThreadPriority.Normal;
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
 
