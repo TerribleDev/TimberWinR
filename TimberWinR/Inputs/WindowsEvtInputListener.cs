@@ -86,7 +86,7 @@ namespace TimberWinR.Inputs
             var rcount = oLogQuery.Execute(qcount, iFmt);
             var qr = rcount.getRecord();
             var lastRecordNumber = qr.getValueEx("MaxRecordNumber");
-
+         
             oLogQuery = null;
                     
             // Execute the query
@@ -112,7 +112,7 @@ namespace TimberWinR.Inputs
                             json.Add(new JProperty(field.Name, v));
                         }
 
-                        lastRecordNumber = record.getValue("RecordNumber");
+                        lastRecordNumber = record.getValueEx("RecordNumber");
 
                         record = null;
                         ProcessJson(json);
