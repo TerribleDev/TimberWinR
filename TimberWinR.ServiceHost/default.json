@@ -3,7 +3,7 @@
         "Inputs": {           
             "WindowsEvents": [
                 {
-                    "source": "System,Application",
+                    "source": "Application",
                     "binaryFormat": "PRINT",
                     "resolveSIDS": true
                 }

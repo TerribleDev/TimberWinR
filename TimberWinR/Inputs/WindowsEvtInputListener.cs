@@ -26,13 +26,17 @@ namespace TimberWinR.Inputs
         private TimberWinR.Parser.WindowsEvent _arguments;
         private long _receivedMessages;
 
-        public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 1)
+        public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
             : base(cancelToken, "Win32-Eventlog")
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
-            var task = new Task(EventWatcher, cancelToken);
-            task.Start();
+
+            foreach (string eventHive in _arguments.Source.Split(','))
+            {
+                string hive = eventHive.Trim();
+                Task.Factory.StartNew(() => EventWatcher(eventHive));
+            }
         }
 
         public override void Shutdown()
@@ -59,9 +63,9 @@ namespace TimberWinR.Inputs
             return json;
         }
 
-        private void EventWatcher()
+        private void EventWatcher(string location)
         {
-            var oLogQuery = new LogQuery();
+            LogQuery oLogQuery = new LogQuery();
 
             LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");
 
@@ -75,50 +79,54 @@ namespace TimberWinR.Inputs
                 fullText = _arguments.FullText,
                 msgErrorMode = _arguments.MsgErrorMode.ToString(),
                 stringsSep = _arguments.StringsSep,
-                resolveSIDs = _arguments.ResolveSIDS,
-                iCheckpoint = CheckpointFileName,
+                resolveSIDs = _arguments.ResolveSIDS
             };
 
+            var qcount  = string.Format("SELECT max(RecordNumber) as MaxRecordNumber FROM {0}", location);
+            var rcount = oLogQuery.Execute(qcount, iFmt);
+            var qr = rcount.getRecord();
+            var lastRecordNumber = qr.getValueEx("MaxRecordNumber");
 
-            // Create the query
-            var query = string.Format("SELECT * FROM {0}", _arguments.Source);
-
-            var firstQuery = true;
+            oLogQuery = null;
+                    
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
             {
                 try
                 {
+                    oLogQuery = new LogQuery();
+                    var query = string.Format("SELECT * FROM {0} where RecordNumber > {1}", location, lastRecordNumber);
+                    
                     var rs = oLogQuery.Execute(query, iFmt);
                     // Browse the recordset
                     for (; !rs.atEnd(); rs.moveNext())
-                    {
-                        // We want to "tail" the log, so skip the first query results.
-                        if (!firstQuery)
+                    {                      
+                       
+                        var record = rs.getRecord();
+                        var json = new JObject();
+                        foreach (var field in _arguments.Fields)
                         {
-                            var record = rs.getRecord();
-                            var json = new JObject();
-                            foreach (var field in _arguments.Fields)
-                            {
-                                object v = record.getValue(field.Name);
-                                if (field.Name == "Data")
-                                    v = ToPrintable(v.ToString());
-                                json.Add(new JProperty(field.Name, v));
-                            }
-
-                            ProcessJson(json);
-                            _receivedMessages++;
+                            object v = record.getValue(field.Name);
+                            if (field.Name == "Data")
+                                v = ToPrintable(v.ToString());
+                            json.Add(new JProperty(field.Name, v));
                         }
+
+                        lastRecordNumber = record.getValue("RecordNumber");
+
+                        record = null;
+                        ProcessJson(json);
+                        _receivedMessages++;
+                        json = null;
+                        
                     }
                     // Close the recordset
                     rs.close();
-                    firstQuery = false;
+                    rs = null;                                      
                 }
                 catch (Exception ex)
                 {
-                    LogManager.GetCurrentClassLogger().Error(ex);
-                    firstQuery = true;
-                    oLogQuery = new LogQuery();
+                    LogManager.GetCurrentClassLogger().Error(ex);                                     
                 }
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
