@@ -9,7 +9,7 @@
     <authors>efontana</authors>
     <owners>Eric Fontana</owners>
     <summary>TimberWinR Shipper</summary>
-    <description>TimberWinR Shipper</description>
+    <description>TimberWinR Native .NET Logstash Shipper.  Use https://groups.google.com/forum/#!forum/timberwinr for support.</description>
     <projectUrl>https://github.com/efontana/TimberWinR</projectUrl>
     <tags>TimberWinR admin</tags>
     <copyright></copyright>

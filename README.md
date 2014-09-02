@@ -181,3 +181,8 @@ sc stop TimberWinR ; stop the service
 sc start TimberWinR; start the service
 ```
 
+### support ###
+Please use the TimberWinR Google Group for discussion and support:
+
+https://groups.google.com/forum/#!forum/timberwinr
+
