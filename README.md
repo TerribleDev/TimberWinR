@@ -96,7 +96,14 @@ following options:
 TimberWinR.ServiceHost.exe -configFile:myconfig.json -logLevel:Debug
 ```
 
-## Installation as a Windows Service
+
+## Automatic Installation via Chocolatey
+
+[TimbeWinR Chocolatey](https://chocolatey.org/packages/TimberWinR)
+
+![alt tag](https://raw.github.com/efontana/TimberWinR/master/chocolatey.png)
+
+## Manual Installation as a Windows Service
 TimberWinR uses [TopShelf](http://topshelf-project.com/) to install as a service, so all the documentation
 for installing and configuring the service is show here [TopShelf Doc](http://docs.topshelf-project.com/en/latest/)
 

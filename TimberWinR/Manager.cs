@@ -57,8 +57,11 @@ namespace TimberWinR
         {
             StartedOn = DateTime.UtcNow;
 
-            JsonConfig = jsonConfigFile;
+            var vfi = new FileInfo(jsonConfigFile);
+
+            JsonConfig = vfi.FullName;
             LogfileDir = logfileDir;
+
 
             numMessages = 0;
             numConnections = 0;
@@ -111,74 +114,75 @@ namespace TimberWinR
             LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);        
             
             // Read the Configuration file
-           
-            if (Config.RedisOutputs != null)
+            if (Config != null)
             {
-                foreach (var ro in Config.RedisOutputs)
+                if (Config.RedisOutputs != null)
                 {
-                    var redis = new RedisOutput(this, ro, cancelToken);
-                    Outputs.Add(redis);
+                    foreach (var ro in Config.RedisOutputs)
+                    {
+                        var redis = new RedisOutput(this, ro, cancelToken);
+                        Outputs.Add(redis);
+                    }
+
                 }
-              
-            }
-            if (Config.ElasticsearchOutputs != null)
-            {
-                foreach (var ro in Config.ElasticsearchOutputs)
+                if (Config.ElasticsearchOutputs != null)
                 {
-                    var els = new ElasticsearchOutput(this, ro, cancelToken);
-                    Outputs.Add(els);
+                    foreach (var ro in Config.ElasticsearchOutputs)
+                    {
+                        var els = new ElasticsearchOutput(this, ro, cancelToken);
+                        Outputs.Add(els);
+                    }
                 }
-            }
-            if (Config.StdoutOutputs != null)
-            {
-                foreach (var ro in Config.StdoutOutputs)
+                if (Config.StdoutOutputs != null)
                 {
-                    var stdout = new StdoutOutput(this, ro, cancelToken);
-                    Outputs.Add(stdout);
+                    foreach (var ro in Config.StdoutOutputs)
+                    {
+                        var stdout = new StdoutOutput(this, ro, cancelToken);
+                        Outputs.Add(stdout);
+                    }
+                }
+
+                foreach (Parser.IISW3CLog iisw3cConfig in Config.IISW3C)
+                {
+                    var elistner = new IISW3CInputListener(iisw3cConfig, cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
+                foreach (Parser.WindowsEvent eventConfig in Config.Events)
+                {
+                    var elistner = new WindowsEvtInputListener(eventConfig, cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
+                foreach (var logConfig in Config.Logs)
+                {
+                    var elistner = new LogsListener(logConfig, cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
+                foreach (var tcp in Config.Tcps)
+                {
+                    var elistner = new TcpInputListener(cancelToken, tcp.Port);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
+
+                foreach (var tcp in Config.Stdins)
+                {
+                    var elistner = new StdinListener(cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
                 }
             }
-
-            foreach (Parser.IISW3CLog iisw3cConfig in Config.IISW3C)
-            {
-                var elistner = new IISW3CInputListener(iisw3cConfig, cancelToken);
-                Listeners.Add(elistner);
-                foreach(var output in Outputs)
-                    output.Connect(elistner);
-            }
-
-            foreach (Parser.WindowsEvent eventConfig in Config.Events)
-            {
-                var elistner = new WindowsEvtInputListener(eventConfig, cancelToken);
-                Listeners.Add(elistner);
-                foreach (var output in Outputs)
-                    output.Connect(elistner);
-            }
-
-            foreach (var logConfig in Config.Logs)
-            {
-                var elistner = new LogsListener(logConfig, cancelToken);
-                Listeners.Add(elistner);
-                foreach (var output in Outputs)
-                    output.Connect(elistner);
-            }
-
-            foreach (var tcp in Config.Tcps)
-            {
-                var elistner = new TcpInputListener(cancelToken, tcp.Port);
-                Listeners.Add(elistner);                
-                foreach (var output in Outputs)
-                    output.Connect(elistner);
-            }
-
-
-            foreach (var tcp in Config.Stdins)
-            {
-                var elistner = new StdinListener(cancelToken);
-                Listeners.Add(elistner);
-                foreach (var output in Outputs)
-                    output.Connect(elistner);
-            }
-
         }
 
         /// <summary>
