@@ -30,7 +30,7 @@ namespace TimberWinR.UnitTests
                 ""Filters"":[  
 	                {  
 		            ""grok"":{  
-		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
+		                ""type"": ""Win32-FileLog"",
 		                ""match"":[  
 			                ""Text"",
 			                """"

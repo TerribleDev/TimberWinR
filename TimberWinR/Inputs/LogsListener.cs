@@ -32,8 +32,12 @@ namespace TimberWinR.Inputs
             _receivedMessages = 0;
             _arguments = arguments;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
-            var task = new Task(FileWatcher, cancelToken);
-            task.Start();
+
+            foreach (string srcFile in _arguments.Location.Split(','))
+            {
+                string file = srcFile.Trim();
+                Task.Factory.StartNew(() => FileWatcher(file));
+            }           
         }
 
         public override void Shutdown()
@@ -55,40 +59,56 @@ namespace TimberWinR.Inputs
             return json;
         }
 
-        private void FileWatcher()
+        private void FileWatcher(string fileToWatch)
         {                      
             var iFmt = new TextLineInputFormat()
             {
                 iCodepage = _arguments.CodePage,
-                splitLongLines = _arguments.SplitLongLines,
-                iCheckpoint = CheckpointFileName,
+                splitLongLines = _arguments.SplitLongLines,             
                 recurse = _arguments.Recurse
             };
-
-              // Create the query
-            var query = string.Format("SELECT * FROM {0}", _arguments.Location);          
-
-            var firstQuery = true;
+        
+            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();         
+        
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
             {
                 var oLogQuery = new LogQuery();
                 try
-                {                   
-                    var rs = oLogQuery.Execute(query, iFmt);
-                    Dictionary<string, int> colMap = new Dictionary<string, int>();
-                    for (int col=0; col<rs.getColumnCount(); col++)
-                    {
-                        string colName = rs.getColumnName(col);
-                        colMap[colName] = col;
-                    }
+                {
+                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
-                    // Browse the recordset
-                    for (; !rs.atEnd(); rs.moveNext())
+                    var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", fileToWatch);
+                    var rsfiles = oLogQuery.Execute(qfiles, iFmt);
+                    for (; !rsfiles.atEnd(); rsfiles.moveNext())
                     {
-                        // We want to "tail" the log, so skip the first query results.
-                        if (!firstQuery)
+                        var record = rsfiles.getRecord();
+                        string logName = record.getValue("LogFilename") as string;
+                        if (!logFileMaxRecords.ContainsKey(logName))
                         {
+                            var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
+                            var rcount = oLogQuery.Execute(qcount, iFmt);
+                            var qr = rcount.getRecord();
+                            var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
+                            logFileMaxRecords[logName] = lrn;
+                        }
+                    }
+                    foreach (string fileName in logFileMaxRecords.Keys.ToList())
+                    {
+                        var lastRecordNumber = logFileMaxRecords[fileName];
+                        var query = string.Format("SELECT * FROM {0} where Index > {1}", fileName, lastRecordNumber);
+                    
+                        var rs = oLogQuery.Execute(query, iFmt);
+                        Dictionary<string, int> colMap = new Dictionary<string, int>();
+                        for (int col = 0; col < rs.getColumnCount(); col++)
+                        {
+                            string colName = rs.getColumnName(col);                           
+                            colMap[colName] = col;
+                        }
+
+                        // Browse the recordset
+                        for (; !rs.atEnd(); rs.moveNext())
+                        {                           
                             var record = rs.getRecord();
                             var json = new JObject();
                             foreach (var field in _arguments.Fields)
@@ -111,11 +131,15 @@ namespace TimberWinR.Inputs
                                 ProcessJson(json);
                                 _receivedMessages++;
                             }
+
+                            var lrn = (Int64)record.getValueEx("Index");
+                            logFileMaxRecords[fileName] = lrn;
                         }
+                       
+                        // Close the recordset
+                        rs.close();
+                        rs = null;
                     }
-                    // Close the recordset
-                    rs.close();
-                    rs = null;
                 }
                 catch (Exception ex)
                 {
@@ -125,7 +149,8 @@ namespace TimberWinR.Inputs
                 {
                     oLogQuery = null;
                 }
-                firstQuery = false;
+              
+                Thread.CurrentThread.Priority = ThreadPriority.Normal;               
                 System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
 

@@ -26,6 +26,7 @@ The following operations are allowed when mutating a field.
 
 | Operation       |     Type        | Description                                                            
 | :---------------|:----------------|:-----------------------------------------------------------------------|
+| *type*          | property:string |Type to which this filter applyes, if empty, applies to all types.
 | *condition*     | property:string |C# expression
 | *match*         | property:string |Required field must match before any subsequent grok operations are executed.
 | *add_field*     | property:array  |If the filter is successful, add an arbitrary field to this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.  This property must be specified in pairs.                                    
@@ -82,8 +83,8 @@ then the operation(s) will be executed in order.
 ```json
   "Filters": [     
     {
-		"grok": {      			
-		    "condition": "\"[type]\" == \"Win32-EventLog\""
+		"grok": {      
+          "type": "Win32-EventLog",		  
 			"add_field": [
 				"ComputerName", "%{Host}"				              
 			]

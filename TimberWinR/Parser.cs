@@ -508,6 +508,10 @@ namespace TimberWinR.Parser
             {
             }
         }
+
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
         [JsonProperty("condition")]
         public string Condition { get; set; }
 
