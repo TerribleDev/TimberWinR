@@ -32,6 +32,8 @@ namespace TimberWinR.Parser
 
     public partial class Grok : LogstashFilter
     {
+        // Returns: true - Filter does not apply or has been applied successfully
+        // Returns: false - Drop this object
         public override bool Apply(JObject json)
         {
             if (!string.IsNullOrEmpty(Type))
@@ -52,7 +54,7 @@ namespace TimberWinR.Parser
                             return false; // drop this one
                     }
                     else                   
-                        return false;                   
+                        return true;                   
                 }
 
                 if (DropIfMatch)
@@ -61,10 +63,10 @@ namespace TimberWinR.Parser
                 AddFields(json);
                 AddTags(json);               
                 RemoveFields(json);
-                RemoveTags(json);                
-                return true;
+                RemoveTags(json);                                
             }
-            return false;
+
+            return true;
         }
       
         private bool Matches(Newtonsoft.Json.Linq.JObject json)

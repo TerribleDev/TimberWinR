@@ -107,6 +107,108 @@ namespace TimberWinR.UnitTests
         }
 
         [Test]
+        public void TestDropConditions()
+        {
+            JObject json1 = new JObject
+            {
+                {"LogFilename", @"C:\\Logs1\\test1.log"},
+                {"EventType", 1},
+                {"Index", 7},
+                {"Text", null},
+                {
+                    "tags", new JArray
+                    {
+                        "tag1",
+                        "tag2"
+                    }
+                },
+                {"type", "Win32-FileLog"},
+                {"ComputerName", "dev.vistaprint.net"}
+            };
+
+            JObject json2 = new JObject
+            {
+                {"LogFilename", @"C:\\Logs1\\test1.log"},
+                {"EventType", 2},
+                {"Index", 7},
+                {"Text", null},
+                {
+                    "tags", new JArray
+                    {
+                        "tag1",
+                        "tag2"
+                    }
+                },
+                {"type", "Win32-FileLog"},
+                {"ComputerName", "dev.vistaprint.net"}
+            };
+
+
+            string grokJsonDropIf1 = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""grok"":{                          
+		                ""condition"": ""[EventType] == 1"",
+                        ""drop"": ""true"",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""remove_tag"":[  
+                            ""tag1""                          
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+            string grokJsonDropIfNot1 = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""grok"":{                          
+		                ""condition"": ""[EventType] != 1"",
+                        ""drop"": ""true"",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""remove_tag"":[  
+//                            ""tag1""                          
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+
+            // Positive Tests
+            Configuration c = Configuration.FromString(grokJsonDropIf1);
+            Grok grok = c.Filters.First() as Grok;
+            Assert.IsFalse(grok.Apply(json1));
+
+            c = Configuration.FromString(grokJsonDropIf1);
+            grok = c.Filters.First() as Grok;
+            Assert.IsTrue(grok.Apply(json2));
+
+            // Negative Tests
+            c = Configuration.FromString(grokJsonDropIfNot1);
+            grok = c.Filters.First() as Grok;
+            Assert.IsFalse(grok.Apply(json2));
+
+            c = Configuration.FromString(grokJsonDropIfNot1);
+            grok = c.Filters.First() as Grok;
+            Assert.IsTrue(grok.Apply(json1));
+
+
+
+
+        }
+
+
+
+        [Test]
         public void TestConditions()
         {
             JObject json = new JObject
@@ -191,7 +293,7 @@ namespace TimberWinR.UnitTests
             // Negative Test
             c = Configuration.FromString(grokJson3);
             grok = c.Filters.First() as Grok;
-            Assert.IsFalse(grok.Apply(json));
+            Assert.IsTrue(grok.Apply(json));
         }
 
         [Test]
