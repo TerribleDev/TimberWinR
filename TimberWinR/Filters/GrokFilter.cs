@@ -40,12 +40,21 @@ namespace TimberWinR.Parser
                 if (json_type != null && json_type.ToString() != Type)
                     return true; // Filter does not apply.
             }
-            
-            if (Condition != null && !EvaluateCondition(json, Condition))
-                return false;
-
+             
             if (Matches(json))
             {
+                if (Condition != null)
+                {
+                    var expr = EvaluateCondition(json, Condition);
+                    if (expr)
+                    {
+                        if (DropIfMatch)
+                            return false; // drop this one
+                    }
+                    else                   
+                        return false;                   
+                }
+
                 if (DropIfMatch)
                     return false;
 
