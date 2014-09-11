@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>3.8</ProductVersion>
-    <MSIVersionNumber>1.1.0</MSIVersionNumber>
+    <MSIVersionNumber>1.2.0</MSIVersionNumber>
     <ProjectGuid>82a39b31-61ec-468d-aa71-0d949ac6528f</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>TimberWinR-$(MSIVersionNumber)</OutputName>
