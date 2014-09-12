@@ -7,8 +7,8 @@ The following operations are allowed when mutating a field.
 
 | Operation       |     Type        | Description                                                            
 | :---------------|:----------------|:-----------------------------------------------------------------------|
-| *type*          | property:string |Type to which this filter applyes, if empty, applies to all types.
-| *condition*     | property:string |C# expression
+| *type*          | property:string |Type to which this filter applies, if empty, applies to all types.
+| *condition*     | property:string |C# expression, if the expression is true, continue, otherwise, ignore
 | *source*        | property:string |Required field indicates which field contains the Json to be parsed
 | *target*        | property:string |If suppled, the parsed json will be contained underneath a propery named *target*
 | *add_field*     | property:array  |If the filter is successful, add an arbitrary field to this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.  This property must be specified in pairs.                                    
@@ -74,7 +74,7 @@ The fields must be in pairs with fieldName first and value second.
 ```json
   "Filters": [     
     {
-		"grok": {      			
+		"json": {      			
 			"add_field": [
               "ComputerName", "Host",
               "Username", "%{SID}"				         
@@ -89,7 +89,7 @@ Remove the fields.  More than one field can be specified at a time.
 ```json
   "Filters": [     
     {
-		"grok": {      			
+		"json": {      			
 			"remove_tag": [             
              "static_tag1",
              "Computer_%{Host}"
@@ -105,7 +105,7 @@ Adds the tag(s) to the tag array.
 ```json
   "Filters": [     
     {
-		"grok": {      			
+		"json": {      			
 			"add_tag": [
                "foo_%{Host}",
 			   "static_tag1"      
@@ -120,7 +120,7 @@ Remove the tag(s) to the tag array.  More than one tag can be specified at a tim
 ```json
   "Filters": [     
     {
-		"grok": {      			
+		"json": {      			
 			"remove_tag": [             
              "static_tag1",
              "Username"

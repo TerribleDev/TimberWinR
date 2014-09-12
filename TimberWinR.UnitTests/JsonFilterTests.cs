@@ -68,8 +68,6 @@ namespace TimberWinR.UnitTests
             // 4 fields, Email, Active, CreatedDate, Roles
             Assert.AreEqual(4, stuff.Count);
 
-
-
             // Now, merge it into the root (starts as 3 fields, ends up with 7 fields)
             Assert.AreEqual(3, jsonInputLine2.Count);
             c = Configuration.FromString(jsonFilterNoTarget);
@@ -77,10 +75,7 @@ namespace TimberWinR.UnitTests
             Assert.IsTrue(jf.Apply(jsonInputLine2));
             JObject nostuff = jsonInputLine2["stuff"] as JObject;
             Assert.IsNull(nostuff);
-            Assert.AreEqual(7, jsonInputLine2.Count);
-
-            var o1 = jsonInputLine1.ToString();
-            var o2 = jsonInputLine2.ToString();
+            Assert.AreEqual(7, jsonInputLine2.Count);            
         }
     }
 }
