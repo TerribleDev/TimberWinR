@@ -71,6 +71,7 @@
     <Compile Include="Filters\DateFilter.cs" />
     <Compile Include="Filters\FilterBase.cs" />
     <Compile Include="Filters\GrokFilter.cs" />
+    <Compile Include="Filters\JsonFilter.cs" />
     <Compile Include="Filters\MutateFilter.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
     <Compile Include="Inputs\IISW3CInputListener.cs" />
@@ -105,6 +106,7 @@
     </None>
     <None Include="mdocs\DateFilter.md" />
     <None Include="mdocs\Filters.md" />
+    <None Include="mdocs\JsonFilter.md" />
     <None Include="mdocs\GrokFilter.md" />
     <None Include="mdocs\ElasticsearchOutput.md" />
     <None Include="mdocs\RedisOutput.md" />

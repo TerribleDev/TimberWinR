@@ -13,8 +13,19 @@ namespace TimberWinR.Parser
      {
          public override bool Apply(JObject json)
          {
-             if (Condition != null && !EvaluateCondition(json, Condition))
-                 return false;
+             if (!string.IsNullOrEmpty(Type))
+             {
+                 JToken json_type = json["type"];
+                 if (json_type != null && json_type.ToString() != Type)
+                     return true; // Filter does not apply.
+             }
+
+             if (Condition != null)
+             {
+                 var expr = EvaluateCondition(json, Condition);
+                 if (!expr)
+                    return true;
+             }
 
              ApplySplits(json);
              ApplyRenames(json);

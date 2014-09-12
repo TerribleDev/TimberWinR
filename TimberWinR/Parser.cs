@@ -561,6 +561,9 @@ namespace TimberWinR.Parser
             }
         }
 
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
         [JsonProperty("condition")]
         public string Condition { get; set; }
 
@@ -597,6 +600,9 @@ namespace TimberWinR.Parser
 
     public partial class Mutate : LogstashFilter
     {
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
         [JsonProperty("condition")]
         public string Condition { get; set; }
 
@@ -614,7 +620,62 @@ namespace TimberWinR.Parser
            
         }
     }
-    
+
+    public partial class Json : LogstashFilter
+    {
+        public class JsonMissingSourceException : Exception
+        {
+            public JsonMissingSourceException()
+                : base("JSON filter source is required")
+            {
+            }
+        }
+      
+        public class JsonAddFieldException : Exception
+        {
+            public JsonAddFieldException()
+                : base("JSON filter add_field requires tuples")
+            {
+            }
+        }
+
+
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        [JsonProperty("condition")]
+        public string Condition { get; set; }
+
+        [JsonProperty("source")]
+        public string Source { get; set; }
+
+        [JsonProperty("target")]
+        public string Target { get; set; }
+
+        [JsonProperty("add_tag")]
+        public string[] AddTag { get; set; }
+
+        [JsonProperty("add_field")]
+        public string[] AddField { get; set; }
+
+        [JsonProperty("remove_field")]
+        public string[] RemoveField { get; set; }
+
+        [JsonProperty("remove_tag")]
+        public string[] RemoveTag { get; set; }
+  
+        public override void Validate()
+        {
+            if (string.IsNullOrEmpty(Source))
+                throw new JsonMissingSourceException();
+
+            if (AddField != null && AddField.Length % 2 != 0)
+                throw new JsonAddFieldException();          
+
+        }
+    }
+ 
+
     public class Filter
     {
         [JsonProperty("grok")]
@@ -625,6 +686,10 @@ namespace TimberWinR.Parser
 
         [JsonProperty("date")]
         public DateFilter Date { get; set; }
+
+        [JsonProperty("json")]
+        public Json Json { get; set; }
+
     }
    
     public class TimberWinR

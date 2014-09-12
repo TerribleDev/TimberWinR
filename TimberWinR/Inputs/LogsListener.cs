@@ -9,6 +9,7 @@ using Interop.MSUtil;
 
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+
 using NLog;
 
 using LogQuery = Interop.MSUtil.LogQueryClassClass;
