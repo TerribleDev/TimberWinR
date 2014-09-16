@@ -32,7 +32,18 @@ namespace TimberWinR.Parser
             }
            
             return true;
-        }   
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                 new JProperty("date",
+                     new JObject(
+                         new JProperty("condition", Condition),
+                         new JProperty("addfields", AddField)                     
+                         )));
+            return json;
+        }
 
         // copy_field "field1" -> "field2"
         private void AddFields(Newtonsoft.Json.Linq.JObject json)

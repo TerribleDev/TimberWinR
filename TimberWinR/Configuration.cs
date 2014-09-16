@@ -127,29 +127,29 @@ namespace TimberWinR
             if (x.TimberWinR.Inputs != null)
             {
                 if (x.TimberWinR.Inputs.WindowsEvents != null)
-                    c._events = x.TimberWinR.Inputs.WindowsEvents.ToList();
+                    c._events.AddRange(x.TimberWinR.Inputs.WindowsEvents.ToList());
                 if (x.TimberWinR.Inputs.IISW3CLogs != null)
-                    c._iisw3clogs = x.TimberWinR.Inputs.IISW3CLogs.ToList();
+                    c._iisw3clogs.AddRange(x.TimberWinR.Inputs.IISW3CLogs.ToList());
                 if (x.TimberWinR.Inputs.Stdins != null)
-                    c._stdins = x.TimberWinR.Inputs.Stdins.ToList();
+                    c._stdins.AddRange(x.TimberWinR.Inputs.Stdins.ToList());
                 if (x.TimberWinR.Inputs.Logs != null)
-                    c._logs = x.TimberWinR.Inputs.Logs.ToList();
+                    c._logs.AddRange(x.TimberWinR.Inputs.Logs.ToList());
                 if (x.TimberWinR.Inputs.Tcps != null)
-                    c._tcps = x.TimberWinR.Inputs.Tcps.ToList();
+                    c._tcps.AddRange(x.TimberWinR.Inputs.Tcps.ToList());
             }
 
             if (x.TimberWinR.Outputs != null)
             {
                 if (x.TimberWinR.Outputs.Redis != null)
-                    c._redisOutputs = x.TimberWinR.Outputs.Redis.ToList();
+                    c._redisOutputs.AddRange(x.TimberWinR.Outputs.Redis.ToList());
                 if (x.TimberWinR.Outputs.Elasticsearch != null)
-                    c._elasticsearchOutputs = x.TimberWinR.Outputs.Elasticsearch.ToList();
+                    c._elasticsearchOutputs.AddRange(x.TimberWinR.Outputs.Elasticsearch.ToList());
                 if (x.TimberWinR.Outputs.Stdout != null)
-                    c._stdoutOutputs = x.TimberWinR.Outputs.Stdout.ToList();
-            }         
+                    c._stdoutOutputs.AddRange(x.TimberWinR.Outputs.Stdout.ToList());
+            }
 
             if (x.TimberWinR.Filters != null)
-                c._filters = x.TimberWinR.AllFilters.ToList();
+                c._filters.AddRange(x.TimberWinR.AllFilters.ToList());
 
             c.Validate(c);
 

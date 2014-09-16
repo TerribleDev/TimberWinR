@@ -92,7 +92,11 @@ namespace TimberWinR.Diagnostics
                                 new JProperty("inputs",
                                     new JArray(
                                         from i in Manager.Listeners                                    
-                                        select new JObject(i.ToJson()))),             
+                                        select new JObject(i.ToJson()))),
+                                new JProperty("filters",
+                                    new JArray(
+                                        from f in Manager.Config.Filters
+                                        select new JObject(f.ToJson()))),   
                                 new JProperty("outputs",
                                     new JArray(
                                         from o in Manager.Outputs

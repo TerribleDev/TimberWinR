@@ -30,8 +30,24 @@ namespace TimberWinR.Parser
         }
     }
 
+
+
     public partial class Grok : LogstashFilter
     {
+        public override JObject ToJson()
+        {
+            JObject json = new JObject(
+                 new JProperty("grok",
+                     new JObject(
+                         new JProperty("condition", Condition),
+                         new JProperty("addfields", AddField),
+                         new JProperty("addtags", AddTag),
+                         new JProperty("removefields", RemoveField),
+                         new JProperty("removetag", RemoveTag)
+                         )));
+            return json;
+        }
+
         // Returns: true - Filter does not apply or has been applied successfully
         // Returns: false - Drop this object
         public override bool Apply(JObject json)
@@ -42,7 +58,7 @@ namespace TimberWinR.Parser
                 if (json_type != null && json_type.ToString() != Type)
                     return true; // Filter does not apply.
             }
-             
+
             if (Matches(json))
             {
                 if (Condition != null)
@@ -53,22 +69,22 @@ namespace TimberWinR.Parser
                         if (DropIfMatch)
                             return false; // drop this one
                     }
-                    else                   
-                        return true;                   
+                    else
+                        return true;
                 }
 
                 if (DropIfMatch)
                     return false;
 
                 AddFields(json);
-                AddTags(json);               
+                AddTags(json);
                 RemoveFields(json);
-                RemoveTags(json);                                
+                RemoveTags(json);
             }
 
             return true;
         }
-      
+
         private bool Matches(Newtonsoft.Json.Linq.JObject json)
         {
             string field = Match[0];
@@ -110,7 +126,7 @@ namespace TimberWinR.Parser
                     AddOrModify(json, fieldName, fieldValue);
                 }
             }
-        }      
+        }
 
         private void RemoveFields(Newtonsoft.Json.Linq.JObject json)
         {
@@ -151,17 +167,17 @@ namespace TimberWinR.Parser
                 JToken tags = json["tags"];
                 if (tags != null)
                 {
-                    List<JToken> children = tags.Children().ToList();                                      
+                    List<JToken> children = tags.Children().ToList();
                     for (int i = 0; i < RemoveTag.Length; i++)
                     {
-                        string tagName = ExpandField(RemoveTag[i], json);       
-                        foreach(JToken token in children)
+                        string tagName = ExpandField(RemoveTag[i], json);
+                        foreach (JToken token in children)
                         {
                             if (token.ToString() == tagName)
                                 token.Remove();
                         }
-                    }                   
-                }               
+                    }
+                }
             }
         }
     }

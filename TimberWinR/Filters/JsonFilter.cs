@@ -12,6 +12,22 @@ namespace TimberWinR.Parser
 { 
      public partial class Json : LogstashFilter
      {
+         public override JObject ToJson()
+         {
+             JObject json = new JObject(
+                new JProperty("json",
+                    new JObject(
+                        new JProperty("condition", Condition),
+                        new JProperty("source", Source),
+                        new JProperty("target", Target),
+                        new JProperty("addfields", AddField),
+                        new JProperty("addtags", AddTag),
+                        new JProperty("removefields", RemoveField),
+                        new JProperty("removetag", RemoveTag)
+                        )));
+             return json;
+         }
+
          public override bool Apply(JObject json)
          {
              if (!string.IsNullOrEmpty(Type))

@@ -34,6 +34,8 @@ namespace TimberWinR.Parser
             }
         }
 
+        public abstract JObject ToJson();
+
         protected bool EvaluateCondition(JObject json, string condition)
         {
             // Create a new instance of the C# compiler
