@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Net;
@@ -19,11 +20,8 @@ namespace TimberWinR.Diagnostics
         private CancellationToken CancelToken { get; set; }
         public int Port { get; set; }
         public Manager Manager { get; set; }
-
-        private readonly System.Net.Sockets.TcpListener _tcpListenerV4;
-        private readonly System.Net.Sockets.TcpListener _tcpListenerV6;
-        private Thread _listenThreadV4;
-        private Thread _listenThreadV6;
+     
+        private HttpListener web;
 
         public Diagnostics(Manager manager, CancellationToken cancelToken, int port = 5141)
         {
@@ -31,16 +29,66 @@ namespace TimberWinR.Diagnostics
             CancelToken = cancelToken;
             Manager = manager;
 
-            LogManager.GetCurrentClassLogger().Info("Diagnostic(v4/v6) on Port {0} Ready", Port);
+            LogManager.GetCurrentClassLogger().Info("Diagnostic(v4/v6) on Port {0} Ready", Port);           
 
-            _tcpListenerV6 = new System.Net.Sockets.TcpListener(IPAddress.IPv6Any, Port);
-            _tcpListenerV4 = new System.Net.Sockets.TcpListener(IPAddress.Any, Port);
+            var hl = new Thread(new ParameterizedThreadStart(HttpListen));
+            hl.Start(null);
+        }
 
-            _listenThreadV4 = new Thread(new ParameterizedThreadStart(ListenForClients));
-            _listenThreadV4.Start(_tcpListenerV4);
+        void processRequest()
+        {
+            var result = web.BeginGetContext(DiagnosticCallback, web);
+            result.AsyncWaitHandle.WaitOne();
+        }
 
-            _listenThreadV6 = new Thread(new ParameterizedThreadStart(ListenForClients));
-            _listenThreadV6.Start(_tcpListenerV6);
+        private void DiagnosticCallback(IAsyncResult result)
+        {
+            var context = web.EndGetContext(result);
+            var response = context.Response;
+
+
+            JObject json = new JObject(
+                new JProperty("timberwinr",
+                    new JObject(
+                        new JProperty("messages", Manager.NumMessages),
+                        new JProperty("startedon", Manager.StartedOn),
+                        new JProperty("configfile", Manager.JsonConfig),
+                        new JProperty("logdir", Manager.LogfileDir),
+                        new JProperty("logginglevel", LogManager.GlobalThreshold.ToString()),
+                        new JProperty("inputs",
+                            new JArray(
+                                from i in Manager.Listeners
+                                select new JObject(i.ToJson()))),
+                        new JProperty("filters",
+                            new JArray(
+                                from f in Manager.Config.Filters
+                                select new JObject(f.ToJson()))),
+                        new JProperty("outputs",
+                            new JArray(
+                                from o in Manager.Outputs
+                                select new JObject(o.ToJson()))))));
+
+            response.StatusCode = (int)HttpStatusCode.OK;
+            response.StatusDescription = HttpStatusCode.OK.ToString();
+            byte[] buffer = Encoding.UTF8.GetBytes(json.ToString());
+            response.ContentLength64 = buffer.Length;
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
+        }
+
+
+        private void HttpListen(object o)
+        {
+            web = new HttpListener();
+            web.Prefixes.Add(string.Format("http://*:{0}/", Port));
+            web.Start();
+
+            while (web.IsListening)
+            {
+                processRequest();              
+            }
+
+            web.Stop();
 
         }
 
@@ -49,7 +97,7 @@ namespace TimberWinR.Diagnostics
             var listener = olistener as System.Net.Sockets.TcpListener;
 
             listener.Start();
-          
+
             while (!CancelToken.IsCancellationRequested)
             {
                 try
@@ -71,11 +119,13 @@ namespace TimberWinR.Diagnostics
             }
         }
 
+
         private void HandleNewClient(object client)
         {
             var tcpClient = (TcpClient)client;
             NetworkStream clientStream = null;
 
+            Console.WriteLine("Handle new diag client: {0}, {1}", tcpClient.Connected, tcpClient.Client.RemoteEndPoint.ToString());
             try
             {
                 using (clientStream = tcpClient.GetStream())
@@ -87,21 +137,22 @@ namespace TimberWinR.Diagnostics
                                 new JProperty("messages", Manager.NumMessages),
                                 new JProperty("startedon", Manager.StartedOn),
                                 new JProperty("configfile", Manager.JsonConfig),
-                                new JProperty("logdir", Manager.LogfileDir),                              
+                                new JProperty("logdir", Manager.LogfileDir),
                                 new JProperty("logginglevel", LogManager.GlobalThreshold.ToString()),
                                 new JProperty("inputs",
                                     new JArray(
-                                        from i in Manager.Listeners                                    
+                                        from i in Manager.Listeners
                                         select new JObject(i.ToJson()))),
                                 new JProperty("filters",
                                     new JArray(
                                         from f in Manager.Config.Filters
-                                        select new JObject(f.ToJson()))),   
+                                        select new JObject(f.ToJson()))),
                                 new JProperty("outputs",
                                     new JArray(
                                         from o in Manager.Outputs
                                         select new JObject(o.ToJson()))))));
-                                                                                 
+
+
 
                     sw.WriteLine(json.ToString());
                     sw.Flush();
@@ -117,8 +168,7 @@ namespace TimberWinR.Diagnostics
 
         public void Shutdown()
         {
-            _tcpListenerV4.Stop();
-            _tcpListenerV6.Stop();
+         
         }
 
     }
