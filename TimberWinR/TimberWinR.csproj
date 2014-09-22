@@ -39,6 +39,14 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <HintPath>lib\com-logparser\Interop.MSUtil.dll</HintPath>
     </Reference>
+    <Reference Include="MaxMind.Db">
+      <HintPath>..\packages\MaxMind.Db.0.2.3.0\lib\net40\MaxMind.Db.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MaxMind.GeoIP2">
+      <HintPath>..\packages\MaxMind.GeoIP2.0.4.0.0\lib\net40\MaxMind.GeoIP2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -71,6 +79,7 @@
     <Compile Include="Filters\DateFilter.cs" />
     <Compile Include="Filters\FilterBase.cs" />
     <Compile Include="Filters\GrokFilter.cs" />
+    <Compile Include="Filters\GeoIPFilter.cs" />
     <Compile Include="Filters\JsonFilter.cs" />
     <Compile Include="Filters\MutateFilter.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
@@ -104,8 +113,12 @@
     <None Include="configSchema.xsd">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="GeoLite2City.mmdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="mdocs\DateFilter.md" />
     <None Include="mdocs\Filters.md" />
+    <None Include="mdocs\GeoIPFilter.md" />
     <None Include="mdocs\JsonFilter.md" />
     <None Include="mdocs\GrokFilter.md" />
     <None Include="mdocs\ElasticsearchOutput.md" />

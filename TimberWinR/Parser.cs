@@ -623,6 +623,58 @@ namespace TimberWinR.Parser
         }
     }
 
+    public partial class GeoIP : LogstashFilter
+    {
+        public class GeoIPMissingSourceException : Exception
+        {
+            public GeoIPMissingSourceException()
+                : base("GeoIP filter source is required")
+            {
+            }
+        }
+
+        public class GeoIPAddFieldException : Exception
+        {
+            public GeoIPAddFieldException()
+                : base("GeoIP filter add_field requires tuples")
+            {
+            }
+        }
+
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        [JsonProperty("condition")]
+        public string Condition { get; set; }
+
+        [JsonProperty("source")]
+        public string Source { get; set; }
+
+        [JsonProperty("target")]
+        public string Target { get; set; }
+
+        [JsonProperty("add_tag")]
+        public string[] AddTag { get; set; }
+
+        [JsonProperty("add_field")]
+        public string[] AddField { get; set; }
+
+        [JsonProperty("remove_field")]
+        public string[] RemoveField { get; set; }
+
+        [JsonProperty("remove_tag")]
+        public string[] RemoveTag { get; set; }
+
+        public override void Validate()
+        {
+            if (string.IsNullOrEmpty(Source))
+                throw new GeoIPMissingSourceException();
+
+            if (AddField != null && AddField.Length % 2 != 0)
+                throw new GeoIPAddFieldException();     
+        }
+    }
+
     public partial class Json : LogstashFilter
     {
         public class JsonMissingSourceException : Exception
@@ -691,7 +743,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("json")]
         public Json Json { get; set; }
-
+        
+        [JsonProperty("geoip")]
+        public GeoIP GeoIP { get; set; }
     }
    
     public class TimberWinR

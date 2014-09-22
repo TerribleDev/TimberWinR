@@ -40,7 +40,7 @@
   <Fragment>
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="ProductComponent" Guid="1BDEC5F3-5E9F-4E2E-8B1B-30E7968A99E1">
-           <File Id="TimberWinR.ServiceHost.exe" Name="$(var.TimberWinR.ServiceHost.TargetFileName)" Source="$(var.TimberWinR.ServiceHost.TargetPath)" />
+        <File Id="TimberWinR.ServiceHost.exe" Name="$(var.TimberWinR.ServiceHost.TargetFileName)" Source="$(var.TimberWinR.ServiceHost.TargetPath)" />
         <File Id="TimberWinR.ServiceHost.exe.config" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.ServiceHost.exe.config" />
         <File Id="Interop.MSUtil.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Interop.MSUtil.dll"  />
         <File Id="csredis.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\csredis.dll"  />
@@ -51,6 +51,9 @@
         <File Id="RapidRegex.Core.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RapidRegex.Core.dll"  />
         <File Id="TimberWinR.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.dll"  />
         <File Id="Topshelf.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Topshelf.dll"  />
+        <File Id="MaxMind.Db.dll" Source="$(var.TimberWinR.TargetDir)\MaxMind.db.dll"  />
+        <File Id="MaxMind.GeoIP2.dll" Source="$(var.TimberWinR.TargetDir)\MaxMind.GeoIP2.dll"  />
+        <File Id="GeoLite2City.mmdb" Source="$(var.TimberWinR.TargetDir)\GeoLite2City.mmdb"  />
       </Component>
     </ComponentGroup>
 

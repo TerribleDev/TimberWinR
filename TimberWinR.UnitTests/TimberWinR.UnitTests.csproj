@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="DateFilterTests.cs" />
+    <Compile Include="GeoIPFilterTests.cs" />
     <Compile Include="JsonFilterTests.cs" />
     <Compile Include="GrokFilterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
