@@ -327,7 +327,42 @@ namespace TimberWinR.Parser
             
         }
     }
-    
+
+    public class W3CLog : IValidateSchema
+    {
+        [JsonProperty(PropertyName = "location")]
+        public string Location { get; set; }
+        [JsonProperty(PropertyName = "separator")]
+        public string Separator { get; set; }
+        [JsonProperty(PropertyName = "iCodepage")]
+        public int CodePage { get; set; }
+        [JsonProperty(PropertyName = "dtLines")]
+        public int DtLines { get; set; }
+        [JsonProperty(PropertyName = "dQuotes")]
+        public bool DoubleQuotes { get; set; }
+        
+
+        [JsonProperty(PropertyName = "fields")]
+        public List<Field> Fields { get; set; }
+
+        public W3CLog()
+        {
+            CodePage = 0;
+            DtLines = 10;
+            Fields = new List<Field>();
+            Separator = "auto";
+
+            Fields.Add(new Field("LogFilename", "string"));
+            Fields.Add(new Field("RowNumber", "integer"));          
+        }
+
+        public void Validate()
+        {
+
+        }
+    }
+
+
     public class IISW3CLog : IValidateSchema
     {       
         [JsonProperty(PropertyName = "location")]
@@ -488,6 +523,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("IISW3CLogs")]
         public IISW3CLog[] IISW3CLogs { get; set; }
+
+        [JsonProperty("W3CLogs")]
+        public W3CLog[] W3CLogs { get; set; }
 
         [JsonProperty("Stdin")]
         public Stdin[] Stdins { get; set; }

@@ -19,7 +19,7 @@ namespace TimberWinR.Parser
         {
             get { return fields[i]; }
             set { fields[i] = value; }
-        }
+        }       
 
         public Fields(JObject json)
         {

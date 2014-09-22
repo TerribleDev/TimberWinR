@@ -70,6 +70,12 @@ namespace TimberWinR
             get { return _iisw3clogs; }
         }
 
+        private List<W3CLog> _w3clogs = new List<W3CLog>();
+
+        public IEnumerable<W3CLog> W3C
+        {
+            get { return _w3clogs; }
+        }
 
         private List<Stdin> _stdins = new List<Stdin>();
         public IEnumerable<Stdin> Stdins
@@ -128,6 +134,8 @@ namespace TimberWinR
             {
                 if (x.TimberWinR.Inputs.WindowsEvents != null)
                     c._events.AddRange(x.TimberWinR.Inputs.WindowsEvents.ToList());
+                if (x.TimberWinR.Inputs.W3CLogs != null)
+                    c._w3clogs.AddRange(x.TimberWinR.Inputs.W3CLogs.ToList());
                 if (x.TimberWinR.Inputs.IISW3CLogs != null)
                     c._iisw3clogs.AddRange(x.TimberWinR.Inputs.IISW3CLogs.ToList());
                 if (x.TimberWinR.Inputs.Stdins != null)

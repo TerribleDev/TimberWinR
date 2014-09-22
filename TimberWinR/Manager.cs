@@ -150,6 +150,14 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
+                foreach (Parser.W3CLog iisw3cConfig in Config.W3C)
+                {
+                    var elistner = new W3CInputListener(iisw3cConfig, cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
                 foreach (Parser.WindowsEvent eventConfig in Config.Events)
                 {
                     var elistner = new WindowsEvtInputListener(eventConfig, cancelToken);
