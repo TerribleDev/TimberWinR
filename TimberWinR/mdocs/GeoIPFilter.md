@@ -1,6 +1,7 @@
 # GeoIP Filter
-The Json filter allows you to parse a single line of Json into its corresponding fields.  This is
-particularly useful when parsing log files.
+The GeoIP filter adds information about the geographical location of IP addresses, based on data from the Maxmind database.
+TimberWinR releases ship with the GeoLiteCity database made available from Maxmind with a CCA-ShareAlike 3.0 license.
+For more details on GeoLite, see http://www.maxmind.com/en/geolite.
 
 ## GeoIP Operations
 The following operations are allowed when mutating a field.
