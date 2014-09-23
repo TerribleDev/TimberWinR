@@ -21,6 +21,7 @@ The current supported Input format sources are:
  3. [IISW3C](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/IISW3CInput.md)(Internet Information Services W3C Format)
  4. [WindowsEvents](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/WindowsEvents.md) (Windows Event Viewer)
  5. [Stdin](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/StdinInput.md) (Standard Input for Debugging)
+ 3. [W3C](https://github.com/efontana/TimberWinR/blob/master/TimberWinR/mdocs/W3CInput.md)(Internet Information Services W3C Advanced/Custom Format)
 
 ## Filters
 The current list of supported filters are:
