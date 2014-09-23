@@ -3,11 +3,14 @@
 The W3C input format parses IIS log files in the W3C Extended Log File Format, and handles custom fields unlike the IISW3C input.
 
 IIS web sites logging in the W3C Extended format can be configured to log only a specific subset of the available fields.
-Log files in this format begin with some informative headers ("directives"), the most important of which is the "#Fields" directive, describing which fields are logged at which position in a log row.
-After the directives, the log entries follow. Each log entry is a space-separated list of field values.
+Log files in this format begin with some informative headers ("directives"), the most important of which is the "#Fields" directive, 
+describing which fields are logged at which position in a log row. After the directives, the log entries follow. 
+Each log entry is a space-separated list of field values.
 
-If the logging configuration of an IIS virtual site is updated, the structure of the fields in the file that is currently logged to might change according to the new configuration. In this case, a new "#Fields" directive is logged describing the new fields structure, and the IISW3C input format keeps track of the structure change and parses the new log entries accordingly. 
-
+If the logging configuration of an IIS virtual site is updated, the structure of the fields in the file that is 
+currently logged to might change according to the new configuration. In this case, a new "#Fields" directive is 
+logged describing the new fields structure, and the W3C input format keeps track of the structure change and 
+parses the new log entries accordingly. 
 
 
 ## Parameters
@@ -38,11 +41,11 @@ Example Input:
 
 
 ## Fields
-After a successful parse of an event, the following fields are added [(if configured to be logged)](http://technet.microsoft.com/en-us/library/cc754702(v=ws.10).aspx)
+After a successful parse of an event, the following fields are added [(if configured to be logged)](http://www.iis.net/learn/extensions/advanced-logging-module/advanced-logging-readme)
 
 | Name | Type | Description |
 | ---- |:-----| :-----------------------------------------------------------------------|
 |LogFilename| STRING | Full path of the log file containing this entry |
 |LogRow | INTEGER |  Line in the log file containing this entry  |
 
-Custom fields to follow..
+After the above fields, all other fields selected to be logged will be appended.
