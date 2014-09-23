@@ -11,15 +11,15 @@ If the logging configuration of an IIS virtual site is updated, the structure of
 
 
 ## Parameters
-The following parameters are allowed when configuring IISW3CLogs input.
+The following parameters are allowed when configuring W3CLogs input.
 
 | Parameter         |     Type       |  Description                                                             | Details               |  Default |
 | :---------------- |:---------------| :----------------------------------------------------------------------- | :---------------------------  | :-- |
 | *location*        | string  |Location of log files(s) to monitor                                     | Path to text file(s) including wildcards, may be separated by commas |     |
 | *iCodepage*       | integer |Codepage of the text file.                                              | 0 is the system codepage, -1 is UNICODE.                         | 0  |
-| *dtLines*  | integer |Number of lines examined to determine field types at run time. | This parameter specifies the number of initial log lines that the W3C input format examines to determine the data type of the input record fields. If the value is zero, all fields will be assumed to be of the STRING data type. | false |
-| *dQuotes*       | boolean |Specifies that string values in the log are double-quoted.                | Log processors might generate W3C logs whose string values are enclosed in double-quotes.                      | false |
-| *separator*       | string |Use the value of the "#Date" directive for the "date" and/or "time" field values when these fields are not logged.               | When a log file is configured to not log the "date" and/or "time" fields, specifying "true" for this parameters causes the IISW3C input format to generate "date" and "time" values using the value of the last seen "#Date" directive.  | false |
+| *dtLines*         | integer |Number of lines examined to determine field types at run time. | This parameter specifies the number of initial log lines that the W3C input format examines to determine the data type of the input record fields. If the value is zero, all fields will be assumed to be of the STRING data type. | false |
+| *dQuotes*         | boolean |Specifies that string values in the log are double-quoted.                | Log processors might generate W3C logs whose string values are enclosed in double-quotes.                      | false |
+| *separator*       | enum    |Separator character between fields.    | Different W3C log files can use different separator characters between the fields; for example, Exchange Tracking log files use tab characters, while Personal Firewall log files use space characters. The "auto" value instructs the W3C input format to detect automatically the separator character used in the input log(s).   | auto/space/tab/character |
 
 Example Input:
 ```json
