@@ -704,7 +704,7 @@ namespace TimberWinR.Parser
 
         [JsonProperty("remove_tag")]
         public string[] RemoveTag { get; set; }
-
+               
         public override void Validate()
         {
             if (string.IsNullOrEmpty(Source))
@@ -763,6 +763,10 @@ namespace TimberWinR.Parser
 
         [JsonProperty("rename")]
         public string[] Rename { get; set; }
+
+        [JsonProperty("promote")]
+        public string Promote { get; set; }
+    
 
         public override void Validate()
         {

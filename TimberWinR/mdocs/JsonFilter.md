@@ -11,6 +11,7 @@ The following operations are allowed when mutating a field.
 | *condition*     | property:string |C# expression, if the expression is true, continue, otherwise, ignore
 | *remove_source* | property:bool   |If true, the source property is removed, default: true
 | *source*        | property:string |Required field indicates which field contains the Json to be parsed
+| *promote*       | property:string |If supplied any properties named *promote* will be promoted to top-level
 | *target*        | property:string |If suppled, the parsed json will be contained underneath a propery named *target*
 | *add_field*     | property:array  |If the filter is successful, add an arbitrary field to this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.  This property must be specified in pairs.                                    
 | *remove_field*  | property:array  |If the filter is successful, remove arbitrary fields from this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.                                
