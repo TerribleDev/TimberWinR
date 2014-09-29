@@ -28,6 +28,7 @@ The following operations are allowed when mutating a field.
 | :---------------|:----------------|:-----------------------------------------------------------------------|
 | *type*          | property:string |Type to which this filter applyes, if empty, applies to all types.
 | *condition*     | property:string |C# expression
+| *rename*        | property:array  |Rename one or more fields                                       
 | *match*         | property:string |Required field must match before any subsequent grok operations are executed.
 | *add_field*     | property:array  |If the filter is successful, add an arbitrary field to this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.  This property must be specified in pairs.                                    
 | *remove_field*  | property:array  |If the filter is successful, remove arbitrary fields from this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.                                

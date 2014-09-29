@@ -30,7 +30,9 @@ namespace TimberWinR.Parser
             if (token != null)
             {
                 json.Remove(oldName);
-                json.Add(newName, token);
+                JToken newToken = json[newName];
+                if (newToken == null)
+                    json.Add(newName, token);
             }
         }
 
@@ -741,6 +743,9 @@ namespace TimberWinR.Parser
         [JsonProperty("source")]
         public string Source { get; set; }
 
+        [JsonProperty("remove_source")]
+        public bool RemoveSource { get; set; }
+
         [JsonProperty("target")]
         public string Target { get; set; }
 
@@ -755,7 +760,10 @@ namespace TimberWinR.Parser
 
         [JsonProperty("remove_tag")]
         public string[] RemoveTag { get; set; }
-  
+
+        [JsonProperty("rename")]
+        public string[] Rename { get; set; }
+
         public override void Validate()
         {
             if (string.IsNullOrEmpty(Source))

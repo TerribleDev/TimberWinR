@@ -75,7 +75,7 @@ namespace TimberWinR.UnitTests
             Assert.IsTrue(jf.Apply(jsonInputLine2));
             JObject nostuff = jsonInputLine2["stuff"] as JObject;
             Assert.IsNull(nostuff);
-            Assert.AreEqual(7, jsonInputLine2.Count);            
+            Assert.AreEqual(6, jsonInputLine2.Count);            
         }
     }
 }

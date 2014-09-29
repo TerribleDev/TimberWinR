@@ -9,6 +9,7 @@ The following operations are allowed when mutating a field.
 | :---------------|:----------------|:-----------------------------------------------------------------------|
 | *type*          | property:string |Type to which this filter applies, if empty, applies to all types.
 | *condition*     | property:string |C# expression, if the expression is true, continue, otherwise, ignore
+| *remove_source* | property:bool   |If true, the source property is removed, default: true
 | *source*        | property:string |Required field indicates which field contains the Json to be parsed
 | *target*        | property:string |If suppled, the parsed json will be contained underneath a propery named *target*
 | *add_field*     | property:array  |If the filter is successful, add an arbitrary field to this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.  This property must be specified in pairs.                                    
@@ -42,7 +43,11 @@ Lets assume that a newline such as the following is appended to foo.jlog:
                 "json":{  
                     "type":  "Win32-FileLog",                   
                     "target": "stuff",
-                    "source": "Text"              
+                    "source": "Text",
+                    "rename": [
+                        "Text",
+                        "Data"
+                    ]                   
                 }
             }]
         }       
@@ -68,7 +73,23 @@ The resulting output would be:
     }
   }
 ```
-
+### rename ["oldname", "newname", ...]
+The fields must be in pairs with oldname first and newname second.
+```json
+  "Filters": [     
+   {
+	  "json":{  
+        "type":  "Win32-FileLog",                   
+        "target": "stuff",
+        "source": "Text",
+        "rename": [
+            "Text",
+            "Data"
+        ]                   
+     } 
+   }     
+  ]
+```
 ### add_field ["fieldName", "fieldValue", ...]
 The fields must be in pairs with fieldName first and value second.
 ```json

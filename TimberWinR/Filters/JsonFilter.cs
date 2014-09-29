@@ -12,6 +12,10 @@ namespace TimberWinR.Parser
 { 
      public partial class Json : LogstashFilter
      {
+         public Json()
+         {
+             RemoveSource = true;           
+         }
          public override JObject ToJson()
          {
              JObject json = new JObject(
@@ -45,8 +49,12 @@ namespace TimberWinR.Parser
              }
 
              var source = json[Source];
+             if (source == null)
+                 return true;
 
-             if (source != null && !string.IsNullOrEmpty(source.ToString()))
+             var jsonOrig = source.ToString();
+
+             if (!string.IsNullOrEmpty(source.ToString()))
              {
                  try
                  {
@@ -57,13 +65,26 @@ namespace TimberWinR.Parser
                          subJson = new JObject();
                          subJson[Target] = JObject.Parse(source.ToString());
                      }
-                     else
+                     else                    
                          subJson = JObject.Parse(source.ToString());
-
+                    
                      json.Merge(subJson, new JsonMergeSettings
                      {
-                         MergeArrayHandling = MergeArrayHandling.Union
+                         MergeArrayHandling = MergeArrayHandling.Replace
                      });
+
+                     if (Rename != null && Rename.Length > 0)
+                     {
+                         string oldName = ExpandField(Rename[0], json);
+                         string newName = ExpandField(Rename[1], json);
+                         RenameProperty(json, oldName, newName);
+                     }
+                     
+                     if (RemoveSource)
+                     {
+                         RemoveProperties(json, new string[] { Source });
+                     }
+                     
                  }
                  catch (Exception ex)
                  {
