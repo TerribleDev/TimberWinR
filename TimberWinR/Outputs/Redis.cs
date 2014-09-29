@@ -90,7 +90,7 @@ namespace TimberWinR.Outputs
         }
 
         public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutput ro, CancellationToken cancelToken)
-            : base(cancelToken)
+            : base(cancelToken, "Redis")
         {
             _redisDepth = 0;
             _batchCount = ro.BatchCount;

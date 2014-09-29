@@ -28,7 +28,7 @@ namespace TimberWinR.Outputs
         private long _errorCount;
 
         public ElasticsearchOutput(TimberWinR.Manager manager, Parser.ElasticsearchOutput eo, CancellationToken cancelToken)
-            : base(cancelToken)
+            : base(cancelToken, "Elasticsearch")
         {
             _sentMessages = 0;
             _errorCount = 0;

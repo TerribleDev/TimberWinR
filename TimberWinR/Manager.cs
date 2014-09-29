@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net.Sockets;
+using System.Reflection;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -10,6 +11,7 @@ using System.Text;
 using TimberWinR.Inputs;
 using TimberWinR.Outputs;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace TimberWinR
 {
@@ -190,8 +192,37 @@ namespace TimberWinR
                     foreach (var output in Outputs)
                         output.Connect(elistner);
                 }
+
+                var computerName = System.Environment.MachineName + "." +
+                       Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                           @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
+                           .GetValue("Domain", "")
+                           .ToString();    
+
+                foreach (var output in Outputs)
+                {
+                    var name = Assembly.GetExecutingAssembly().GetName();
+                    JObject json = new JObject(
+                     new JProperty("TimberWinR",
+                         new JObject(
+                             new JProperty("version", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
+                             new JProperty("host", computerName),
+                             new JProperty("output", output.Name),
+                             new JProperty("initialized", DateTime.UtcNow)
+                             )));
+                    output.Startup(json);
+                }
             }
+
         }
+
+
+        private Assembly GetAssemblyByName(string name)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies().
+                   SingleOrDefault(assembly => assembly.GetName().Name == name);
+        }
+
 
         /// <summary>
         /// Creates the default <see cref="FileTarget"/>.

@@ -17,7 +17,7 @@ namespace TimberWinR.Outputs
         private long _sentMessages;
 
         public StdoutOutput(TimberWinR.Manager manager, Parser.StdoutOutput eo, CancellationToken cancelToken)
-            : base(cancelToken)
+            : base(cancelToken, "Stdout")
         {
             _sentMessages = 0;
             _manager = manager;
