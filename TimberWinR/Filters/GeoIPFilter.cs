@@ -24,6 +24,7 @@ namespace TimberWinR.Parser
                new JProperty("geoip",
                    new JObject(
                        new JProperty("source", Source),
+                       new JProperty("type", Type),
                        new JProperty("condition", Condition),
                        new JProperty("target", Target)
                        )));

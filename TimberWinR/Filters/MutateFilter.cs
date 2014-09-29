@@ -18,6 +18,7 @@ namespace TimberWinR.Parser
                     new JObject(
                         new JProperty("condition", Condition),
                         new JProperty("splits", Split),
+                        new JProperty("type", Type),
                         new JProperty("rename", Rename),
                         new JProperty("replace", Replace)                       
                         )));

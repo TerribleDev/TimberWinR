@@ -40,6 +40,7 @@ namespace TimberWinR.Parser
                  new JProperty("date",
                      new JObject(
                          new JProperty("condition", Condition),
+                         new JProperty("type", Type),
                          new JProperty("addfields", AddField)                     
                          )));
             return json;
