@@ -91,6 +91,8 @@ namespace TimberWinR
 
             LogManager.GlobalThreshold = LogLevel.FromString(logLevel);
 
+            LogManager.GetCurrentClassLogger()
+                .Info("TimberWinR Version {0}", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString());
 
             // Is it a directory?
             if (Directory.Exists(jsonConfigFile))

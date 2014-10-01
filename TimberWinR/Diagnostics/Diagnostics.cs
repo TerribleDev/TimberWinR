@@ -20,7 +20,7 @@ namespace TimberWinR.Diagnostics
         private CancellationToken CancelToken { get; set; }
         public int Port { get; set; }
         public Manager Manager { get; set; }
-     
+
         private HttpListener web;
 
         public Diagnostics(Manager manager, CancellationToken cancelToken, int port = 5141)
@@ -29,7 +29,7 @@ namespace TimberWinR.Diagnostics
             CancelToken = cancelToken;
             Manager = manager;
 
-            LogManager.GetCurrentClassLogger().Info("Diagnostic(v4/v6) on Port {0} Ready", Port);           
+            LogManager.GetCurrentClassLogger().Info("Diagnostic(v4/v6) on Port {0} Ready", Port);
 
             var hl = new Thread(new ParameterizedThreadStart(HttpListen));
             hl.Start(null);
@@ -42,10 +42,12 @@ namespace TimberWinR.Diagnostics
         }
 
         private void DiagnosticCallback(IAsyncResult result)
-        {
+        {       
+            if (web == null)         
+                return;
+
             var context = web.EndGetContext(result);
             var response = context.Response;
-
 
             JObject json = new JObject(
                 new JProperty("timberwinr",
@@ -80,16 +82,20 @@ namespace TimberWinR.Diagnostics
         private void HttpListen(object o)
         {
             web = new HttpListener();
-            web.Prefixes.Add(string.Format("http://*:{0}/", Port));
-            web.Start();
-
-            while (web.IsListening)
+            try
             {
-                processRequest();              
+                web.Prefixes.Add(string.Format("http://*:{0}/", Port));
+                web.Start();
+
+                while (web != null && web.IsListening)
+                {                  
+                    processRequest();                  
+                }               
             }
-
-            web.Stop();
-
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error("Diagnostic Listener Error: {0}", ex.ToString());
+            }           
         }
 
         private void ListenForClients(object olistener)
@@ -168,7 +174,20 @@ namespace TimberWinR.Diagnostics
 
         public void Shutdown()
         {
-         
+            
+            try
+            {
+                if (web != null && web.IsListening)
+                {
+                    LogManager.GetCurrentClassLogger().Info("Shutting down diagnostics listener");
+                    web.Close();
+                    web = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);
+            }
         }
 
     }
