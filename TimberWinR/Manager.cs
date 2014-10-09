@@ -212,6 +212,8 @@ namespace TimberWinR
                              new JProperty("output", output.Name),
                              new JProperty("initialized", DateTime.UtcNow)
                              )));
+                    json.Add(new JProperty("type", "Win32-TimberWinR"));
+                    json.Add(new JProperty("host", computerName));
                     output.Startup(json);
                 }
             }

@@ -69,7 +69,8 @@ namespace TimberWinR.Inputs
                 recurse = _arguments.Recurse
             };
         
-            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();         
+            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();
+            Dictionary<string, DateTime> logFileCreationTimes = new Dictionary<string, DateTime>();         
         
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
@@ -78,6 +79,9 @@ namespace TimberWinR.Inputs
                 try
                 {
                     Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+                    FileInfo fiw = new FileInfo(fileToWatch);
+                    if (!fiw.Exists)
+                        continue;
 
                     var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", fileToWatch);
                     var rsfiles = oLogQuery.Execute(qfiles, iFmt);
@@ -85,14 +89,17 @@ namespace TimberWinR.Inputs
                     {
                         var record = rsfiles.getRecord();
                         string logName = record.getValue("LogFilename") as string;
-                        if (!logFileMaxRecords.ContainsKey(logName))
+                        FileInfo fi = new FileInfo(logName);
+                        DateTime creationTime = fi.CreationTimeUtc;
+                        if (!logFileMaxRecords.ContainsKey(logName) || (logFileCreationTimes.ContainsKey(logName) && creationTime > logFileCreationTimes[logName]))
                         {
+                            logFileCreationTimes[logName] = creationTime;
                             var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
                             var rcount = oLogQuery.Execute(qcount, iFmt);
                             var qr = rcount.getRecord();
                             var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
                             logFileMaxRecords[logName] = lrn;
-                        }
+                        }                      
                     }
                     foreach (string fileName in logFileMaxRecords.Keys.ToList())
                     {
