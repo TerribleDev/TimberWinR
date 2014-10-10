@@ -90,14 +90,19 @@ namespace TimberWinR.Inputs
                         var record = rsfiles.getRecord();
                         string logName = record.getValue("LogFilename") as string;
                         FileInfo fi = new FileInfo(logName);
+                        fi.Refresh();
                         DateTime creationTime = fi.CreationTimeUtc;
-                        if (!logFileMaxRecords.ContainsKey(logName) || (logFileCreationTimes.ContainsKey(logName) && creationTime > logFileCreationTimes[logName]))
+                        bool logHasRolled = logFileCreationTimes.ContainsKey(logName) && creationTime > logFileCreationTimes[logName];
+
+                        if (!logFileMaxRecords.ContainsKey(logName) || logHasRolled)
                         {
                             logFileCreationTimes[logName] = creationTime;
                             var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
                             var rcount = oLogQuery.Execute(qcount, iFmt);
                             var qr = rcount.getRecord();
                             var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
+                            if (logHasRolled)
+                                lrn = 0;
                             logFileMaxRecords[logName] = lrn;
                         }                      
                     }
