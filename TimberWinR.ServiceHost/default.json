@@ -1,6 +1,6 @@
 ﻿{
     "TimberWinR": {
-        "Inputs": {           
+        "Inputs": {
             "WindowsEvents": [
                 {
                     "source": "Application,System",
@@ -8,35 +8,35 @@
                     "resolveSIDS": true
                 }
             ],
-             "Tcp": [
+            "Tcp": [
                 {
-                    "_comment": "Output from NLog",   
+                    "_comment": "Output from NLog",
                     "port": 5140
                 }
             ]
-        },      
-        "Filters":[  
-	        {  
-		        "grok":{  
-		            "condition": "[EventTypeName] == \"Information Event\"",
-		            "match":[  
-			            "Text",
-			            ""
-		            ],
-                    "drop": "true"                    
-		        }
-	        }]
         },
-        "Outputs": {
-            "Redis": [
-                { 
-                    "_comment":  "Change the host to your Redis instance",   
-                    "port":  6379,                           
-                    "host": [
-                        "logaggregator.vistaprint.svc"
-                    ]
+        "Filters": [
+            {
+                "grok": {
+                    "condition": "[EventTypeName] == \"Information Event\"",
+                    "match": [
+                        "Text",
+                        ""
+                    ],
+                    "drop": "true"
                 }
-            ]
-        }       
+            }
+        ]
+    },
+    "Outputs": {
+        "Redis": [
+            {
+                "_comment": "Change the host to your Redis instance",
+                "port": 6379,
+                "host": [
+                    "logaggregator.vistaprint.svc"
+                ]
+            }
+        ]
     }
 }
