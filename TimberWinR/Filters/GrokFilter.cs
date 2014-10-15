@@ -36,9 +36,14 @@ namespace TimberWinR.Parser
     {
         public override JObject ToJson()
         {
+            string field = Match[0];
+            string expr = Match[1];
+
             JObject json = new JObject(
                  new JProperty("grok",
                      new JObject(
+                         new JProperty("match", field),
+                         new JProperty("expr", expr),
                          new JProperty("condition", Condition),
                          new JProperty("addfields", AddField),
                          new JProperty("addtags", AddTag),

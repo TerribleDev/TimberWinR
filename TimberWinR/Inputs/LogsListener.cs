@@ -79,10 +79,7 @@ namespace TimberWinR.Inputs
                 try
                 {
                     Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
-                    FileInfo fiw = new FileInfo(fileToWatch);
-                    if (!fiw.Exists)
-                        continue;
-
+                   
                     var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", fileToWatch);
                     var rsfiles = oLogQuery.Execute(qfiles, iFmt);
                     for (; !rsfiles.atEnd(); rsfiles.moveNext())
@@ -90,6 +87,7 @@ namespace TimberWinR.Inputs
                         var record = rsfiles.getRecord();
                         string logName = record.getValue("LogFilename") as string;
                         FileInfo fi = new FileInfo(logName);
+                      
                         fi.Refresh();
                         DateTime creationTime = fi.CreationTimeUtc;
                         bool logHasRolled = logFileCreationTimes.ContainsKey(logName) && creationTime > logFileCreationTimes[logName];

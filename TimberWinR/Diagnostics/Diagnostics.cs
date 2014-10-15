@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
@@ -41,6 +42,13 @@ namespace TimberWinR.Diagnostics
             result.AsyncWaitHandle.WaitOne();
         }
 
+        private Assembly GetAssemblyByName(string name)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies().
+                   SingleOrDefault(assembly => assembly.GetName().Name == name);
+        }
+
+
         private void DiagnosticCallback(IAsyncResult result)
         {       
             if (web == null)         
@@ -52,6 +60,7 @@ namespace TimberWinR.Diagnostics
             JObject json = new JObject(
                 new JProperty("timberwinr",
                     new JObject(
+                        new JProperty("version", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
                         new JProperty("messages", Manager.NumMessages),
                         new JProperty("startedon", Manager.StartedOn),
                         new JProperty("configfile", Manager.JsonConfig),
