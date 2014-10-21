@@ -28,13 +28,16 @@ namespace TimberWinR.Inputs
         private long _receivedMessages;
         private Dictionary<string, Int64> _logFileMaxRecords;
         private Dictionary<string, DateTime> _logFileCreationTimes;
+        private Dictionary<string, DateTime> _logFileSampleTimes;
         private Dictionary<string, long> _logFileSizes;
+
 
         public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 3)
             : base(cancelToken, "Win32-FileLog")
         {
             _logFileMaxRecords = new Dictionary<string, Int64>();
             _logFileCreationTimes = new Dictionary<string, DateTime>();
+            _logFileSampleTimes = new Dictionary<string, DateTime>();
             _logFileSizes = new Dictionary<string, long>();
 
             _receivedMessages = 0;
@@ -59,12 +62,19 @@ namespace TimberWinR.Inputs
                 new JProperty("log",
                     new JObject(
                         new JProperty("messages", _receivedMessages),
+                        new JProperty("type", InputType),
                         new JProperty("location", _arguments.Location),
                         new JProperty("codepage", _arguments.CodePage),
                         new JProperty("splitLongLines", _arguments.SplitLongLines),
                         new JProperty("recurse", _arguments.Recurse),
                         new JProperty("files",
-                            new JArray(from f in _logFileMaxRecords.Keys
+                        new JArray(from f in _logFileMaxRecords.Keys
+                                   select new JValue(f))),
+                        new JProperty("fileSampleTimes",
+                            new JArray(from f in _logFileSampleTimes.Values
+                                       select new JValue(f))),                   
+                        new JProperty("fileSizes",
+                            new JArray(from f in _logFileSizes.Values
                                        select new JValue(f))),
                         new JProperty("fileIndices",
                             new JArray(from f in _logFileMaxRecords.Values
@@ -73,7 +83,7 @@ namespace TimberWinR.Inputs
                             new JArray(from f in _logFileCreationTimes.Values
                                        select new JValue(f)))
                         )));
-          
+
             return json;
         }
 
@@ -103,13 +113,20 @@ namespace TimberWinR.Inputs
                         string logName = record.getValue("LogFilename") as string;
                         FileInfo fi = new FileInfo(logName);
 
-                        fi.Refresh();
+                        if (!fi.Exists)
+                        {
+                            _logFileCreationTimes.Remove(logName);
+                            _logFileMaxRecords.Remove(logName);
+                            _logFileSizes.Remove(logName);
+                        }
+
+                        _logFileSampleTimes[logName] = DateTime.UtcNow;
+
                         DateTime creationTime = fi.CreationTimeUtc;
-                        bool logHasRolled = (_logFileCreationTimes.ContainsKey(logName) &&
-                                             creationTime > _logFileCreationTimes[logName]) ||
+                        bool logHasRolled = (_logFileCreationTimes.ContainsKey(logName) && creationTime > _logFileCreationTimes[logName]) ||
                                             (_logFileSizes.ContainsKey(logName) && fi.Length < _logFileSizes[logName]);
-                        
-                          
+
+
                         if (!_logFileMaxRecords.ContainsKey(logName) || logHasRolled)
                         {
                             _logFileCreationTimes[logName] = creationTime;
