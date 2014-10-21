@@ -142,6 +142,8 @@ namespace TimberWinR.Inputs
                             }
                             _logFileMaxRecords[logName] = lrn;
                         }
+
+                        _logFileSizes[logName] = fi.Length;
                     }
                     foreach (string fileName in _logFileMaxRecords.Keys.ToList())
                     {
