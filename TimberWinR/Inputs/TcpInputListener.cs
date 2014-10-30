@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 
@@ -36,7 +34,7 @@ namespace TimberWinR.Inputs
             : base(cancelToken, "Win32-Tcp")
         {
             _port = port;
-          
+
             LogManager.GetCurrentClassLogger().Info("Tcp Input(v4/v6) on Port {0} Ready", _port);
 
 
@@ -67,7 +65,7 @@ namespace TimberWinR.Inputs
 
             listener.Start();
 
-          
+
             while (!CancelToken.IsCancellationRequested)
             {
                 try
@@ -92,36 +90,28 @@ namespace TimberWinR.Inputs
         private void HandleNewClient(object client)
         {
             var tcpClient = (TcpClient)client;
-            NetworkStream clientStream = null;
 
             try
             {
-                clientStream = tcpClient.GetStream();
-                var stream = new StreamReader(clientStream);
-                string line;
-                while ((line = stream.ReadLine()) != null)
+                NetworkStream clientStream = tcpClient.GetStream();
+                using (var stream = new StreamReader(clientStream))
                 {
-                    try
+                    //assume a continuous stream of JSON objects
+                    using (var reader = new JsonTextReader(stream) { SupportMultipleContent = true })
                     {
-                        JObject json = JObject.Parse(line);
-                        ProcessJson(json);
-                        _receivedMessages++;
+                        while (reader.Read())
+                        {
+                            if (CancelToken.IsCancellationRequested) break;
+                            JObject json = JObject.Load(reader);
+                            ProcessJson(json);
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        LogManager.GetCurrentClassLogger().Error(ex);
-                    }
-                    if (CancelToken.IsCancellationRequested)
-                        break;
                 }
             }
             catch (Exception ex)
             {
                 LogManager.GetCurrentClassLogger().Error(ex);
             }
-
-            if (clientStream != null)
-                clientStream.Close();
 
             tcpClient.Close();
             Finished();

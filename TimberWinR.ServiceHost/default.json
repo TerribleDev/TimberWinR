@@ -26,17 +26,17 @@
                     "drop": "true"
                 }
             }
-        ]
-    },
-    "Outputs": {
-        "Redis": [
-            {
-                "_comment": "Change the host to your Redis instance",
-                "port": 6379,
-                "host": [
-                    "logaggregator.vistaprint.svc"
-                ]
-            }
-        ]
+        ],
+        "Outputs": {
+            "Redis": [
+                {
+                    "_comment": "Change the host to your Redis instance",
+                    "port": 6379,
+                    "host": [
+                        "logaggregator.vistaprint.svc"
+                    ]
+                }
+            ]
+        }
     }
 }
