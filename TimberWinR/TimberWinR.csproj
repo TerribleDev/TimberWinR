@@ -83,6 +83,7 @@
     <Compile Include="Filters\JsonFilter.cs" />
     <Compile Include="Filters\MutateFilter.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
+    <Compile Include="Inputs\UdpInputListener.cs" />
     <Compile Include="Inputs\W3CInputListener.cs" />
     <Compile Include="Inputs\IISW3CInputListener.cs" />
     <Compile Include="Inputs\InputBase.cs" />
@@ -120,6 +121,7 @@
     <None Include="mdocs\DateFilter.md" />
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GeoIPFilter.md" />
+    <None Include="mdocs\UdpInput.md" />
     <None Include="mdocs\W3CInput.md" />
     <None Include="mdocs\JsonFilter.md" />
     <None Include="mdocs\GrokFilter.md" />

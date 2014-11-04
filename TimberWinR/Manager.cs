@@ -23,6 +23,7 @@ namespace TimberWinR
         public Configuration Config { get; set; }
         public List<OutputSender> Outputs { get; set; }
         public List<TcpInputListener> Tcps { get; set; }
+        public List<TcpInputListener> Udps { get; set; }
         public List<InputListener> Listeners { get; set;  }
         public DateTime StartedOn { get; set; }
         public string JsonConfig { get; set; }
@@ -186,8 +187,15 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
+                foreach (var udp in Config.Udps)
+                {
+                    var elistner = new UdpInputListener(cancelToken, udp.Port);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
 
-                foreach (var tcp in Config.Stdins)
+                foreach (var stdin in Config.Stdins)
                 {
                     var elistner = new StdinListener(cancelToken);
                     Listeners.Add(elistner);

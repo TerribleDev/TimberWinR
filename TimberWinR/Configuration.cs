@@ -55,7 +55,13 @@ namespace TimberWinR
         public IEnumerable<Tcp> Tcps
         {
             get { return _tcps; }
-        }       
+        }
+
+        private List<Udp> _udps = new List<Udp>();
+        public IEnumerable<Udp> Udps
+        {
+            get { return _udps; }
+        }     
 
         private List<Log> _logs = new List<Log>();
         public IEnumerable<Log> Logs
@@ -144,6 +150,8 @@ namespace TimberWinR
                     c._logs.AddRange(x.TimberWinR.Inputs.Logs.ToList());
                 if (x.TimberWinR.Inputs.Tcps != null)
                     c._tcps.AddRange(x.TimberWinR.Inputs.Tcps.ToList());
+                if (x.TimberWinR.Inputs.Udps != null)
+                    c._udps.AddRange(x.TimberWinR.Inputs.Udps.ToList());
             }
 
             if (x.TimberWinR.Outputs != null)
@@ -192,6 +200,7 @@ namespace TimberWinR
             _elasticsearchOutputs = new List<ElasticsearchOutput>();
             _stdoutOutputs = new List<StdoutOutput>();
             _tcps = new List<Tcp>();
+            _udps = new List<Udp>();
         }
 
         public static Object GetPropValue(String name, Object obj)

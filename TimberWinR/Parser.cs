@@ -330,6 +330,22 @@ namespace TimberWinR.Parser
         }
     }
 
+
+    public class Udp : IValidateSchema
+    {
+        [JsonProperty(PropertyName = "port")]
+        public int Port { get; set; }
+
+        public Udp()
+        {
+            Port = 5142;
+        }
+
+        public void Validate()
+        {
+
+        }
+    }
     public class W3CLog : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
@@ -522,6 +538,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("Tcp")]
         public Tcp[] Tcps { get; set; }
+
+        [JsonProperty("Udp")]
+        public Udp[] Udps { get; set; }
 
         [JsonProperty("IISW3CLogs")]
         public IISW3CLog[] IISW3CLogs { get; set; }
