@@ -26,11 +26,11 @@ namespace TimberWinR.Inputs
         private TimberWinR.Parser.WindowsEvent _arguments;
         private long _receivedMessages;
 
-        public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
+        public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-Eventlog")
         {
             _arguments = arguments;
-            _pollingIntervalInSeconds = pollingIntervalInSeconds;
+            _pollingIntervalInSeconds = arguments.Interval;
 
             foreach (string eventHive in _arguments.Source.Split(','))
             {
@@ -52,6 +52,7 @@ namespace TimberWinR.Inputs
                         new JProperty("messages", _receivedMessages),
                         new JProperty("binaryFormat", _arguments.BinaryFormat.ToString()),
                         new JProperty("direction", _arguments.Direction.ToString()),
+                        new JProperty("interval", _arguments.Interval),
                         new JProperty("formatMsg", _arguments.FormatMsg),
                         new JProperty("fullEventCode", _arguments.FullEventCode),
                         new JProperty("fullText", _arguments.FullText),
@@ -67,8 +68,7 @@ namespace TimberWinR.Inputs
         {
             LogQuery oLogQuery = new LogQuery();          
 
-            LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");
-            
+            LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");            
 
             // Instantiate the Event Log Input Format object
             var iFmt = new EventLogInputFormat()
@@ -85,18 +85,17 @@ namespace TimberWinR.Inputs
           
             oLogQuery = null;
 
-            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();         
-        
+            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();                 
        
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
             {
                 try
                 {
-                    oLogQuery = new LogQuery();
-
                     Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
+                    oLogQuery = new LogQuery();
+                 
                     var qfiles = string.Format("SELECT Distinct [EventLog] FROM {0}", location);
                     var rsfiles = oLogQuery.Execute(qfiles, iFmt);
                     for (; !rsfiles.atEnd(); rsfiles.moveNext())

@@ -245,9 +245,12 @@ namespace TimberWinR.Parser
         public List<Field> Fields { get; set; }
         [JsonProperty(PropertyName = "formatMsg")]
         public bool FormatMsg { get; set; }
-
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
+        
         public WindowsEvent()
         {
+            Interval = 60; // Every minute
             Source = "System";
             StringsSep = "|";
             FormatMsg = true;
