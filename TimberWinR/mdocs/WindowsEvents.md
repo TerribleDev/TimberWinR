@@ -2,7 +2,7 @@
 
 The WindowsEvents input will collect events from the Windows Event Viewer.   The source parameter indicates which event 
 logs to collect data from.  You can specify more than one log by using the comma, i.e.  "Application,System" will collect
-logs from the Application and System event logs.
+logs from the Application and System event logs.  The default interval for scanning for new Events is 60 seconds.
 
 ## Parameters
 The following parameters are allowed when configuring WindowsEvents.
@@ -18,6 +18,7 @@ The following parameters are allowed when configuring WindowsEvents.
 | *fullText*        | bool   |Retrieve the full text message                                           | true,false                   | **true** |
 | *resolveSIDS*     | bool   |Resolve SID values into full account names                               | true,false                   | **true** |
 | *formatMsg*       | bool   |Format the text message as a single line.                                | true,false                   | **true** |
+| *interval*        | integer  | Interval in seconds to sleep during checks                            | Interval                     | 60 |
 
 ### source format
 The source indicates where to collect the event(s) from, it can be of these form(s): 

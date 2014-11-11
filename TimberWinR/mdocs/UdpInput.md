@@ -1,23 +1,23 @@
-# Input: Tcp
+# Input: Udp
 
-The Tcp input will open a port and listen for properly formatted JSON and will forward on the entire JSON.
+The Udp input will open a port and listen for properly formatted UDP datagrams to be broadcast.
 
 ## Parameters
-The following parameters are allowed when configuring the Tcp input.
+The following parameters are allowed when configuring the Udp input.
 
 | Parameter         |     Type       |  Description                                                             | Details               |  Default |
 | :---------------- |:---------------| :----------------------------------------------------------------------- | :---------------------------  | :-- |
 | *port*        | integer  |Port number to open        | Must be an available port |     |
 
-Example Input: Listen on Port 5140
+Example Input: Listen on Port 5142
 
 ```json
 {
     "TimberWinR": {
         "Inputs": {
-            "Tcp": [
+            "Udp": [
                 {
-                    "port": 5140                  
+                    "port": 5142                
                 }
             ]
 		}
@@ -25,4 +25,4 @@ Example Input: Listen on Port 5140
 }
 ```
 ## Fields
-A field: "type": "Win32-Tcp" is automatically appended, and the entire JSON is passed on vertabim.
+A field: "type": "Win32-Udp" is automatically appended, and the entire JSON is passed on vertabim.
