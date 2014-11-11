@@ -44,11 +44,10 @@ namespace TimberWinR.Outputs
             _jsonQueue = new List<JObject>();
             _numThreads = eo.NumThreads;
 
-            for (int i = 0; i < eo.NumThreads; i++)
-            {
-                var elsThread = new Task(ElasticsearchSender, cancelToken);
-                elsThread.Start();
-            }
+    for (int i = 0; i < eo.NumThreads; i++)
+    {
+        Task.Factory.StartNew(ElasticsearchSender, cancelToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+    }
         }
 
         public override JObject ToJson()
@@ -80,8 +79,9 @@ namespace TimberWinR.Outputs
                 JObject[] messages;
                 lock (_locker)
                 {
-                    messages = _jsonQueue.Take(1).ToArray();
-                    _jsonQueue.RemoveRange(0, messages.Length);
+                    var count = _jsonQueue.Count;
+                    messages = _jsonQueue.Take(count).ToArray();
+                    _jsonQueue.RemoveRange(0, count);
                     if (messages.Length > 0)
                         _manager.IncrementMessageCount(messages.Length);
                 }
@@ -105,10 +105,13 @@ namespace TimberWinR.Outputs
                                     string typeName = "Win32-Elasticsearch";
                                     if (json["type"] != null)
                                         typeName = json["type"].ToString();
-                                    string indexName = _index;
+
+                                    ////check if the submitted JSON object provides a custom index. If yes, use this one
+                                    var token = json["_index"];
+                                    string indexName = token == null ? _index : token.Value<string>();
+                         
                                     if (string.IsNullOrEmpty(indexName))
                                     {
-                                        DateTime now = DateTime.UtcNow;
                                         indexName = string.Format("logstash-{0}", DateTime.UtcNow.ToString("yyyy.MM.dd"));
                                     }
                                     var req = new RestRequest(string.Format("/{0}/{1}/", indexName, typeName), Method.POST);                                  
