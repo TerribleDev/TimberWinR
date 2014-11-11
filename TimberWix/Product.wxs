@@ -6,6 +6,12 @@
     <Property Id="LOGDIR">c:\logs</Property>
     <Property Id="LOGLEVEL">Info</Property>
     <Property Id="DIAGPORT">5141</Property>
+
+    <PropertyRef Id="NETFRAMEWORK40FULL"/>
+    <Condition Message="This application requires Microsoft .NET Framework 4.0 Runtime in order to run. Please install the .NET Framework and then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK40FULL]]>
+    </Condition>
+    
     <UIRef Id="WixUI_InstallDir" />
     
     <!--
