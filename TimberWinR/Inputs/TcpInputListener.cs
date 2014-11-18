@@ -37,6 +37,7 @@ namespace TimberWinR.Inputs
 
             LogManager.GetCurrentClassLogger().Info("Tcp Input(v4/v6) on Port {0} Ready", _port);
 
+            _receivedMessages = 0;
 
             _tcpListenerV6 = new System.Net.Sockets.TcpListener(IPAddress.IPv6Any, port);
             _tcpListenerV4 = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
@@ -104,6 +105,7 @@ namespace TimberWinR.Inputs
                             if (CancelToken.IsCancellationRequested) break;
                             JObject json = JObject.Load(reader);
                             ProcessJson(json);
+                            _receivedMessages++;
                         }
                     }
                 }

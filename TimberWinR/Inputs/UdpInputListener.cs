@@ -46,7 +46,9 @@ namespace TimberWinR.Inputs
             _port = port;
 
             LogManager.GetCurrentClassLogger().Info("Udp Input on Port {0} Ready", _port);
-          
+
+            _receivedMessages = 0;
+
             _udpListener = new System.Net.Sockets.UdpClient(port);
 
             _listenThreadV4 = new Thread(new ParameterizedThreadStart(StartListener));
@@ -76,7 +78,9 @@ namespace TimberWinR.Inputs
                     var data = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
                     JObject json = JObject.Parse(data);
                     ProcessJson(json);
+                    _receivedMessages++;
                 }
+                _udpListener.Close();
             }
             catch (Exception ex)
             {
