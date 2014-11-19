@@ -56,6 +56,7 @@
         <File Id="RestSharp.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RestSharp.dll"  />
         <File Id="RapidRegex.Core.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RapidRegex.Core.dll"  />
         <File Id="TimberWinR.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.dll"  />
+        <File Id="System.Linq.Dynamic.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\System.Linq.Dynamic.dll"  />
         <File Id="Topshelf.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Topshelf.dll"  />
         <File Id="MaxMind.Db.dll" Source="$(var.TimberWinR.TargetDir)\MaxMind.db.dll"  />
         <File Id="MaxMind.GeoIP2.dll" Source="$(var.TimberWinR.TargetDir)\MaxMind.GeoIP2.dll"  />
