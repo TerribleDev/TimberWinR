@@ -48,6 +48,8 @@ namespace TimberWinR
 
             foreach (InputListener listener in Listeners)
                 listener.Shutdown();
+
+            LogManager.GetCurrentClassLogger().Info("Completed ShutDown");
         }
 
 

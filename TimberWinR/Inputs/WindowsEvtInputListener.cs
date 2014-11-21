@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
@@ -25,22 +26,31 @@ namespace TimberWinR.Inputs
         private int _pollingIntervalInSeconds = 1;
         private TimberWinR.Parser.WindowsEvent _arguments;
         private long _receivedMessages;
+        private List<Thread> _tasks { get; set; }
 
         public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-Eventlog")
         {
             _arguments = arguments;
             _pollingIntervalInSeconds = arguments.Interval;
+            _tasks = new List<Thread>();
 
             foreach (string eventHive in _arguments.Source.Split(','))
             {
                 string hive = eventHive.Trim();
-                Task.Factory.StartNew(() => EventWatcher(eventHive));
+                var thread = new Thread(new ParameterizedThreadStart(EventWatcher));
+                _tasks.Add(thread);
+                thread.Start(eventHive);                               
             }
         }
 
         public override void Shutdown()
         {
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            foreach(Thread t in _tasks)
+            {
+                t.Abort();
+            }
             base.Shutdown();
         }
 
@@ -64,8 +74,10 @@ namespace TimberWinR.Inputs
             return json;
         }
 
-        private void EventWatcher(string location)
+        private void EventWatcher(object ploc)
         {
+            string location = ploc.ToString();
+
             LogQuery oLogQuery = new LogQuery();          
 
             LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");            
@@ -147,13 +159,32 @@ namespace TimberWinR.Inputs
                         rs = null;
                     }
                 }
+                catch (System.Threading.ThreadAbortException tex)
+                {                  
+                    Thread.ResetAbort();
+                    break;
+                }
                 catch (Exception ex)
                 {
-                    LogManager.GetCurrentClassLogger().Error(ex);                                     
+                    LogManager.GetCurrentClassLogger().Error(ex);
                 }
 
-                Thread.CurrentThread.Priority = ThreadPriority.Normal;
-                System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
+                try
+                {
+                    Thread.CurrentThread.Priority = ThreadPriority.Normal;
+                    System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
+                }
+                catch (System.Threading.ThreadAbortException tex)
+                {                  
+                    Thread.ResetAbort();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    LogManager.GetCurrentClassLogger().Error(ex);
+                }
+
+              
             }
 
             Finished();

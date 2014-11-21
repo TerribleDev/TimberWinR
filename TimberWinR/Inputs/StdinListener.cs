@@ -28,7 +28,8 @@ namespace TimberWinR.Inputs
         }
 
         public override void Shutdown()
-        {           
+        {
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);         
             base.Shutdown();
         }
 

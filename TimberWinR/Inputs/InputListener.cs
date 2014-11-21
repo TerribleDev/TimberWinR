@@ -59,9 +59,12 @@ namespace TimberWinR.Inputs
         public void Finished()
         {
             FinishedEvent.Set();
+            LogManager.GetCurrentClassLogger().Info("Finished Shutdown {0}", InputType);
         }
         public virtual void Shutdown()
         {
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+
             FinishedEvent.WaitOne();
             try
             {

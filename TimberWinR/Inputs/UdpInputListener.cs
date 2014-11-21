@@ -60,7 +60,9 @@ namespace TimberWinR.Inputs
 
 
         public override void Shutdown()
-        {                     
+        {
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            _udpListener.Close();
             Finished();
             base.Shutdown();
         }
@@ -84,7 +86,8 @@ namespace TimberWinR.Inputs
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                if (!CancelToken.IsCancellationRequested)
+                    LogManager.GetCurrentClassLogger().Error(ex);
             }
 
             Finished();

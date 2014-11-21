@@ -52,6 +52,8 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+
             this._tcpListenerV4.Stop();
             this._tcpListenerV6.Stop();
 
