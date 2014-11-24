@@ -64,6 +64,6 @@ Example Input:
   [1]: http://logstash.net/docs/1.4.2/filters/grok
   [2]: http://logstash.net/docs/1.4.2/filters/date
   [3]: http://logstash.net/docs/1.4.2/filters/mutate
-  [4]: https://github.com/efontana/TimberWinR/blob/master/mdocs/GrokFilter.md
-  [5]: https://github.com/efontana/TimberWinR/blob/master/mdocs/DateFilter.md
-  [6]: https://github.com/efontana/TimberWinR/blob/master/mdocs/MutateFilter.md
+  [4]: https://github.com/Cimpress-MCP/TimberWinR/blob/master/mdocs/GrokFilter.md
+  [5]: https://github.com/Cimpress-MCP/TimberWinR/blob/master/mdocs/DateFilter.md
+  [6]: https://github.com/Cimpress-MCP/TimberWinR/blob/master/mdocs/MutateFilter.md
