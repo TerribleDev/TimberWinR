@@ -32,7 +32,7 @@ namespace TimberWinR.Inputs
         private Dictionary<string, long> _logFileSizes;
 
 
-        public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 3)
+        public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-FileLog")
         {
             _logFileMaxRecords = new Dictionary<string, Int64>();
@@ -42,7 +42,7 @@ namespace TimberWinR.Inputs
 
             _receivedMessages = 0;
             _arguments = arguments;
-            _pollingIntervalInSeconds = pollingIntervalInSeconds;
+            _pollingIntervalInSeconds = arguments.Interval;
 
             foreach (string srcFile in _arguments.Location.Split(','))
             {
@@ -146,8 +146,9 @@ namespace TimberWinR.Inputs
 
                         _logFileSizes[logName] = fi.Length;
                     }
+                    rsfiles.close();
                     foreach (string fileName in _logFileMaxRecords.Keys.ToList())
-                    {
+                    {                        
                         var lastRecordNumber = _logFileMaxRecords[fileName];
                         var query = string.Format("SELECT * FROM {0} where Index > {1}", fileName, lastRecordNumber);
 
@@ -163,6 +164,7 @@ namespace TimberWinR.Inputs
                         for (; !rs.atEnd(); rs.moveNext())
                         {
                             var record = rs.getRecord();
+
                             var json = new JObject();
                             foreach (var field in _arguments.Fields)
                             {
@@ -182,16 +184,19 @@ namespace TimberWinR.Inputs
                             if (!string.IsNullOrEmpty(msg))
                             {
                                 ProcessJson(json);
-                                _receivedMessages++;
+                                _receivedMessages++;                               
                             }
 
                             var lrn = (Int64)record.getValueEx("Index");
                             _logFileMaxRecords[fileName] = lrn;
+                            GC.Collect();
                         }
 
+                        colMap.Clear();
                         // Close the recordset
-                        rs.close();
+                        rs.close();                        
                         rs = null;
+                        GC.Collect();                      
                     }
                 }
                 catch (Exception ex)

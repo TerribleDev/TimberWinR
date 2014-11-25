@@ -150,6 +150,7 @@ namespace TimberWinR.Inputs
                         }
                         // Close the recordset
                         rs.close();
+                        GC.Collect();       
                     }
                 }
                 catch (Exception ex)

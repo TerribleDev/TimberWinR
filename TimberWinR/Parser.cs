@@ -262,6 +262,8 @@ namespace TimberWinR.Parser
         public bool SplitLongLines { get; set; }
         [JsonProperty(PropertyName = "fields")]
         public List<Field> Fields { get; set; }
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
 
         public Log()
         {
@@ -269,6 +271,7 @@ namespace TimberWinR.Parser
             Fields.Add(new Field("LogFilename", "string"));
             Fields.Add(new Field("Index", "integer"));
             Fields.Add(new Field("Text", "string"));
+            Interval = 30;
         }
 
         public void Validate()

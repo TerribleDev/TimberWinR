@@ -133,6 +133,7 @@ namespace TimberWinR.Outputs
                                             else
                                             {
                                                 _sentMessages++;
+                                                GC.Collect();
                                             }
                                         });
                                     }
@@ -140,8 +141,9 @@ namespace TimberWinR.Outputs
                                     {
                                         LogManager.GetCurrentClassLogger().Error(error);
                                         Interlocked.Increment(ref _errorCount);
-                                    }
+                                    }                                   
                                 }
+                                GC.Collect();
                             }
                             else
                             {
@@ -159,6 +161,7 @@ namespace TimberWinR.Outputs
                         }
                     }
                 }
+                GC.Collect();
                 System.Threading.Thread.Sleep(_interval);
             }
         }

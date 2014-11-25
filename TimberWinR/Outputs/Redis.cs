@@ -198,6 +198,7 @@ namespace TimberWinR.Outputs
                                         }
                                     }
                                     client.EndPipe();
+                                    GC.Collect();
                                     break;
                                 }
                                 else
@@ -216,6 +217,7 @@ namespace TimberWinR.Outputs
                         }
                     }
                 }
+                GC.Collect();
                 System.Threading.Thread.Sleep(_interval);
             }
         }

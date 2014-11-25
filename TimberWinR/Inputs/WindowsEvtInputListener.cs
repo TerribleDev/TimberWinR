@@ -157,6 +157,7 @@ namespace TimberWinR.Inputs
                         // Close the recordset
                         rs.close();
                         rs = null;
+                        GC.Collect();       
                     }
                 }
                 catch (System.Threading.ThreadAbortException tex)

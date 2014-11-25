@@ -48,7 +48,7 @@ namespace TimberWinR.Outputs
                 JObject[] messages;
                 lock (_locker)
                 {
-                    messages = _jsonQueue.Take(1).ToArray();
+                    messages = _jsonQueue.Take(_jsonQueue.Count).ToArray();
                     _jsonQueue.RemoveRange(0, messages.Length);                  
                 }
 
