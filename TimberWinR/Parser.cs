@@ -27,6 +27,15 @@ namespace TimberWinR.Parser
     {
         public abstract bool Apply(JObject json);
 
+        protected void RemoveProperty(JObject json, string name)
+        {
+            JToken token = json[name];
+            if (token != null)
+            {
+                json.Remove(name);
+            }
+        }
+
         protected void RenameProperty(JObject json, string oldName, string newName)
         {
             JToken token = json[oldName];
@@ -632,6 +641,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("condition")]
         public string Condition { get; set; }
+
+        [JsonProperty("remove")]
+        public string[] Remove { get; set; }
 
         [JsonProperty("rename")]
         public string[] Rename { get; set; }

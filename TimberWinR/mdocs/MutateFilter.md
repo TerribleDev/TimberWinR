@@ -8,6 +8,7 @@ The following operations are allowed when mutating a field.
 | Operation   |     Type        | Description                                                            
 | :-----------|:----------------|:-----------------------------------------------------------------------|
 | *condition* | property:string |C# Expression
+| *remove*    | property:array  |Remove one or more fields                                       
 | *rename*    | property:array  |Rename one or more fields                                       
 | *replace*   | property:array  |Replace a field with a new value.  The new value can include %{foo} strings to help you build a new value from other parts of the event.                                   
 | *split*     | property:array  |Separator between values of the "Strings" field.   
@@ -30,6 +31,19 @@ then the operation(s) will be executed in order.
 ```
 The above example will rename ComputerName to Host only for Win32-EventLog types.
 
+### remove ["name", ...]
+Removes field.
+```json
+  "Filters": [     
+    {
+		"mutate": {      			
+			"remove": [
+				"ComputerName", "Username"
+			]
+		}                
+    }     
+  ]
+```
 ### rename ["oldname", "newname", ...]
 The fields must be in pairs with oldname first and newname second.
 ```json
