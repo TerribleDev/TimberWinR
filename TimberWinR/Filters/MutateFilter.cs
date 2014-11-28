@@ -19,6 +19,7 @@ namespace TimberWinR.Parser
                         new JProperty("condition", Condition),
                         new JProperty("splits", Split),
                         new JProperty("type", Type),
+                        new JProperty("remove", Remove),
                         new JProperty("rename", Rename),
                         new JProperty("replace", Replace)                       
                         )));
@@ -42,9 +43,22 @@ namespace TimberWinR.Parser
              }
 
              ApplySplits(json);
+             ApplyRemoves(json);
              ApplyRenames(json);
              ApplyReplace(json);
              return true;
+         }
+
+         private void ApplyRemoves(JObject json)
+         {
+             if (Remove != null && Remove.Length > 0)
+             {
+                 for (int i = 0; i < Remove.Length; i += 1)
+                 {
+                     string name = ExpandField(Remove[i], json);
+                     RemoveProperty(json, name);
+                 }
+             }
          }
 
          private void ApplyRenames(JObject json)
