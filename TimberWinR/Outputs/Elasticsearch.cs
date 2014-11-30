@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -11,6 +10,8 @@ using RestSharp;
 
 namespace TimberWinR.Outputs
 {
+    using System.Text.RegularExpressions;
+
     public partial class ElasticsearchOutput : OutputSender
     {
         private TimberWinR.Manager _manager;
@@ -18,7 +19,6 @@ namespace TimberWinR.Outputs
         private readonly int _interval;
         private readonly string[] _host;
         private readonly string _protocol;
-        private readonly string _index;
         private int _hostIndex;
         private readonly int _timeout;
         private readonly object _locker = new object();
@@ -26,6 +26,7 @@ namespace TimberWinR.Outputs
         private readonly int _numThreads;
         private long _sentMessages;
         private long _errorCount;
+        private Parser.ElasticsearchOutput eo;
 
         public ElasticsearchOutput(TimberWinR.Manager manager, Parser.ElasticsearchOutput eo, CancellationToken cancelToken)
             : base(cancelToken, "Elasticsearch")
@@ -33,13 +34,13 @@ namespace TimberWinR.Outputs
             _sentMessages = 0;
             _errorCount = 0;
 
+            this.eo = eo;
             _protocol = eo.Protocol;
             _timeout = eo.Timeout;
             _manager = manager;
             _port = eo.Port;
             _interval = eo.Interval;
             _host = eo.Host;
-            _index = eo.Index;
             _hostIndex = 0;
             _jsonQueue = new List<JObject>();
             _numThreads = eo.NumThreads;
@@ -102,18 +103,8 @@ namespace TimberWinR.Outputs
 
                                 foreach (JObject json in messages)
                                 {
-                                    string typeName = "Win32-Elasticsearch";
-                                    if (json["type"] != null)
-                                        typeName = json["type"].ToString();
-
-                                    ////check if the submitted JSON object provides a custom index. If yes, use this one
-                                    var token = json["_index"];
-                                    string indexName = token == null ? _index : token.Value<string>();
-                         
-                                    if (string.IsNullOrEmpty(indexName))
-                                    {
-                                        indexName = string.Format("logstash-{0}", DateTime.UtcNow.ToString("yyyy.MM.dd"));
-                                    }
+                                    var typeName = this.eo.GetTypeName(json);
+                                    var indexName = this.eo.GetIndexName(json);
                                     var req = new RestRequest(string.Format("/{0}/{1}/", indexName, typeName), Method.POST);                                  
 
                                     req.AddParameter("text/json", json.ToString(), ParameterType.RequestBody);

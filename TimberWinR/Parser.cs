@@ -17,6 +17,8 @@ using System.CodeDom.Compiler;
 
 namespace TimberWinR.Parser
 {
+    using System.Text.RegularExpressions;
+
     interface IValidateSchema
     {
         void Validate();
@@ -424,6 +426,8 @@ namespace TimberWinR.Parser
 
     public class ElasticsearchOutput
     {
+        const string IndexDatePattern = "(%\\{(?<format>[^\\}]+)\\})";
+
         [JsonProperty(PropertyName = "host")]
         public string[] Host { get; set; }
         [JsonProperty(PropertyName = "index")]
@@ -449,6 +453,45 @@ namespace TimberWinR.Parser
             NumThreads = 1;
             Interval = 1000;
         }
+
+        public string GetIndexName(JObject json)
+        {
+            ////check if the submitted JSON object provides a custom index. If yes, use this one
+            var token = json["_index"];
+            var indexName = token == null ? this.Index : token.Value<string>();
+
+            if (string.IsNullOrEmpty(indexName))
+            {
+                indexName = string.Format("logstash-{0}", DateTime.UtcNow.ToString("yyyy.MM.dd"));
+            }
+            else
+            {
+                var date = DateTime.UtcNow;
+                if (json["@timestamp"] != null)
+                {
+                    date = DateTime.Parse(json["@timestamp"].ToString());
+                }
+
+                var match = Regex.Match(indexName, IndexDatePattern);
+                if (match.Success)
+                {
+                    indexName = Regex.Replace(indexName, IndexDatePattern, date.ToString(match.Groups["format"].Value));
+                }
+            }
+
+            return indexName;
+        }
+
+        public string GetTypeName(JObject json)
+        {
+            string typeName = "Win32-Elasticsearch";
+            if (json["type"] != null)
+            {
+                typeName = json["type"].ToString();
+            }
+            return typeName;
+        }
+
     }
 
     public class RedisOutput
