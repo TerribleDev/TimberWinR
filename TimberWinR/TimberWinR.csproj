@@ -86,6 +86,7 @@
     <Compile Include="Filters\JsonFilter.cs" />
     <Compile Include="Filters\MutateFilter.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
+    <Compile Include="Inputs\IISW3CRowReader.cs" />
     <Compile Include="Inputs\UdpInputListener.cs" />
     <Compile Include="Inputs\W3CInputListener.cs" />
     <Compile Include="Inputs\IISW3CInputListener.cs" />
