@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using Interop.MSUtil;
 
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using NLog;
-using TimberWinR.Parser;
 using LogQuery = Interop.MSUtil.LogQueryClassClass;
 using IISW3CLogInputFormat = Interop.MSUtil.COMIISW3CInputContextClassClass;
 using LogRecordSet = Interop.MSUtil.ILogRecordset;
@@ -23,15 +16,19 @@ namespace TimberWinR.Inputs
     public class IISW3CInputListener : InputListener
     {
         private readonly int _pollingIntervalInSeconds;
-        private readonly TimberWinR.Parser.IISW3CLog _arguments;
+        private readonly Parser.IISW3CLog _arguments;
         private long _receivedMessages;
 
-        public IISW3CInputListener(TimberWinR.Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
+        private IisW3CRowReader rowReader;
+
+        public IISW3CInputListener(Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
             : base(cancelToken, "Win32-IISLog")
         {
             _arguments = arguments;
             _receivedMessages = 0;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
+            this.rowReader = new IisW3CRowReader(_arguments.Fields);
+
             foreach (string loc in _arguments.Location.Split(','))
             {
                 string hive = loc.Trim();
@@ -61,7 +58,6 @@ namespace TimberWinR.Inputs
                         )));
             return json;
         }
-
 
         private void IISW3CWatcher(string location)
         {
@@ -108,39 +104,19 @@ namespace TimberWinR.Inputs
                         }
                     }
 
-                 
                     foreach (string fileName in logFileMaxRecords.Keys.ToList())
                     {
                         var lastRecordNumber = logFileMaxRecords[fileName];
                         var query = string.Format("SELECT * FROM '{0}' Where LogRow > {1}", fileName, lastRecordNumber);
 
                         var rs = oLogQuery.Execute(query, iFmt);
-                        var colMap = new Dictionary<string, int>();
-                        for (int col = 0; col < rs.getColumnCount(); col++)
-                        {
-                            string colName = rs.getColumnName(col);
-                            colMap[colName] = col;
-                        }
+                        rowReader.ReadColumnMap(rs);
 
                         // Browse the recordset
                         for (; !rs.atEnd(); rs.moveNext())
                         {
                             var record = rs.getRecord();
-                            var json = new JObject();
-                            foreach (var field in _arguments.Fields)
-                            {
-                                if (!colMap.ContainsKey(field.Name))
-                                    continue;
-
-                                object v = record.getValue(field.Name);
-                                if (field.DataType == typeof (DateTime))
-                                {
-                                    DateTime dt = DateTime.Parse(v.ToString());
-                                    json.Add(new JProperty(field.Name, dt));
-                                }
-                                else
-                                    json.Add(new JProperty(field.Name, v));
-                            }
+                            var json = rowReader.ReadToJson(record);
                             ProcessJson(json);
                             _receivedMessages++;
                             var lrn = (Int64)record.getValueEx("LogRow");
