@@ -64,6 +64,7 @@
     <Compile Include="Inputs\IisW3CRowReaderTests.cs" />
     <Compile Include="JsonFilterTests.cs" />
     <Compile Include="GrokFilterTests.cs" />
+    <Compile Include="Parser\ElasticsearchOutputTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBase.cs" />
   </ItemGroup>

@@ -13,6 +13,9 @@ The following parameters are allowed when configuring the Redis output.
 | *host*        | [string] | The hostname(s) of your Elasticsearch server(s) | IP or DNS name |  |
 | *port*        | integer  | Redis port number                                           | This port must be open  | 9200  |
 
+### Index parameter
+If you want to output your data everyday to a new index, use following index format: "index-%{yyyy.MM.dd}". Here date format could be any forwat which you need.
+
 Example Input:
 ```json
 {
