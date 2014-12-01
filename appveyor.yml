@@ -12,4 +12,3 @@ assembly_info:
 
 artifacts:
   - path: '**\*.msi'
-
