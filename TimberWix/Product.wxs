@@ -13,17 +13,16 @@
     </Condition>
     
     <UIRef Id="WixUI_InstallDir" />
-    
+
     <!--
 				We need to be able to uninstall a newer version from an older version.
 				The default reinstallmode is "omus", of which the 'o' means "reinstall if missing or older"
 				The 'd' means "reinstall if different". This ensures that, at the individual component level, rollbacks work correctly.
 				See http://msdn.microsoft.com/en-us/library/windows/desktop/aa371182(v=vs.85).aspx
 			-->
-    <Property Id="REINSTALLMODE" Value="dmus" />
-
+    <Property Id="REINSTALLMODE" Value="dmus" />  
     
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."  />
+ 
     <MediaTemplate EmbedCab="yes" />
 
     
@@ -65,6 +64,7 @@
     </ComponentGroup>
 
     <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallFinalize" Overridable="yes" />
       <Custom Action='ManagedInstall' After="InstallFiles">NOT Installed</Custom>
       <Custom Action='ManagedInstall2' After="ManagedInstall">NOT Installed</Custom>
       <Custom Action='ManagedUnInstall' Before="RemoveFiles">Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")</Custom>
