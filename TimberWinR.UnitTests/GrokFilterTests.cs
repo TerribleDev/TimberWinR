@@ -69,7 +69,7 @@ namespace TimberWinR.UnitTests
             {
                 {"LogFilename", @"C:\\Logs1\\test1.log"},
                 {"Index", 7},
-                {"Text", null},
+                {"Text", "crap"},
                 {"type", "Win32-FileLog"},
                 {"ComputerName", "dev.vistaprint.net"}
             };
@@ -82,7 +82,7 @@ namespace TimberWinR.UnitTests
 		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
 		                ""match"":[  
 			                ""Text"",
-			                """"
+			                ""crap""
 		                ],
                         ""remove_field"":[  
                             ""Index"",

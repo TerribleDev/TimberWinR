@@ -19,7 +19,7 @@ namespace TimberWinR.Parser
         {
             get { return fields[i]; }
             set { fields[i] = value; }
-        }       
+        }
 
         public Fields(JObject json)
         {
@@ -116,7 +116,10 @@ namespace TimberWinR.Parser
                         return true; // Yes!
                     }
                 }
-                return true; // Empty field is no match
+                if (string.IsNullOrEmpty(expr))
+                    return true; // Empty field is no match
+                else
+                    return false;
             }
             return false; // Not specified is failure
         }
