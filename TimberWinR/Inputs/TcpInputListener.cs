@@ -105,9 +105,17 @@ namespace TimberWinR.Inputs
                         while (reader.Read())
                         {
                             if (CancelToken.IsCancellationRequested) break;
-                            JObject json = JObject.Load(reader);
-                            ProcessJson(json);
-                            _receivedMessages++;
+                            try
+                            {
+                                JObject json = JObject.Load(reader);
+                                ProcessJson(json);
+                                _receivedMessages++;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogManager.GetCurrentClassLogger().Warn(ex);
+                            }
+                          
                         }
                     }
                 }

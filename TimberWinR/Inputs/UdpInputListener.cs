@@ -18,7 +18,7 @@ namespace TimberWinR.Inputs
 
         private Thread _listenThreadV4;
         private Thread _listenThreadV6;
-     
+
         private readonly int _port;
         private long _receivedMessages;
 
@@ -26,7 +26,7 @@ namespace TimberWinR.Inputs
         {
             public IPEndPoint endPoint;
             public UdpClient client;
-        }    
+        }
 
         public override JObject ToJson()
         {
@@ -52,10 +52,10 @@ namespace TimberWinR.Inputs
             _udpListener = new System.Net.Sockets.UdpClient(port);
 
             _listenThreadV4 = new Thread(new ParameterizedThreadStart(StartListener));
-            _listenThreadV4.Start(new listenProfile() {endPoint = groupV4, client = _udpListener});
+            _listenThreadV4.Start(new listenProfile() { endPoint = groupV4, client = _udpListener });
 
             _listenThreadV6 = new Thread(new ParameterizedThreadStart(StartListener));
-            _listenThreadV6.Start(new listenProfile() { endPoint = groupV6, client = _udpListener });   
+            _listenThreadV6.Start(new listenProfile() { endPoint = groupV6, client = _udpListener });
         }
 
 
@@ -77,10 +77,17 @@ namespace TimberWinR.Inputs
                 while (!CancelToken.IsCancellationRequested)
                 {
                     byte[] bytes = profile.client.Receive(ref profile.endPoint);
-                    var data = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
-                    JObject json = JObject.Parse(data);
-                    ProcessJson(json);
-                    _receivedMessages++;
+                    try
+                    {
+                        var data = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+                        JObject json = JObject.Parse(data);
+                        ProcessJson(json);
+                        _receivedMessages++;
+                    }
+                    catch (Exception ex1)
+                    {
+                        LogManager.GetCurrentClassLogger().Warn(ex1);
+                    }
                 }
                 _udpListener.Close();
             }
