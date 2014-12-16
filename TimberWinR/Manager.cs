@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net.Sockets;
 using System.Reflection;
+using Newtonsoft.Json;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -24,12 +25,13 @@ namespace TimberWinR
         public List<OutputSender> Outputs { get; set; }
         public List<TcpInputListener> Tcps { get; set; }
         public List<TcpInputListener> Udps { get; set; }
-        public List<InputListener> Listeners { get; set;  }
+        public List<InputListener> Listeners { get; set; }
         public DateTime StartedOn { get; set; }
         public string JsonConfig { get; set; }
         public string LogfileDir { get; set; }
 
-        public int NumConnections {
+        public int NumConnections
+        {
             get { return numConnections; }
         }
 
@@ -41,7 +43,7 @@ namespace TimberWinR
         private static int numConnections;
         private static int numMessages;
 
-     
+
         public void Shutdown()
         {
             LogManager.GetCurrentClassLogger().Info("Shutting Down");
@@ -54,10 +56,10 @@ namespace TimberWinR
 
 
         public void IncrementMessageCount(int count = 1)
-        {            
+        {
             Interlocked.Add(ref numMessages, count);
         }
-    
+
         public Manager(string jsonConfigFile, string logLevel, string logfileDir, CancellationToken cancelToken)
         {
             StartedOn = DateTime.UtcNow;
@@ -71,9 +73,9 @@ namespace TimberWinR
             numMessages = 0;
             numConnections = 0;
 
-            Outputs = new List<OutputSender>();           
+            Outputs = new List<OutputSender>();
             Listeners = new List<InputListener>();
-           
+
             var loggingConfiguration = new LoggingConfiguration();
 
             // Create our default targets
@@ -88,7 +90,7 @@ namespace TimberWinR
             loggingConfiguration.LoggingRules.Add(new LoggingRule("*", LogLevel.Trace, coloredConsoleTarget));
             // LogLevel.Debug means has to be at least Debug to show up in logfile
             loggingConfiguration.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, fileTarget));
-          
+
             LogManager.Configuration = loggingConfiguration;
             LogManager.EnableLogging();
 
@@ -97,29 +99,39 @@ namespace TimberWinR
             LogManager.GetCurrentClassLogger()
                 .Info("TimberWinR Version {0}", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString());
 
-            // Is it a directory?
-            if (Directory.Exists(jsonConfigFile))
+            try
             {
-                DirectoryInfo di = new DirectoryInfo(jsonConfigFile);
-                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", di.FullName);
-                Config = Configuration.FromDirectory(jsonConfigFile);              
+                // Is it a directory?
+                if (Directory.Exists(jsonConfigFile))
+                {
+                    DirectoryInfo di = new DirectoryInfo(jsonConfigFile);
+                    LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", di.FullName);
+                    Config = Configuration.FromDirectory(jsonConfigFile);
+                }
+                else
+                {
+                    var fi = new FileInfo(jsonConfigFile);
+
+                    LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From File: {0}", fi.FullName);
+
+                    if (!fi.Exists)
+                        throw new FileNotFoundException("Missing config file", jsonConfigFile);
+
+                    LogManager.GetCurrentClassLogger().Info("Initialized, Reading Config: {0}", fi.FullName);
+                    Config = Configuration.FromFile(jsonConfigFile);
+                }
             }
-            else
+            catch (JsonSerializationException jse)
             {
-                var fi = new FileInfo(jsonConfigFile);
-
-                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From File: {0}", fi.FullName);
-               
-                if (!fi.Exists)
-                    throw new FileNotFoundException("Missing config file", jsonConfigFile);
-
-                LogManager.GetCurrentClassLogger().Info("Initialized, Reading Config: {0}", fi.FullName);
-                Config = Configuration.FromFile(jsonConfigFile);
+                LogManager.GetCurrentClassLogger().Error(jse);
             }
-         
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);               
+            }
             LogManager.GetCurrentClassLogger().Info("Log Directory {0}", logfileDir);
-            LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);        
-            
+            LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);
+
             // Read the Configuration file
             if (Config != null)
             {
@@ -209,7 +221,7 @@ namespace TimberWinR
                        Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
                            @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
                            .GetValue("Domain", "")
-                           .ToString();    
+                           .ToString();
 
                 foreach (var output in Outputs)
                 {
