@@ -106,14 +106,14 @@ The fields must be in pairs with fieldName first and value second.
   ]
 ```
 
-### remove_field ["tag1", "tag2", ...]
+### remove_field ["fieldName1", "fieldName2", ...]
 Remove the fields.  More than one field can be specified at a time.
 ```json
   "Filters": [     
     {
 		"json": {      			
-			"remove_tag": [             
-             "static_tag1",
+			"remove_field": [             
+             "fieldName1",
              "Computer_%{Host}"
 			]
 		}                
