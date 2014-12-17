@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Configuration;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,11 +31,14 @@ namespace TimberWinR.Inputs
         private Dictionary<string, DateTime> _logFileCreationTimes;
         private Dictionary<string, DateTime> _logFileSampleTimes;
         private Dictionary<string, long> _logFileSizes;
-
+        private CancellationToken _cancelToken;
+        public bool Stop { get; set; }
 
         public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-FileLog")
         {
+            Stop = false;
+            _cancelToken = cancelToken;
             _logFileMaxRecords = new Dictionary<string, Int64>();
             _logFileCreationTimes = new Dictionary<string, DateTime>();
             _logFileSampleTimes = new Dictionary<string, DateTime>();
@@ -54,6 +58,7 @@ namespace TimberWinR.Inputs
         public override void Shutdown()
         {
             LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            Stop = true;              
             base.Shutdown();
         }
 
@@ -69,20 +74,20 @@ namespace TimberWinR.Inputs
                         new JProperty("splitLongLines", _arguments.SplitLongLines),
                         new JProperty("recurse", _arguments.Recurse),
                         new JProperty("files",
-                        new JArray(from f in _logFileMaxRecords.Keys
-                                   select new JValue(f))),
+                            new JArray(from f in _logFileMaxRecords.Keys
+                                select new JValue(f))),
                         new JProperty("fileSampleTimes",
                             new JArray(from f in _logFileSampleTimes.Values
-                                       select new JValue(f))),                   
+                                select new JValue(f))),
                         new JProperty("fileSizes",
                             new JArray(from f in _logFileSizes.Values
-                                       select new JValue(f))),
+                                select new JValue(f))),
                         new JProperty("fileIndices",
                             new JArray(from f in _logFileMaxRecords.Values
-                                       select new JValue(f))),
+                                select new JValue(f))),
                         new JProperty("fileCreationDates",
                             new JArray(from f in _logFileCreationTimes.Values
-                                       select new JValue(f)))
+                                select new JValue(f)))
                         )));
 
             return json;
@@ -97,122 +102,135 @@ namespace TimberWinR.Inputs
                 recurse = _arguments.Recurse
             };
 
-
-            // Execute the query
-            while (!CancelToken.IsCancellationRequested)
+            using (var syncHandle = new ManualResetEventSlim())
             {
-                var oLogQuery = new LogQuery();
-                try
+                // Execute the query
+                while (!Stop)
                 {
-                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
-
-                    var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", fileToWatch);
-                    var rsfiles = oLogQuery.Execute(qfiles, iFmt);
-                    for (; !rsfiles.atEnd(); rsfiles.moveNext())
+                    var oLogQuery = new LogQuery();
+                    if (!_cancelToken.IsCancellationRequested)
                     {
-                        var record = rsfiles.getRecord();
-                        string logName = record.getValue("LogFilename") as string;
-                        FileInfo fi = new FileInfo(logName);
-
-                        if (!fi.Exists)
+                        try
                         {
-                            _logFileCreationTimes.Remove(logName);
-                            _logFileMaxRecords.Remove(logName);
-                            _logFileSizes.Remove(logName);
-                        }
-
-                        _logFileSampleTimes[logName] = DateTime.UtcNow;
-
-                        DateTime creationTime = fi.CreationTimeUtc;
-                        bool logHasRolled = (_logFileCreationTimes.ContainsKey(logName) && creationTime > _logFileCreationTimes[logName]) ||
-                                            (_logFileSizes.ContainsKey(logName) && fi.Length < _logFileSizes[logName]);
-
-
-                        if (!_logFileMaxRecords.ContainsKey(logName) || logHasRolled)
-                        {
-                            _logFileCreationTimes[logName] = creationTime;
-                            _logFileSizes[logName] = fi.Length;
-                            var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
-                            var rcount = oLogQuery.Execute(qcount, iFmt);
-                            var qr = rcount.getRecord();
-                            var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
-                            if (logHasRolled)
+                            syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), _cancelToken);
+                            var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", fileToWatch);
+                            var rsfiles = oLogQuery.Execute(qfiles, iFmt);
+                            for (; !rsfiles.atEnd(); rsfiles.moveNext())
                             {
-                                LogManager.GetCurrentClassLogger().Info("Log {0} has rolled", logName);
-                                lrn = 0;
-                            }
-                            _logFileMaxRecords[logName] = lrn;
-                        }
+                                var record = rsfiles.getRecord();
+                                string logName = record.getValue("LogFilename") as string;
+                                FileInfo fi = new FileInfo(logName);
 
-                        _logFileSizes[logName] = fi.Length;
-                    }
-                    rsfiles.close();
-                    foreach (string fileName in _logFileMaxRecords.Keys.ToList())
-                    {                        
-                        var lastRecordNumber = _logFileMaxRecords[fileName];
-                        var query = string.Format("SELECT * FROM {0} where Index > {1}", fileName, lastRecordNumber);
-
-                        var rs = oLogQuery.Execute(query, iFmt);
-                        Dictionary<string, int> colMap = new Dictionary<string, int>();
-                        for (int col = 0; col < rs.getColumnCount(); col++)
-                        {
-                            string colName = rs.getColumnName(col);
-                            colMap[colName] = col;
-                        }
-
-                        // Browse the recordset
-                        for (; !rs.atEnd(); rs.moveNext())
-                        {
-                            var record = rs.getRecord();
-
-                            var json = new JObject();
-                            foreach (var field in _arguments.Fields)
-                            {
-                                if (!colMap.ContainsKey(field.Name))
-                                    continue;
-
-                                object v = record.getValue(field.Name);
-                                if (field.DataType == typeof(DateTime))
+                                if (!fi.Exists)
                                 {
-                                    DateTime dt = DateTime.Parse(v.ToString());
-                                    json.Add(new JProperty(field.Name, dt));
+                                    _logFileCreationTimes.Remove(logName);
+                                    _logFileMaxRecords.Remove(logName);
+                                    _logFileSizes.Remove(logName);
                                 }
-                                else
-                                    json.Add(new JProperty(field.Name, v));
-                            }
-                            string msg = json["Text"].ToString();
-                            if (!string.IsNullOrEmpty(msg))
-                            {
-                                ProcessJson(json);
-                                _receivedMessages++;                               
-                            }
 
-                            var lrn = (Int64)record.getValueEx("Index");
-                            _logFileMaxRecords[fileName] = lrn;
-                            GC.Collect();
+                                _logFileSampleTimes[logName] = DateTime.UtcNow;
+
+                                DateTime creationTime = fi.CreationTimeUtc;
+                                bool logHasRolled = (_logFileCreationTimes.ContainsKey(logName) &&
+                                                     creationTime > _logFileCreationTimes[logName]) ||
+                                                    (_logFileSizes.ContainsKey(logName) &&
+                                                     fi.Length < _logFileSizes[logName]);
+
+
+                                if (!_logFileMaxRecords.ContainsKey(logName) || logHasRolled)
+                                {
+                                    _logFileCreationTimes[logName] = creationTime;
+                                    _logFileSizes[logName] = fi.Length;
+                                    var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
+                                    var rcount = oLogQuery.Execute(qcount, iFmt);
+                                    var qr = rcount.getRecord();
+                                    var lrn = (Int64) qr.getValueEx("MaxRecordNumber");
+                                    if (logHasRolled)
+                                    {
+                                        LogManager.GetCurrentClassLogger().Info("Log {0} has rolled", logName);
+                                        lrn = 0;
+                                    }
+                                    _logFileMaxRecords[logName] = lrn;
+                                }
+
+                                _logFileSizes[logName] = fi.Length;
+                            }
+                            rsfiles.close();
+                            foreach (string fileName in _logFileMaxRecords.Keys.ToList())
+                            {
+                                var lastRecordNumber = _logFileMaxRecords[fileName];
+                                var query = string.Format("SELECT * FROM {0} where Index > {1}", fileName,
+                                    lastRecordNumber);
+
+                                var rs = oLogQuery.Execute(query, iFmt);
+                                Dictionary<string, int> colMap = new Dictionary<string, int>();
+                                for (int col = 0; col < rs.getColumnCount(); col++)
+                                {
+                                    string colName = rs.getColumnName(col);
+                                    colMap[colName] = col;
+                                }
+
+                                // Browse the recordset
+                                for (; !rs.atEnd(); rs.moveNext())
+                                {
+                                    var record = rs.getRecord();
+
+                                    var json = new JObject();
+                                    foreach (var field in _arguments.Fields)
+                                    {
+                                        if (!colMap.ContainsKey(field.Name))
+                                            continue;
+
+                                        if (json["logSource"] == null)
+                                        {
+                                            if (string.IsNullOrEmpty(_arguments.LogSource))
+                                                json.Add(new JProperty("logSource", fileName));
+                                            else
+                                                json.Add(new JProperty("logSource", _arguments.LogSource));
+                                        }
+
+                                        object v = record.getValue(field.Name);
+                                        if (field.DataType == typeof (DateTime))
+                                        {
+                                            DateTime dt = DateTime.Parse(v.ToString());
+                                            json.Add(new JProperty(field.Name, dt));
+                                        }
+                                        else
+                                            json.Add(new JProperty(field.Name, v));
+                                    }
+                                    string msg = json["Text"].ToString();
+                                    if (!string.IsNullOrEmpty(msg))
+                                    {
+                                        ProcessJson(json);
+                                        _receivedMessages++;
+                                    }
+
+                                    var lrn = (Int64) record.getValueEx("Index");
+                                    _logFileMaxRecords[fileName] = lrn;
+                                    GC.Collect();
+                                }
+
+                                colMap.Clear();
+                                // Close the recordset
+                                rs.close();
+                                rs = null;
+                                GC.Collect();
+                            }
                         }
 
-                        colMap.Clear();
-                        // Close the recordset
-                        rs.close();                        
-                        rs = null;
-                        GC.Collect();                      
+                        catch (Exception ex)
+                        {
+                            LogManager.GetCurrentClassLogger().Error(ex);
+                        }
+                        finally
+                        {
+                            oLogQuery = null;
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    LogManager.GetCurrentClassLogger().Error(ex);
-                }
-                finally
-                {
-                    oLogQuery = null;
-                }
-
-                Thread.CurrentThread.Priority = ThreadPriority.Normal;
-                System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
+                Finished();
             }
-
-            Finished();
         }
     }
 }
+

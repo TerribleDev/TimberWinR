@@ -275,6 +275,8 @@ namespace TimberWinR.Parser
         public List<Field> Fields { get; set; }
         [JsonProperty(PropertyName = "interval")]
         public int Interval { get; set; }
+        [JsonProperty(PropertyName = "logSource")]
+        public string LogSource { get; set; }
 
         public Log()
         {

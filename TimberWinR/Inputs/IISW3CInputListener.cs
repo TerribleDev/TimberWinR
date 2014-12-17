@@ -79,8 +79,7 @@ namespace TimberWinR.Inputs
                 iFmt.minDateMod = _arguments.MinDateMod.Value.ToString("yyyy-MM-dd hh:mm:ss");
 
             Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();
-         
-          
+                   
             // Execute the query
             while (!CancelToken.IsCancellationRequested)
             {

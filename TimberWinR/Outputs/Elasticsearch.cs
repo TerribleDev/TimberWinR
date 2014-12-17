@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NLog;
+using RapidRegex.Core;
 using RestSharp;
 
 namespace TimberWinR.Outputs
@@ -105,7 +106,7 @@ namespace TimberWinR.Outputs
                                 {
                                     var typeName = this.eo.GetTypeName(json);
                                     var indexName = this.eo.GetIndexName(json);
-                                    var req = new RestRequest(string.Format("/{0}/{1}/", indexName, typeName), Method.POST);                                  
+                                    var req = new RestRequest(string.Format("/{0}/{1}/", indexName, typeName), Method.POST);                                                                                                 
 
                                     req.AddParameter("text/json", json.ToString(), ParameterType.RequestBody);
 

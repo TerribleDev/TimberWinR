@@ -115,7 +115,7 @@ namespace TimberWinR.Inputs
                             {
                                 LogManager.GetCurrentClassLogger().Warn(ex);
                             }
-                          
+
                         }
                     }
                 }
