@@ -870,12 +870,7 @@ namespace TimberWinR.Parser
                 var list = new List<LogstashFilter>();
                 
                 foreach (var filter in Filters)
-                {
-                    //if (filter is Json[])
-                    //{
-                    //    Json[] ja = filter as Json[];
-                    //    list.AddRange(ja);
-                    //}
+                {                  
                     foreach (var prop in filter.GetType().GetProperties())
                     {
                         object typedFilter = filter.GetType().GetProperty(prop.Name).GetValue(filter, null);

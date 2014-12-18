@@ -112,7 +112,6 @@ namespace TimberWinR.Inputs
                     {
                         try
                         {
-                            syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), _cancelToken);
                             var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", fileToWatch);
                             var rsfiles = oLogQuery.Execute(qfiles, iFmt);
                             for (; !rsfiles.atEnd(); rsfiles.moveNext())
@@ -214,7 +213,7 @@ namespace TimberWinR.Inputs
                                 // Close the recordset
                                 rs.close();
                                 rs = null;
-                                GC.Collect();
+                                GC.Collect();                             
                             }
                         }
                         catch(FileNotFoundException fnfex)
@@ -233,6 +232,7 @@ namespace TimberWinR.Inputs
                         {
                             oLogQuery = null;
                         }
+                        syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), _cancelToken);
                     }
                 }
                 Finished();
