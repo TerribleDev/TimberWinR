@@ -817,7 +817,6 @@ namespace TimberWinR.Parser
 
             if (AddField != null && AddField.Length % 2 != 0)
                 throw new JsonAddFieldException();
-
         }
     }
 
@@ -835,9 +834,24 @@ namespace TimberWinR.Parser
 
         [JsonProperty("json")]
         public Json Json { get; set; }
-
+    
         [JsonProperty("geoip")]
         public GeoIP GeoIP { get; set; }
+
+        [JsonProperty("grokFilters")]
+        public Grok[] Groks { get; set; }
+
+        [JsonProperty("mutateFilters")]
+        public Mutate[] Mutates { get; set; }
+
+        [JsonProperty("dateFilters")]
+        public DateFilter[] Dates { get; set; }
+
+        [JsonProperty("jsonFilters")]
+        public Json[] Jsons { get; set; }
+       
+        [JsonProperty("geoipFilters")]
+        public GeoIP[] GeoIPs { get; set; }
     }
 
     public class TimberWinR
@@ -854,14 +868,25 @@ namespace TimberWinR.Parser
             get
             {
                 var list = new List<LogstashFilter>();
+                
                 foreach (var filter in Filters)
                 {
+                    //if (filter is Json[])
+                    //{
+                    //    Json[] ja = filter as Json[];
+                    //    list.AddRange(ja);
+                    //}
                     foreach (var prop in filter.GetType().GetProperties())
                     {
                         object typedFilter = filter.GetType().GetProperty(prop.Name).GetValue(filter, null);
                         if (typedFilter != null && typedFilter is LogstashFilter)
                         {
                             list.Add(typedFilter as LogstashFilter);
+                        }
+                        else if (typedFilter != null && typedFilter.GetType().IsArray && typeof(LogstashFilter).IsAssignableFrom(typedFilter.GetType().GetElementType()))
+                        {
+                            IEnumerable<LogstashFilter> lf = typedFilter as IEnumerable<LogstashFilter>;
+                            list.AddRange(lf);
                         }
                     }
                 }

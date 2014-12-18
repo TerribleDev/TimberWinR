@@ -144,7 +144,7 @@ namespace TimberWinR.Inputs
                                     var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
                                     var rcount = oLogQuery.Execute(qcount, iFmt);
                                     var qr = rcount.getRecord();
-                                    var lrn = (Int64) qr.getValueEx("MaxRecordNumber");
+                                    var lrn = (Int64) qr.getValueEx("MaxRecordNumber");                                    
                                     if (logHasRolled)
                                     {
                                         LogManager.GetCurrentClassLogger().Info("Log {0} has rolled", logName);
@@ -217,7 +217,14 @@ namespace TimberWinR.Inputs
                                 GC.Collect();
                             }
                         }
-
+                        catch(FileNotFoundException fnfex)
+                        {
+                            LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
+                        }
+                        catch(OperationCanceledException oce)
+                        {
+                            break;
+                        }
                         catch (Exception ex)
                         {
                             LogManager.GetCurrentClassLogger().Error(ex);
