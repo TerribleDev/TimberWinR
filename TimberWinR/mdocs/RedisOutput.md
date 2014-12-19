@@ -13,7 +13,7 @@ The following parameters are allowed when configuring the Redis output.
 | *host*        | [string] | The hostname(s) of your Redis server(s) | IP or DNS name |  |
 | *port*        | integer  | Redis port number                                           | This port must be open  | 6379  |
 | *max_queue_size* | integer  | Maximum redis queue depth       |  | 50000 |
-| *queue_overflow_discard_oldest* | bool  | If true, discard oldest messages when max_queue_size reached otherwise discard newest |  | false |
+| *queue_overflow_discard_oldest* | bool  | If true, discard oldest messages when max_queue_size reached otherwise discard newest |  | true |
 
 Example Input:
 ```json
