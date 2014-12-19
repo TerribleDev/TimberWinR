@@ -80,6 +80,8 @@ namespace TimberWinR.Outputs
                         new JProperty("sent_messages", _sentMessages),
                         new JProperty("queued_messages", _jsonQueue.Count),
                         new JProperty("port", _port),
+                        new JProperty("maxQueueSize", _maxQueueSize),
+                        new JProperty("overflowDiscardOldest", _queueOverflowDiscardOldest),
                         new JProperty("interval", _interval),
                         new JProperty("threads", _numThreads),
                         new JProperty("batchcount", _batchCount),
@@ -119,7 +121,7 @@ namespace TimberWinR.Outputs
 
         public override string ToString()
         {
-            return string.Format("Redis Host: {0} Port: {1}, Threads: {2}, Interval: {3}, BatchCount: {4}", string.Join(",", _redisHosts) , _port, _numThreads, _interval, _batchCount);
+            return string.Format("Redis Host: {0} Port: {1}, Threads: {2}, Interval: {3}, BatchCount: {4}", string.Join(",", _redisHosts), _port, _numThreads, _interval, _batchCount);
         }
 
         /// <summary>
@@ -145,11 +147,17 @@ namespace TimberWinR.Outputs
                     // then remove as many as necessary to get us under our limit
                     if (_queueOverflowDiscardOldest)
                     {
+                        LogManager.GetCurrentClassLogger()
+                            .Warn("Overflow discarding oldest {0} messages", _jsonQueue.Count - _maxQueueSize + 1);
+
                         _jsonQueue.RemoveRange(0, (_jsonQueue.Count - _maxQueueSize) + 1);
                     }
                     // Otherwise we're in a "discard newest" mode, and this is the newest message, so just ignore it
                     else
                     {
+                        LogManager.GetCurrentClassLogger()
+                            .Warn("Overflow discarding newest message: {0}", message);
+
                         return;
                     }
                 }
