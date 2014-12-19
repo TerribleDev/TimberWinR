@@ -145,10 +145,7 @@ namespace TimberWinR.Outputs
                     // then remove as many as necessary to get us under our limit
                     if (_queueOverflowDiscardOldest)
                     {
-                        for (int i = 0; i <= (_jsonQueue.Count - _maxQueueSize); i++)
-                        {
-                            _jsonQueue.RemoveAt(0);
-                        }
+                        _jsonQueue.RemoveRange(0, (_jsonQueue.Count - _maxQueueSize) + 1);
                     }
                     // Otherwise we're in a "discard newest" mode, and this is the newest message, so just ignore it
                     else
