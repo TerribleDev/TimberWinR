@@ -58,7 +58,7 @@ namespace TimberWinR.Inputs
         public override void Shutdown()
         {
             LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
-            Stop = true;              
+            Stop = true;
             base.Shutdown();
         }
 
@@ -75,19 +75,19 @@ namespace TimberWinR.Inputs
                         new JProperty("recurse", _arguments.Recurse),
                         new JProperty("files",
                             new JArray(from f in _logFileMaxRecords.Keys
-                                select new JValue(f))),
+                                       select new JValue(f))),
                         new JProperty("fileSampleTimes",
                             new JArray(from f in _logFileSampleTimes.Values
-                                select new JValue(f))),
+                                       select new JValue(f))),
                         new JProperty("fileSizes",
                             new JArray(from f in _logFileSizes.Values
-                                select new JValue(f))),
+                                       select new JValue(f))),
                         new JProperty("fileIndices",
                             new JArray(from f in _logFileMaxRecords.Values
-                                select new JValue(f))),
+                                       select new JValue(f))),
                         new JProperty("fileCreationDates",
                             new JArray(from f in _logFileCreationTimes.Values
-                                select new JValue(f)))
+                                       select new JValue(f)))
                         )));
 
             return json;
@@ -143,7 +143,7 @@ namespace TimberWinR.Inputs
                                     var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
                                     var rcount = oLogQuery.Execute(qcount, iFmt);
                                     var qr = rcount.getRecord();
-                                    var lrn = (Int64) qr.getValueEx("MaxRecordNumber");                                    
+                                    var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
                                     if (logHasRolled)
                                     {
                                         LogManager.GetCurrentClassLogger().Info("Log {0} has rolled", logName);
@@ -189,7 +189,7 @@ namespace TimberWinR.Inputs
                                         }
 
                                         object v = record.getValue(field.Name);
-                                        if (field.DataType == typeof (DateTime))
+                                        if (field.DataType == typeof(DateTime))
                                         {
                                             DateTime dt = DateTime.Parse(v.ToString());
                                             json.Add(new JProperty(field.Name, dt));
@@ -204,7 +204,7 @@ namespace TimberWinR.Inputs
                                         _receivedMessages++;
                                     }
 
-                                    var lrn = (Int64) record.getValueEx("Index");
+                                    var lrn = (Int64)record.getValueEx("Index");
                                     _logFileMaxRecords[fileName] = lrn;
                                     GC.Collect();
                                 }
@@ -213,14 +213,16 @@ namespace TimberWinR.Inputs
                                 // Close the recordset
                                 rs.close();
                                 rs = null;
-                                GC.Collect();                             
+                                GC.Collect();
                             }
+                            // Sleep 
+                            syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), _cancelToken);
                         }
-                        catch(FileNotFoundException fnfex)
+                        catch (FileNotFoundException fnfex)
                         {
                             LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
                         }
-                        catch(OperationCanceledException oce)
+                        catch (OperationCanceledException oce)
                         {
                             break;
                         }
@@ -232,7 +234,6 @@ namespace TimberWinR.Inputs
                         {
                             oLogQuery = null;
                         }
-                        syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), _cancelToken);
                     }
                 }
                 Finished();

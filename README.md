@@ -41,7 +41,7 @@ The current list of supported filters are:
 Note that there are now two syntaxes for filters, array and single, if you want more than one filter of the same
 type then you must use the array tag instead of the singular tag. i.e:
 
-A single Json filter using the single tag
+A single Json filter using the single tag (this is only provided as a convienience, the array syntax is preferred)
 ```json
 "Filters": [          
     {
