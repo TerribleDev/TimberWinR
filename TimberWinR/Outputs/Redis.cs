@@ -38,6 +38,8 @@ namespace TimberWinR.Outputs
         private int _maxQueueSize;
         private bool _queueOverflowDiscardOldest;
 
+        public bool Stop { get; set; }
+
         /// <summary>
         /// Get the next client
         /// </summary>
@@ -185,67 +187,87 @@ namespace TimberWinR.Outputs
         // 
         private void RedisSender()
         {
-            while (!CancelToken.IsCancellationRequested)
+            using (var syncHandle = new ManualResetEventSlim())
             {
-                string[] messages;
-                lock (_locker)
+                // Execute the query
+                while (!Stop)
                 {
-                    messages = _jsonQueue.Take(_batchCount).ToArray();
-                    _jsonQueue.RemoveRange(0, messages.Length);
-                    if (messages.Length > 0)
-                        _manager.IncrementMessageCount(messages.Length);
-                }
-
-                if (messages.Length > 0)
-                {
-                    int numHosts = _redisHosts.Length;
-                    while (numHosts-- > 0)
+                    if (!CancelToken.IsCancellationRequested)
                     {
                         try
                         {
-                            // Get the next client
-                            using (RedisClient client = getClient())
+                            string[] messages;
+                            lock (_locker)
                             {
-                                if (client != null)
-                                {
-                                    client.StartPipe();
-                                    LogManager.GetCurrentClassLogger()
-                                               .Debug("Sending {0} Messages to {1}", messages.Length, client.Host);
+                                messages = _jsonQueue.Take(_batchCount).ToArray();
+                                _jsonQueue.RemoveRange(0, messages.Length);
+                                if (messages.Length > 0)
+                                    _manager.IncrementMessageCount(messages.Length);
+                            }
 
+                            if (messages.Length > 0)
+                            {
+                                int numHosts = _redisHosts.Length;
+                                while (numHosts-- > 0)
+                                {
                                     try
                                     {
-                                        _redisDepth = client.RPush(_logstashIndexName, messages);
-                                        _sentMessages += messages.Length;
+                                        // Get the next client
+                                        using (RedisClient client = getClient())
+                                        {
+                                            if (client != null)
+                                            {
+                                                client.StartPipe();
+                                                LogManager.GetCurrentClassLogger()
+                                                    .Debug("Sending {0} Messages to {1}", messages.Length, client.Host);
+
+                                                try
+                                                {
+                                                    _redisDepth = client.RPush(_logstashIndexName, messages);
+                                                    _sentMessages += messages.Length;
+                                                }
+                                                catch (SocketException ex)
+                                                {
+                                                    LogManager.GetCurrentClassLogger().Warn(ex);
+                                                    Interlocked.Increment(ref _errorCount);
+                                                }
+                                                finally
+                                                {
+                                                    client.EndPipe();
+                                                }
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                Interlocked.Increment(ref _errorCount);
+                                                LogManager.GetCurrentClassLogger()
+                                                    .Fatal("Unable to connect with any Redis hosts, {0}",
+                                                        String.Join(",", _redisHosts));
+                                            }
+                                        }
                                     }
-                                    catch (SocketException ex)
+                                    catch (Exception ex)
                                     {
-                                        LogManager.GetCurrentClassLogger().Warn(ex);
+                                        LogManager.GetCurrentClassLogger().Error(ex);
                                         Interlocked.Increment(ref _errorCount);
                                     }
-                                    finally
-                                    {
-                                        client.EndPipe();
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    Interlocked.Increment(ref _errorCount);
-                                    LogManager.GetCurrentClassLogger()
-                                        .Fatal("Unable to connect with any Redis hosts, {0}",
-                                            String.Join(",", _redisHosts));
                                 }
                             }
+                            GC.Collect();
+                            if (!Stop)
+                                syncHandle.Wait(TimeSpan.FromSeconds(_interval), CancelToken);
+                        }
+                        catch (OperationCanceledException oce)
+                        {
+                            break;
                         }
                         catch (Exception ex)
                         {
-                            LogManager.GetCurrentClassLogger().Error(ex);
-                            Interlocked.Increment(ref _errorCount);
+
+                            throw;
                         }
                     }
                 }
-                GC.Collect();
-                System.Threading.Thread.Sleep(_interval);
             }
         }
     }

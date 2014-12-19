@@ -15,6 +15,7 @@ namespace TimberWinR.Outputs
         private readonly object _locker = new object();
         private readonly List<JObject> _jsonQueue;
         private long _sentMessages;
+        public bool Stop { get; set; }
 
         public StdoutOutput(TimberWinR.Manager manager, Parser.StdoutOutput eo, CancellationToken cancelToken)
             : base(cancelToken, "Stdout")
@@ -34,7 +35,7 @@ namespace TimberWinR.Outputs
                 new JProperty("stdout",
                     new JObject(
                         new JProperty("sent_messages", _sentMessages))));
-                      
+
             return json;
         }
 
@@ -43,31 +44,49 @@ namespace TimberWinR.Outputs
         // 
         private void StdoutSender()
         {
-            while (!CancelToken.IsCancellationRequested)
+            using (var syncHandle = new ManualResetEventSlim())
             {
-                JObject[] messages;
-                lock (_locker)
+                // Execute the query
+                while (!Stop)
                 {
-                    messages = _jsonQueue.Take(_jsonQueue.Count).ToArray();
-                    _jsonQueue.RemoveRange(0, messages.Length);                  
-                }
-
-                if (messages.Length > 0)
-                {
-                    try
+                    if (!CancelToken.IsCancellationRequested)
                     {
-                        foreach (JObject obj in messages)
+                        try
                         {
-                            Console.WriteLine(obj.ToString());
-                            _sentMessages++;
+                            JObject[] messages;
+                            lock (_locker)
+                            {
+                                messages = _jsonQueue.Take(_jsonQueue.Count).ToArray();
+                                _jsonQueue.RemoveRange(0, messages.Length);
+                            }
+
+                            if (messages.Length > 0)
+                            {
+                                try
+                                {
+                                    foreach (JObject obj in messages)
+                                    {
+                                        Console.WriteLine(obj.ToString());
+                                        _sentMessages++;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogManager.GetCurrentClassLogger().Error(ex);
+                                }
+                            }
+                            if (!Stop)
+                                syncHandle.Wait(TimeSpan.FromSeconds(_interval), CancelToken);
+                        }
+                        catch (OperationCanceledException oce)
+                        {
+                            break;
+                        }
+                        catch (Exception)
+                        {
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        LogManager.GetCurrentClassLogger().Error(ex);
-                    }
                 }
-                System.Threading.Thread.Sleep(_interval);
             }
         }
 

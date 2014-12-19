@@ -18,12 +18,12 @@ namespace TimberWinR.Inputs
         private readonly int _pollingIntervalInSeconds;
         private readonly Parser.IISW3CLog _arguments;
         private long _receivedMessages;
-
-        private IisW3CRowReader rowReader;
+        public bool Stop { get; set; }
+        private IisW3CRowReader rowReader;      
 
         public IISW3CInputListener(Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
             : base(cancelToken, "Win32-IISLog")
-        {
+        {          
             _arguments = arguments;
             _receivedMessages = 0;
             _pollingIntervalInSeconds = pollingIntervalInSeconds;
@@ -38,6 +38,7 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
+            Stop = true;
             LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
             base.Shutdown();
         }
@@ -70,7 +71,7 @@ namespace TimberWinR.Inputs
                 codepage = _arguments.CodePage,
                 consolidateLogs = true,
                 dirTime = _arguments.DirTime,
-                dQuotes = _arguments.DoubleQuotes,               
+                dQuotes = _arguments.DoubleQuotes,
                 recurse = _arguments.Recurse,
                 useDoubleQuotes = _arguments.DoubleQuotes
             };
@@ -79,61 +80,74 @@ namespace TimberWinR.Inputs
                 iFmt.minDateMod = _arguments.MinDateMod.Value.ToString("yyyy-MM-dd hh:mm:ss");
 
             Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();
-                   
-            // Execute the query
-            while (!CancelToken.IsCancellationRequested)
+
+            using (var syncHandle = new ManualResetEventSlim())
             {
-                try
+                // Execute the query
+                while (!Stop)
                 {
-                    oLogQuery = new LogQuery();
-
-                    var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", location);
-                    var rsfiles = oLogQuery.Execute(qfiles, iFmt);
-                    for (; !rsfiles.atEnd(); rsfiles.moveNext())
+                    // Execute the query
+                    if (!CancelToken.IsCancellationRequested)
                     {
-                        var record = rsfiles.getRecord();
-                        string fileName = record.getValue("LogFilename") as string;
-                        if (!logFileMaxRecords.ContainsKey(fileName))
+                        try
                         {
-                            var qcount = string.Format("SELECT max(LogRow) as MaxRecordNumber FROM {0}", fileName);
-                            var rcount = oLogQuery.Execute(qcount, iFmt);
-                            var qr = rcount.getRecord();
-                            var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
-                            logFileMaxRecords[fileName] = lrn;
+                            oLogQuery = new LogQuery();
+
+                            var qfiles = string.Format("SELECT Distinct [LogFilename] FROM {0}", location);
+                            var rsfiles = oLogQuery.Execute(qfiles, iFmt);
+                            for (; !rsfiles.atEnd(); rsfiles.moveNext())
+                            {
+                                var record = rsfiles.getRecord();
+                                string fileName = record.getValue("LogFilename") as string;
+                                if (!logFileMaxRecords.ContainsKey(fileName))
+                                {
+                                    var qcount = string.Format("SELECT max(LogRow) as MaxRecordNumber FROM {0}",
+                                        fileName);
+                                    var rcount = oLogQuery.Execute(qcount, iFmt);
+                                    var qr = rcount.getRecord();
+                                    var lrn = (Int64) qr.getValueEx("MaxRecordNumber");
+                                    logFileMaxRecords[fileName] = lrn;
+                                }
+                            }
+
+                            foreach (string fileName in logFileMaxRecords.Keys.ToList())
+                            {
+                                var lastRecordNumber = logFileMaxRecords[fileName];
+                                var query = string.Format("SELECT * FROM '{0}' Where LogRow > {1}", fileName,
+                                    lastRecordNumber);
+
+                                var rs = oLogQuery.Execute(query, iFmt);
+                                rowReader.ReadColumnMap(rs);
+
+                                // Browse the recordset
+                                for (; !rs.atEnd(); rs.moveNext())
+                                {
+                                    var record = rs.getRecord();
+                                    var json = rowReader.ReadToJson(record);
+                                    ProcessJson(json);
+                                    _receivedMessages++;
+                                    var lrn = (Int64) record.getValueEx("LogRow");
+                                    logFileMaxRecords[fileName] = lrn;
+                                    record = null;
+                                    json = null;
+                                }
+                                // Close the recordset
+                                rs.close();
+                                GC.Collect();
+                            }
+                            if (!Stop)
+                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                         }
-                    }
-
-                    foreach (string fileName in logFileMaxRecords.Keys.ToList())
-                    {
-                        var lastRecordNumber = logFileMaxRecords[fileName];
-                        var query = string.Format("SELECT * FROM '{0}' Where LogRow > {1}", fileName, lastRecordNumber);
-
-                        var rs = oLogQuery.Execute(query, iFmt);
-                        rowReader.ReadColumnMap(rs);
-
-                        // Browse the recordset
-                        for (; !rs.atEnd(); rs.moveNext())
+                        catch (OperationCanceledException oce)
                         {
-                            var record = rs.getRecord();
-                            var json = rowReader.ReadToJson(record);
-                            ProcessJson(json);
-                            _receivedMessages++;
-                            var lrn = (Int64)record.getValueEx("LogRow");
-                            logFileMaxRecords[fileName] = lrn;
-                            record = null;
-                            json = null;
+                            break;
                         }
-                        // Close the recordset
-                        rs.close();
-                        GC.Collect();       
+                        catch (Exception ex)
+                        {
+                            LogManager.GetCurrentClassLogger().Error(ex);
+                        }                       
                     }
                 }
-                catch (Exception ex)
-                {
-                    LogManager.GetCurrentClassLogger().Error(ex);
-                }
-               
-                System.Threading.Thread.Sleep(_pollingIntervalInSeconds * 1000);
             }
 
             Finished();

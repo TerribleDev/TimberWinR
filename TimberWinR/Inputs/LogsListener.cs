@@ -31,14 +31,14 @@ namespace TimberWinR.Inputs
         private Dictionary<string, DateTime> _logFileCreationTimes;
         private Dictionary<string, DateTime> _logFileSampleTimes;
         private Dictionary<string, long> _logFileSizes;
-        private CancellationToken _cancelToken;
+      
         public bool Stop { get; set; }
 
         public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-FileLog")
         {
             Stop = false;
-            _cancelToken = cancelToken;
+          
             _logFileMaxRecords = new Dictionary<string, Int64>();
             _logFileCreationTimes = new Dictionary<string, DateTime>();
             _logFileSampleTimes = new Dictionary<string, DateTime>();
@@ -108,7 +108,7 @@ namespace TimberWinR.Inputs
                 while (!Stop)
                 {
                     var oLogQuery = new LogQuery();
-                    if (!_cancelToken.IsCancellationRequested)
+                    if (!CancelToken.IsCancellationRequested)
                     {
                         try
                         {
@@ -216,7 +216,8 @@ namespace TimberWinR.Inputs
                                 GC.Collect();
                             }
                             // Sleep 
-                            syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), _cancelToken);
+                            if (!Stop)
+                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                         }
                         catch (FileNotFoundException fnfex)
                         {

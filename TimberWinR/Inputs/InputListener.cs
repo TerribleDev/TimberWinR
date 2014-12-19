@@ -58,14 +58,17 @@ namespace TimberWinR.Inputs
 
         public void Finished()
         {
+            LogManager.GetCurrentClassLogger().Info("Signaling Event Shutdown {0}", InputType);
             FinishedEvent.Set();
-            LogManager.GetCurrentClassLogger().Info("Finished Shutdown {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("Finished signaling Shutdown {0}", InputType);
         }
         public virtual void Shutdown()
         {
             LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
 
             FinishedEvent.WaitOne();
+
+            LogManager.GetCurrentClassLogger().Info("Finished Wait For {0}", InputType);
             try
             {
                 if (File.Exists(CheckpointFileName))
