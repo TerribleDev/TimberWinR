@@ -512,6 +512,10 @@ namespace TimberWinR.Parser
         public int NumThreads { get; set; }
         [JsonProperty(PropertyName = "interval")]
         public int Interval { get; set; }
+        [JsonProperty(PropertyName = "max_queue_size")]
+        public int MaxQueueSize { get; set; }
+        [JsonProperty(PropertyName = "queue_overflow_discard_oldest")]
+        public bool QueueOverflowDiscardOldest { get; set; }
 
         public RedisOutput()
         {
@@ -522,6 +526,8 @@ namespace TimberWinR.Parser
             BatchCount = 10;
             NumThreads = 1;
             Interval = 5000;
+            QueueOverflowDiscardOldest = true;
+            MaxQueueSize = 50000;
         }
     }
 
