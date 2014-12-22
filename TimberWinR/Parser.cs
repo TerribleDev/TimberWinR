@@ -525,7 +525,7 @@ namespace TimberWinR.Parser
             Timeout = 10000;
             BatchCount = 10;
             NumThreads = 1;
-            Interval = 5000;
+            Interval = 5;
             QueueOverflowDiscardOldest = true;
             MaxQueueSize = 50000;
         }

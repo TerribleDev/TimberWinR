@@ -20,9 +20,9 @@
 				The 'd' means "reinstall if different". This ensures that, at the individual component level, rollbacks work correctly.
 				See http://msdn.microsoft.com/en-us/library/windows/desktop/aa371182(v=vs.85).aspx
 			-->
-    <Property Id="REINSTALLMODE" Value="dmus" />  
-    
- 
+    <Property Id="REINSTALLMODE" Value="dmus" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."  />
     <MediaTemplate EmbedCab="yes" />
 
     

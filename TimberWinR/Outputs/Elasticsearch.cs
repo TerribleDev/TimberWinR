@@ -165,8 +165,10 @@ namespace TimberWinR.Outputs
                             }
                             GC.Collect();
                             if (!Stop)
-                                syncHandle.Wait(TimeSpan.FromSeconds(_interval), CancelToken);
-                        }
+                            {                              
+                                syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);  
+                            }
+                          }
                         catch (OperationCanceledException oce)
                         {
                             break;
