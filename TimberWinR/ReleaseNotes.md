@@ -7,7 +7,7 @@ Version History
 ### 1.3.18.0 - 12/22/2014
 
 1. Fixed bug introduced in 1.3.17.0 which changed the meaning of the delay for Elasticsearch, Redis and Stdout 
-intervals to be interpreted as seconds instead of milliseconds.
+intervals to be interpreted as seconds instead of milliseconds.   1.3.17.0 should not be used.
 2. Removed ability for installer to downgrade which was leading to leaving previous versions laying around (i.e. reverts 1.3.13.0 change)
 
 ### 1.3.17.0 - 12/19/2014
