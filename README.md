@@ -7,6 +7,10 @@ TimberWinR is a native .NET implementation utilizing Microsoft's [LogParser](htt
 no JVM/JRuby is required, and LogParser does all the heavy lifting.  TimberWinR collects
 the data from LogParser and ships it to Logstash via Redis (or can ship direcly to Elasticsearch)
 
+## Release Notes
+
+[View Version History](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/ReleaseNotes.md)
+
 ## Basics
 TimberWinR uses a configuration file to control how the logs are collected, filtered and shipped off.  
 These are broken down into:
