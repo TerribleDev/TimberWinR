@@ -93,7 +93,10 @@ namespace TimberWinR.Outputs
         protected override void MessageReceivedHandler(Newtonsoft.Json.Linq.JObject jsonMessage)
         {
             if (_manager.Config.Filters != null)
-                ApplyFilters(jsonMessage);
+            {
+                if (ApplyFilters(jsonMessage))
+                    return;
+            }
 
             var message = jsonMessage.ToString();
             LogManager.GetCurrentClassLogger().Debug(message);
@@ -104,12 +107,17 @@ namespace TimberWinR.Outputs
             }
         }
 
-        private void ApplyFilters(JObject json)
+        private bool ApplyFilters(JObject json)
         {
+            bool drop = false;
+
             foreach (var filter in _manager.Config.Filters)
             {
-                filter.Apply(json);
+                if (!filter.Apply(json))
+                    drop = true;
             }
+
+            return drop;
         }
 
     }

@@ -4,6 +4,10 @@ A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version History
 
+### 1.3.19.0 - 01/12/2015
+
+1. Added support for Multiline codecs for Stdin and Logs listeners, addresses issue #23
+
 ### 1.3.18.0 - 12/22/2014
 
 1. Fixed bug introduced in 1.3.17.0 which changed the meaning of the delay for Elasticsearch, Redis and Stdout 

@@ -122,6 +122,7 @@
     <Content Include="GeoLite2City.mmdb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="mdocs\Codec.md" />
     <None Include="mdocs\DateFilter.md" />
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GeoIPFilter.md" />

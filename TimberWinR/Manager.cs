@@ -62,6 +62,8 @@ namespace TimberWinR
 
         public Manager(string jsonConfigFile, string logLevel, string logfileDir, CancellationToken cancelToken)
         {
+            LogsFileDatabase.Manager = this;           
+  
             StartedOn = DateTime.UtcNow;
 
             var vfi = new FileInfo(jsonConfigFile);
@@ -98,6 +100,11 @@ namespace TimberWinR
 
             LogManager.GetCurrentClassLogger()
                 .Info("TimberWinR Version {0}", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString());
+
+
+            LogManager.GetCurrentClassLogger()
+                .Info("Database Directory: {0}", LogsFileDatabase.Instance.DatabaseFileName);
+
 
             try
             {
@@ -211,7 +218,7 @@ namespace TimberWinR
 
                 foreach (var stdin in Config.Stdins)
                 {
-                    var elistner = new StdinListener(cancelToken);
+                    var elistner = new StdinListener(stdin, cancelToken);
                     Listeners.Add(elistner);
                     foreach (var output in Outputs)
                         output.Connect(elistner);

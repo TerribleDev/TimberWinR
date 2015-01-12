@@ -26,4 +26,5 @@ A field: "type": "Win32-Stdin" is automatically appended, and the entire JSON is
 | ---- |:-----| :-----------------------------------------------------------------------|
 | type | STRING |Win32-Stdin |
 | message | STRING | The message typed in  |
+| [codec](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/Codec.md)  | object | Codec to use  |
 

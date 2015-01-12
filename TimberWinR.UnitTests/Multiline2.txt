@@ -1,0 +1,19 @@
+﻿2015-01-07 13:14:26,572 TEST DEBUG [THREAD : 25] - Sending message to TServer - tcp://10.1111.11.111:1111
+'RequestAttachUserData' ('30')
+message attributes:
+AttributeConnID [long] = 00890
+AttributeReferenceID [int] = 88
+AttributeThisDN [str] = "2214"
+AttributeUserData [bstr] = KVList: 
+		'ActivityID' [str] = "1-XXXXXX"
+2015-01-07 13:14:26,574 TEST DEBUG [THREAD : 25] - Writing message RequestAttachUserData in 'proxy1' via '.StatePrimary proxy: proxy1'
+2015-01-07 13:14:26,575 TEST DEBUG [THREAD : 25] - sending RequestAttachUserData to Test.Platform.Commons.Connection.CommonConnection
+2015-01-07 13:20:31,665 TEST DEBUG [THREAD : SelectorThread] - Proxy got message 'EventOnHook' ('87')
+message attributes:
+AttributeEventSequenceNumber [long] = 4899493
+Time            = ComplexClass(TimeStamp):
+	AttributeTimeinuSecs [int] = 573000
+	AttributeTimeinSecs [int] = 1420644031
+AttributeThisDN [str] = "2214"
+. Processing with  state .StatePrimary proxy: proxy1
+2015-01-07 14:14:26,666 TEST DEBUG [THREAD : 25] - sending RequestAttachUserData to Test.Platform.Commons.Connection.CommonConnection

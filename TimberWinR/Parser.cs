@@ -23,7 +23,7 @@ namespace TimberWinR.Parser
     {
         void Validate();
     }
-   
+
 
     public abstract class LogstashFilter : IValidateSchema
     {
@@ -51,22 +51,21 @@ namespace TimberWinR.Parser
         }
 
         public abstract JObject ToJson();
-      
+
         protected bool EvaluateCondition(JObject json, string condition)
         {
-           
             var cond = condition;
 
             IList<string> keys = json.Properties().Select(pn => pn.Name).ToList();
             foreach (string key in keys)
                 cond = cond.Replace(string.Format("[{0}]", key), string.Format("{0}", json[key].ToString()));
 
-            var p = Expression.Parameter(typeof (JObject), "");
-            var e = System.Linq.Dynamic.DynamicExpression.ParseLambda(new[] {p}, null, cond);
+            var p = Expression.Parameter(typeof(JObject), "");
+            var e = System.Linq.Dynamic.DynamicExpression.ParseLambda(new[] { p }, null, cond);
 
             var result = e.Compile().DynamicInvoke(json);
 
-            return (bool) result;
+            return (bool)result;
         }
         protected void RemoveProperties(JToken token, string[] fields)
         {
@@ -255,9 +254,46 @@ namespace TimberWinR.Parser
 
     public class Stdin : IValidateSchema
     {
+        [JsonProperty(PropertyName = "codec")]
+        public Codec Codec { get; set; }
+
         public void Validate()
         {
 
+        }
+    }
+
+    public class Codec
+    {
+        public enum CodecType
+        {
+            singleline,
+            multiline
+        };
+
+        public enum WhatType
+        {
+            previous,
+            next
+        };
+
+        [JsonProperty(PropertyName = "type")]
+        public CodecType Type { get; set; }
+        [JsonProperty(PropertyName = "pattern")]
+        public string Pattern { get; set; }
+        [JsonProperty(PropertyName = "what")]
+        public WhatType What { get; set; }
+        [JsonProperty(PropertyName = "negate")]
+        public bool Negate { get; set; }
+        [JsonProperty(PropertyName = "multiline_tag")]
+        public string MultilineTag { get; set; }
+
+        public Regex Re { get; set; }
+
+        public Codec()
+        {
+            Negate = false;
+            MultilineTag = "multiline";
         }
     }
 
@@ -277,6 +313,8 @@ namespace TimberWinR.Parser
         public int Interval { get; set; }
         [JsonProperty(PropertyName = "logSource")]
         public string LogSource { get; set; }
+        [JsonProperty(PropertyName = "codec")]
+        public Codec Codec { get; set; }
 
         public Log()
         {
@@ -763,6 +801,7 @@ namespace TimberWinR.Parser
         }
     }
 
+   
     public partial class Json : LogstashFilter
     {
         public class JsonMissingSourceException : Exception
@@ -840,13 +879,13 @@ namespace TimberWinR.Parser
 
         [JsonProperty("json")]
         public Json Json { get; set; }
-    
+
         [JsonProperty("geoip")]
         public GeoIP GeoIP { get; set; }
 
         [JsonProperty("grokFilters")]
         public Grok[] Groks { get; set; }
-
+      
         [JsonProperty("mutateFilters")]
         public Mutate[] Mutates { get; set; }
 
@@ -855,9 +894,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("jsonFilters")]
         public Json[] Jsons { get; set; }
-       
+
         [JsonProperty("geoipFilters")]
-        public GeoIP[] GeoIPs { get; set; }
+        public GeoIP[] GeoIPs { get; set; }    
     }
 
     public class TimberWinR
@@ -874,9 +913,9 @@ namespace TimberWinR.Parser
             get
             {
                 var list = new List<LogstashFilter>();
-                
+
                 foreach (var filter in Filters)
-                {                  
+                {
                     foreach (var prop in filter.GetType().GetProperties())
                     {
                         object typedFilter = filter.GetType().GetProperty(prop.Name).GetValue(filter, null);

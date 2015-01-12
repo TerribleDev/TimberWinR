@@ -18,7 +18,7 @@ namespace TimberWinR.Inputs
         private string _typeName;
         public AutoResetEvent FinishedEvent { get; set; }
         public string CheckpointFileName { get; set; }
-
+      
         public string InputType
         {
             get { return _typeName; }

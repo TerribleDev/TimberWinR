@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using RapidRegex.Core;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using TimberWinR.Parser;
 
 namespace TimberWinR.Outputs
 {
@@ -174,10 +175,10 @@ namespace TimberWinR.Outputs
             foreach (var filter in _manager.Config.Filters)
             {
                 if (!filter.Apply(json))
-                {
+                {  
                     LogManager.GetCurrentClassLogger().Debug("Dropping: {0}", json.ToString());
                     drop = true;
-                }
+                }              
             }
             return drop;
         }
