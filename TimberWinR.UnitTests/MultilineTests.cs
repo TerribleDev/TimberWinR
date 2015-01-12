@@ -18,7 +18,7 @@ namespace TimberWinR.UnitTests
     [TestFixture]
     public class MultilineTests
     {
-        [Test(Description = "Test using next")]
+     //   [Test(Description = "Test using next")]
         public void TestMultiline1()
         {
             using (StreamReader sr = new StreamReader("Multiline1.txt"))
@@ -67,7 +67,7 @@ namespace TimberWinR.UnitTests
             }
         }
 
-        [Test(Description = "Test using previous")]
+    //    [Test(Description = "Test using previous")]
         public void TestMultiline2()
         {
             using (StreamReader sr = new StreamReader("Multiline2.txt"))
