@@ -21,9 +21,10 @@ Example Input: Mutliline input log file
                 "location": "C:\\Logs1\\multiline.log",
                 "recurse": -1,
                 "codec": {
-                "type": "multiline",
-                "pattern": "(^.+Exception: .+)|(^\\s+at .+)|(^\\s+... \\d+ more)|(^\\s*Caused by:.+)",
-                "what": "previous"
+                  "negate": false,
+                  "type": "multiline",
+                  "pattern": "(^.+Exception: .+)|(^\\s+at .+)|(^\\s+... \\d+ more)|(^\\s*Caused by:.+)",
+                  "what": "previous"
                 }
             }
 		 }
