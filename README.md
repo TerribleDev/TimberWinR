@@ -35,7 +35,7 @@ The current supported Input format sources are:
  7. [Udp](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/UdpInput.md) (listens for UDP on port for JSON messages)
 
 ## Codecs
-The current list of supported filters are:
+The current list of supported codecs are:
  1. [Multiline](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/Codec.md)
 
 ## Filters
