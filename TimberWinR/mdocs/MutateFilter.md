@@ -19,14 +19,14 @@ If present, the condition must evaluate to true in order for the remaining opera
 then the operation(s) will be executed in order.
 ```json
   "Filters": [     
-    {
+	{
 		"mutate": {      			
-		    "condition": "\"[type]\" == \"Win32-EventLog\""
+			"condition": "\"[type]\" == \"Win32-EventLog\"",
 			"rename": [
 				"ComputerName", "Host"				              
 			]
 		}                
-    }     
+	}     
   ]
 ```
 The above example will rename ComputerName to Host only for Win32-EventLog types.
