@@ -6,7 +6,7 @@ Version History
 
 ### 1.3.19.0 - 01/12/2015
 
-1. Added support for Multiline codecs for Stdin and Logs listeners, addresses issue #23
+1. Added support for Multiline codecs for Stdin and Logs listeners, closes issue [#23](https://github.com/Cimpress-MCP/TimberWinR/issues/23)
 
 ### 1.3.18.0 - 12/22/2014
 
