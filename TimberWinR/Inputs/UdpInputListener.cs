@@ -21,6 +21,7 @@ namespace TimberWinR.Inputs
 
         private readonly int _port;
         private long _receivedMessages;
+        private long _parsedErrors;
 
         private struct listenProfile
         {
@@ -34,6 +35,7 @@ namespace TimberWinR.Inputs
                 new JProperty("udp",
                     new JObject(
                         new JProperty("port", _port),
+                        new JProperty("errors", _parsedErrors),
                         new JProperty("messages", _receivedMessages)
                         )));
 
@@ -71,22 +73,25 @@ namespace TimberWinR.Inputs
         private void StartListener(object useProfile)
         {
             var profile = (listenProfile)useProfile;
-
+            string lastMessage = "";
             try
             {
                 while (!CancelToken.IsCancellationRequested)
                 {
-                    byte[] bytes = profile.client.Receive(ref profile.endPoint);
                     try
                     {
-                        var data = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+                        byte[] bytes = profile.client.Receive(ref profile.endPoint);  
+                        var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+                        lastMessage = data;
                         JObject json = JObject.Parse(data);
                         ProcessJson(json);
                         _receivedMessages++;
                     }
                     catch (Exception ex1)
                     {
+                        LogManager.GetCurrentClassLogger().Warn("Bad JSON: {0}", lastMessage);
                         LogManager.GetCurrentClassLogger().Warn(ex1);
+                        _parsedErrors++;
                     }
                 }
                 _udpListener.Close();

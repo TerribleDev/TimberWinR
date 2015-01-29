@@ -3,6 +3,10 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version History
+### 1.3.20.0 - 01/29/2015
+1. Added new TailFiles input type which uses a native implementation (more-efficient) than using LogParser's Log
+2. Updated Udp input listner to use UTF8 Encoding rather than ASCII
+3. Reduced noisy complaint about missing log files for Logs listener
 
 ### 1.3.19.0 - 01/12/2015
 

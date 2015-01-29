@@ -297,6 +297,36 @@ namespace TimberWinR.Parser
         }
     }
 
+    public class TailFile : IValidateSchema
+    {
+        [JsonProperty(PropertyName = "location")]
+        public string Location { get; set; }       
+        [JsonProperty(PropertyName = "recurse")]
+        public int Recurse { get; set; }        
+        [JsonProperty(PropertyName = "fields")]
+        public List<Field> Fields { get; set; }
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
+        [JsonProperty(PropertyName = "logSource")]
+        public string LogSource { get; set; }
+        [JsonProperty(PropertyName = "codec")]
+        public Codec Codec { get; set; }
+
+        public TailFile()
+        {
+            Fields = new List<Field>();
+            Fields.Add(new Field("LogFilename", "string"));
+            Fields.Add(new Field("Index", "integer"));
+            Fields.Add(new Field("Text", "string"));
+            Interval = 5;
+        }
+
+        public void Validate()
+        {
+
+        }
+    }
+
     public class Log : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
@@ -599,6 +629,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("Logs")]
         public Log[] Logs { get; set; }
+
+        [JsonProperty("TailFiles")]
+        public TailFile[] TailFiles { get; set; }
 
         [JsonProperty("Tcp")]
         public Tcp[] Tcps { get; set; }

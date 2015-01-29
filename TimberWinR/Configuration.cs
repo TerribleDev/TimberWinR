@@ -67,7 +67,13 @@ namespace TimberWinR
         public IEnumerable<Log> Logs
         {
             get { return _logs; }
-        }       
+        }
+
+        private List<TailFile> _tails = new List<TailFile>();
+        public IEnumerable<TailFile> TailFiles
+        {
+            get { return _tails; }
+        }    
 
         private List<IISW3CLog> _iisw3clogs = new List<IISW3CLog>();
 
@@ -148,6 +154,8 @@ namespace TimberWinR
                     c._stdins.AddRange(x.TimberWinR.Inputs.Stdins.ToList());
                 if (x.TimberWinR.Inputs.Logs != null)
                     c._logs.AddRange(x.TimberWinR.Inputs.Logs.ToList());
+                if (x.TimberWinR.Inputs.TailFiles != null)
+                    c._tails.AddRange(x.TimberWinR.Inputs.TailFiles.ToList());
                 if (x.TimberWinR.Inputs.Tcps != null)
                     c._tcps.AddRange(x.TimberWinR.Inputs.Tcps.ToList());
                 if (x.TimberWinR.Inputs.Udps != null)

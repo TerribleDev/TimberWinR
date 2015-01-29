@@ -198,6 +198,8 @@ namespace TimberWinR.Inputs
                 recurse = _arguments.Recurse
             };
 
+            Dictionary<string, string> _fnfmap = new Dictionary<string, string>();
+
             using (var syncHandle = new ManualResetEventSlim())
             {
                 // Execute the query
@@ -322,7 +324,12 @@ namespace TimberWinR.Inputs
                         }
                         catch (FileNotFoundException fnfex)
                         {
-                            LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
+                            string fn = fnfex.FileName;
+
+                            if (!_fnfmap.ContainsKey(fn))
+                                LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
+                            else
+                                _fnfmap[fn] = fn;
                         }
                         catch (OperationCanceledException oce)
                         {

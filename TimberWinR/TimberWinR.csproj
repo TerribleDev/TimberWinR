@@ -88,6 +88,7 @@
     <Compile Include="Inputs\FieldDefinitions.cs" />
     <Compile Include="Inputs\IISW3CRowReader.cs" />
     <Compile Include="Inputs\LogsFileDatabase.cs" />
+    <Compile Include="Inputs\TailFileListener.cs" />
     <Compile Include="Inputs\UdpInputListener.cs" />
     <Compile Include="Inputs\W3CInputListener.cs" />
     <Compile Include="Inputs\IISW3CInputListener.cs" />
@@ -127,6 +128,7 @@
     <None Include="mdocs\DateFilter.md" />
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GeoIPFilter.md" />
+    <None Include="mdocs\TailFiles.md" />
     <None Include="mdocs\UdpInput.md" />
     <None Include="mdocs\W3CInput.md" />
     <None Include="mdocs\JsonFilter.md" />

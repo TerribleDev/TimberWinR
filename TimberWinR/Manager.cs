@@ -200,6 +200,14 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
+                foreach (var logConfig in Config.TailFiles)
+                {
+                    var elistner = new TailFileListener(logConfig, cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
                 foreach (var tcp in Config.Tcps)
                 {
                     var elistner = new TcpInputListener(cancelToken, tcp.Port);
