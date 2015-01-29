@@ -318,7 +318,7 @@ namespace TimberWinR.Parser
             Fields.Add(new Field("LogFilename", "string"));
             Fields.Add(new Field("Index", "integer"));
             Fields.Add(new Field("Text", "string"));
-            Interval = 5;
+            Interval = 30;
         }
 
         public void Validate()

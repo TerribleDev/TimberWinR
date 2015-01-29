@@ -11,6 +11,7 @@ The following parameters are allowed when configuring WindowsEvents.
 | *location*        | string  |Location of file(s) to monitor                                           | Path to text file(s) including wildcards. |     |
 | *logSource*       | string  |Source name                                  | Used for conditions |     |
 | *recurse*         | integer |Max subdirectory recursion level.                                       | 0 disables subdirectory recursion; -1 enables unlimited recursion. | 0 |
+| *interval*        | integer |Polling interval in seconds                                     | Defaults every 60 seconds | 60 |
 | [codec](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/Codec.md)  | object | Codec to use  |
 
 Example Input: Monitors all files (recursively) located at C:\Logs1\ matching *.log as a pattern.  I.e. C:\Logs1\foo.log, C:\Logs1\Subdir\Log2.log, etc.
