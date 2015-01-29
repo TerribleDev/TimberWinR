@@ -221,7 +221,7 @@ If you really just want to try it out, grab the binary distribution, extract the
 into a directory, e.g.  C:\TimberWinR
 
 Grab the [JSON example file](https://raw.githubusercontent.com/efontana/TimberWinR/master/TimberWinR.ServiceHost/default.json) and place it into C:\TimberWinR\default.json. 
-Edit the default.json file and change the Redis instance to match yours, replace 'tstlexiceapp006.vistaprint.svc' with the IP or DNS name
+Edit the default.json file and change the Redis instance to match yours, replace 'tstlexiceapp006.mycompany.svc' with the IP or DNS name
 of the machine running redis.  Fire up the collector, enable the verbose debugging to see some Windows Events.
 
 ```

@@ -33,7 +33,7 @@
                     "_comment": "Change the host to your Redis instance",
                     "port": 6379,
                     "host": [
-                        "logaggregator.vistaprint.svc"
+                        "logaggregator.mycompany.svc"
                     ]
                 }
             ]

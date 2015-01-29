@@ -85,7 +85,7 @@ namespace TimberWinR.UnitTests
                         [{  
                             ""host"": 
                             [
-                                ""logaggregator.vistaprint.svc""
+                                ""logaggregator.mycompany.svc""
                             ]                   
 		                }]
 	                }

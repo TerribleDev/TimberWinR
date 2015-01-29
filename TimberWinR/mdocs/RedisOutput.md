@@ -26,7 +26,7 @@ Example Input:
                     "interval": 5000, 
                     "batch_count":  500,              
                     "host": [
-                        "tstlexiceapp006.vistaprint.svc"
+                        "tstlexiceapp006.mycompany.svc"
                     ]
                 }
             ]

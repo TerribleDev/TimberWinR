@@ -61,7 +61,7 @@ The resulting output would be:
 ```
   {
     "type": "Win32-FileLog",
-    "ComputerName": "dev.vistaprint.net",
+    "ComputerName": "dev.mycompany.net",
     "Text": "{\"Email\":\"james@example.com\",\"Active\":true,\"CreatedDate\":\"2013-01-20T00:00:00Z\",\"Roles\":[\"User\",\"Admin\"]}",
     "stuff": {
       "Email": "james@example.com",

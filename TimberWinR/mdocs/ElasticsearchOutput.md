@@ -26,7 +26,7 @@ Example Input:
                     "threads":  1,   
                     "interval": 5000,                             
                     "host": [
-                        "tstlexiceapp006.vistaprint.svc"
+                        "tstlexiceapp006.mycompany.svc"
                     ]
                 }
             ]

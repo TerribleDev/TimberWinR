@@ -90,7 +90,7 @@
                     "interval": 5000, 
                     "batch_count":  500,              
                     "host": [
-                        "tstlexiceapp006.vistaprint.svc"
+                        "tstlexiceapp006.mycompany.svc"
                     ]
                 }
             ],            
@@ -99,7 +99,7 @@
                     "threads":  1,   
                     "interval": 5000,                          
                     "host": [
-                        "tstlexiceapp003.vistaprint.svc"
+                        "tstlexiceapp003.mycompany.svc"
                     ]
                 }
             ]                           

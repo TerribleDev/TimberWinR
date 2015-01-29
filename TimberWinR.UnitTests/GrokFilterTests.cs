@@ -22,7 +22,7 @@ namespace TimberWinR.UnitTests
                 {"Index", 7},
                 {"Text", null},
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"}
+                {"ComputerName", "dev.mycompany.net"}
             };
 
             string grokJson = @"{  
@@ -55,7 +55,7 @@ namespace TimberWinR.UnitTests
             Assert.IsTrue(grok.Apply(json));
 
             // Verify host field added
-            Assert.AreEqual(json["host"].ToString(), "dev.vistaprint.net");
+            Assert.AreEqual(json["host"].ToString(), "dev.mycompany.net");
 
             // Verify two tags added
             Assert.AreEqual(json["tags"][0].ToString(), "rn_7");
@@ -71,7 +71,7 @@ namespace TimberWinR.UnitTests
                 {"Index", 7},
                 {"Text", "crap"},
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"}
+                {"ComputerName", "dev.mycompany.net"}
             };
 
             string grokJson = @"{  
@@ -123,7 +123,7 @@ namespace TimberWinR.UnitTests
                     }
                 },
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"}
+                {"ComputerName", "dev.mycompany.net"}
             };
 
             JObject json2 = new JObject
@@ -140,7 +140,7 @@ namespace TimberWinR.UnitTests
                     }
                 },
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"}
+                {"ComputerName", "dev.mycompany.net"}
             };
 
 
@@ -223,7 +223,7 @@ namespace TimberWinR.UnitTests
                     }
                 },
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"}
+                {"ComputerName", "dev.mycompany.net"}
             };
 
             string grokJson1 = @"{  
@@ -311,7 +311,7 @@ namespace TimberWinR.UnitTests
                     }
                 },
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"}
+                {"ComputerName", "dev.mycompany.net"}
             };
 
             string grokJson = @"{  

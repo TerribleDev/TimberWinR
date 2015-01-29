@@ -20,14 +20,14 @@ namespace TimberWinR.UnitTests
             JObject jsonInputLine1 = new JObject
             {               
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"},
+                {"ComputerName", "dev.mycompany.net"},
                 {"Text", "{\"Email\":\"james@example.com\",\"Active\":true,\"CreatedDate\":\"2013-01-20T00:00:00Z\",\"Roles\":[\"User\",\"Admin\"]}"}
             };
 
             JObject jsonInputLine2 = new JObject
             {               
                 {"type", "Win32-FileLog"},
-                {"ComputerName", "dev.vistaprint.net"},
+                {"ComputerName", "dev.mycompany.net"},
                 {"Text", "{\"Email\":\"james@example.com\",\"Active\":true,\"CreatedDate\":\"2013-01-20T00:00:00Z\",\"Roles\":[\"User\",\"Admin\"]}"}
             };
 
