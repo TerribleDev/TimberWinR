@@ -240,8 +240,6 @@ namespace TimberWinR.Inputs
         // threads.
         private void TailFileWatcher(string fileToWatch)
         {
-            Dictionary<string, string> _fnfmap = new Dictionary<string, string>();
-
             using (var syncHandle = new ManualResetEventSlim())
             {
                 // Execute the query
@@ -253,6 +251,8 @@ namespace TimberWinR.Inputs
                         {
                             string path = Path.GetDirectoryName(fileToWatch);
                             string name = Path.GetFileName(fileToWatch);
+                            if (string.IsNullOrEmpty(path))
+                                path = ".";
 
                             // Ok, we have a potential file filter here as 'fileToWatch' could be foo.log or *.log
 
@@ -292,12 +292,8 @@ namespace TimberWinR.Inputs
                     }
                     catch (FileNotFoundException fnfex)
                     {
-                        string fn = fnfex.FileName;
-
-                        if (!_fnfmap.ContainsKey(fn))
-                            LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
-                        else
-                            _fnfmap[fn] = fn;
+                        string fn = fnfex.FileName;                       
+                        LogManager.GetCurrentClassLogger().Warn(fnfex.Message);                      
                     }
                     catch (OperationCanceledException oce)
                     {

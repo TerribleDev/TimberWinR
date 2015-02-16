@@ -60,6 +60,11 @@ namespace TimberWinR
             Interlocked.Add(ref numMessages, count);
         }
 
+        public Manager()
+        {
+            LogsFileDatabase.Manager = this;                   
+        }
+
         public Manager(string jsonConfigFile, string logLevel, string logfileDir, CancellationToken cancelToken)
         {
             LogsFileDatabase.Manager = this;           
