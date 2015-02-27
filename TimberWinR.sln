@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		chocolateyInstall.ps1.template = chocolateyInstall.ps1.template
 		chocolateyUninstall.ps1.guid = chocolateyUninstall.ps1.guid
 		chocolateyUninstall.ps1.template = chocolateyUninstall.ps1.template
+		chocolateyUninstall.ps1.template.orig = chocolateyUninstall.ps1.template.orig
 		LICENSE.txt = LICENSE.txt
 		Performance1.psess = Performance1.psess
 		README.md = README.md

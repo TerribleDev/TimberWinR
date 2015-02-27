@@ -26,6 +26,8 @@ namespace TimberWinR
         public List<TcpInputListener> Tcps { get; set; }
         public List<TcpInputListener> Udps { get; set; }
         public List<InputListener> Listeners { get; set; }
+        public bool LiveMonitor { get; set; }
+
         public DateTime StartedOn { get; set; }
         public string JsonConfig { get; set; }
         public string LogfileDir { get; set; }
@@ -65,11 +67,12 @@ namespace TimberWinR
             LogsFileDatabase.Manager = this;                   
         }
 
-        public Manager(string jsonConfigFile, string logLevel, string logfileDir, CancellationToken cancelToken)
+        public Manager(string jsonConfigFile, string logLevel, string logfileDir, bool liveMonitor, CancellationToken cancelToken)
         {
             LogsFileDatabase.Manager = this;           
   
             StartedOn = DateTime.UtcNow;
+            LiveMonitor = liveMonitor;
 
             var vfi = new FileInfo(jsonConfigFile);
 
@@ -110,7 +113,6 @@ namespace TimberWinR
             LogManager.GetCurrentClassLogger()
                 .Info("Database Directory: {0}", LogsFileDatabase.Instance.DatabaseFileName);
 
-
             try
             {
                 // Is it a directory?
@@ -118,7 +120,7 @@ namespace TimberWinR
                 {
                     DirectoryInfo di = new DirectoryInfo(jsonConfigFile);
                     LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", di.FullName);
-                    Config = Configuration.FromDirectory(jsonConfigFile);
+                    Config = Configuration.FromDirectory(jsonConfigFile, cancelToken, this);
                 }
                 else
                 {
@@ -144,36 +146,40 @@ namespace TimberWinR
             LogManager.GetCurrentClassLogger().Info("Log Directory {0}", logfileDir);
             LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);
 
-            // Read the Configuration file
-            if (Config != null)
+            ProcessConfiguration(cancelToken, Config);
+        }
+
+        public void ProcessConfiguration(CancellationToken cancelToken, Configuration config)
+        {
+// Read the Configuration file
+            if (config != null)
             {
-                if (Config.RedisOutputs != null)
+                if (config.RedisOutputs != null)
                 {
-                    foreach (var ro in Config.RedisOutputs)
+                    foreach (var ro in config.RedisOutputs)
                     {
                         var redis = new RedisOutput(this, ro, cancelToken);
                         Outputs.Add(redis);
                     }
-
                 }
-                if (Config.ElasticsearchOutputs != null)
+                if (config.ElasticsearchOutputs != null)
                 {
-                    foreach (var ro in Config.ElasticsearchOutputs)
+                    foreach (var ro in config.ElasticsearchOutputs)
                     {
                         var els = new ElasticsearchOutput(this, ro, cancelToken);
                         Outputs.Add(els);
                     }
                 }
-                if (Config.StdoutOutputs != null)
+                if (config.StdoutOutputs != null)
                 {
-                    foreach (var ro in Config.StdoutOutputs)
+                    foreach (var ro in config.StdoutOutputs)
                     {
                         var stdout = new StdoutOutput(this, ro, cancelToken);
                         Outputs.Add(stdout);
                     }
                 }
 
-                foreach (Parser.IISW3CLog iisw3cConfig in Config.IISW3C)
+                foreach (Parser.IISW3CLog iisw3cConfig in config.IISW3C)
                 {
                     var elistner = new IISW3CInputListener(iisw3cConfig, cancelToken);
                     Listeners.Add(elistner);
@@ -181,7 +187,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (Parser.W3CLog iisw3cConfig in Config.W3C)
+                foreach (Parser.W3CLog iisw3cConfig in config.W3C)
                 {
                     var elistner = new W3CInputListener(iisw3cConfig, cancelToken);
                     Listeners.Add(elistner);
@@ -189,7 +195,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (Parser.WindowsEvent eventConfig in Config.Events)
+                foreach (Parser.WindowsEvent eventConfig in config.Events)
                 {
                     var elistner = new WindowsEvtInputListener(eventConfig, cancelToken);
                     Listeners.Add(elistner);
@@ -197,7 +203,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (var logConfig in Config.Logs)
+                foreach (var logConfig in config.Logs)
                 {
                     var elistner = new LogsListener(logConfig, cancelToken);
                     Listeners.Add(elistner);
@@ -205,7 +211,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (var logConfig in Config.TailFiles)
+                foreach (var logConfig in config.TailFiles)
                 {
                     var elistner = new TailFileListener(logConfig, cancelToken);
                     Listeners.Add(elistner);
@@ -213,7 +219,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (var tcp in Config.Tcps)
+                foreach (var tcp in config.Tcps)
                 {
                     var elistner = new TcpInputListener(cancelToken, tcp.Port);
                     Listeners.Add(elistner);
@@ -221,7 +227,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (var udp in Config.Udps)
+                foreach (var udp in config.Udps)
                 {
                     var elistner = new UdpInputListener(cancelToken, udp.Port);
                     Listeners.Add(elistner);
@@ -229,7 +235,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (var stdin in Config.Stdins)
+                foreach (var stdin in config.Stdins)
                 {
                     var elistner = new StdinListener(stdin, cancelToken);
                     Listeners.Add(elistner);
@@ -238,28 +244,28 @@ namespace TimberWinR
                 }
 
                 var computerName = System.Environment.MachineName + "." +
-                       Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                           @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
-                           .GetValue("Domain", "")
-                           .ToString();
+                                   Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                                       @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
+                                       .GetValue("Domain", "")
+                                       .ToString();
 
                 foreach (var output in Outputs)
                 {
                     var name = Assembly.GetExecutingAssembly().GetName();
                     JObject json = new JObject(
-                     new JProperty("TimberWinR",
-                         new JObject(
-                             new JProperty("version", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
-                             new JProperty("host", computerName),
-                             new JProperty("output", output.Name),
-                             new JProperty("initialized", DateTime.UtcNow)
-                             )));
+                        new JProperty("TimberWinR",
+                            new JObject(
+                                new JProperty("version",
+                                    GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
+                                new JProperty("host", computerName),
+                                new JProperty("output", output.Name),
+                                new JProperty("initialized", DateTime.UtcNow)
+                                )));
                     json.Add(new JProperty("type", "Win32-TimberWinR"));
                     json.Add(new JProperty("host", computerName));
                     output.Startup(json);
                 }
             }
-
         }
 
 

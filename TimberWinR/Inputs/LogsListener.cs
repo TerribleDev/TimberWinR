@@ -317,19 +317,16 @@ namespace TimberWinR.Inputs
                                 rs.close();
                                 rs = null;
                                 GC.Collect();
-                            }
-                            // Sleep 
-                            if (!Stop)
-                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                            }                          
                         }
                         catch (FileNotFoundException fnfex)
                         {
                             string fn = fnfex.FileName;
 
                             if (!_fnfmap.ContainsKey(fn))
-                                LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
-                            else
-                                _fnfmap[fn] = fn;
+                                LogManager.GetCurrentClassLogger().Warn(fnfex.Message);       
+                    
+                            _fnfmap[fn] = fn;
                         }
                         catch (OperationCanceledException oce)
                         {
@@ -342,6 +339,9 @@ namespace TimberWinR.Inputs
                         finally
                         {
                             oLogQuery = null;
+                            // Sleep 
+                            if (!Stop)
+                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                         }
                     }
                 }

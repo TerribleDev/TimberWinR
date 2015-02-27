@@ -38,7 +38,8 @@ namespace TimberWinR.ServiceHost
                     serviceConfigurator.WhenStarted(myService => myService.Start());
                     serviceConfigurator.WhenStopped(myService => myService.Stop());
                 });
-               
+
+                hostConfigurator.AddCommandLineDefinition("liveMonitor", c => arguments.LiveMonitor = bool.Parse(c.ToString()));
                 hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
                 hostConfigurator.AddCommandLineDefinition("logLevel", c => arguments.LogLevel = c);
                 hostConfigurator.AddCommandLineDefinition("logDir", c => arguments.LogfileDir = c);
@@ -60,6 +61,7 @@ namespace TimberWinR.ServiceHost
                         AddServiceParameter("-configFile", arguments.ConfigFile);
                         AddServiceParameter("-logLevel", arguments.LogLevel);
                         AddServiceParameter("-logDir", arguments.LogfileDir);
+                        AddServiceParameter("-liveMonitor", arguments.LiveMonitor);
                         if (arguments.DiagnosticPort > 0)
                             AddServiceParameter("-diagnosticPort", arguments.DiagnosticPort);
                     }
@@ -68,8 +70,7 @@ namespace TimberWinR.ServiceHost
         }
 
         private static void AddServiceParameter(string paramName, string value)
-        {
-         
+        {         
             string currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
 
             if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0} ", paramName)))           
@@ -80,8 +81,7 @@ namespace TimberWinR.ServiceHost
         }
 
         private static void AddServiceParameter(string paramName, int value)
-        {
-    
+        {    
             string currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
 
             if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0}:", paramName)))
@@ -91,6 +91,16 @@ namespace TimberWinR.ServiceHost
             }
         }
 
+        private static void AddServiceParameter(string paramName, bool value)
+        {
+            string currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
+
+            if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0}:", paramName)))
+            {
+                currentValue += string.Format(" {0} \"{1}\"", paramName, value.ToString());
+                Registry.SetValue(KeyPath, KeyName, currentValue);
+            }
+        }
     }
 
     internal class Arguments
@@ -99,9 +109,10 @@ namespace TimberWinR.ServiceHost
         public string LogLevel { get; set; }
         public string LogfileDir { get; set; }
         public int DiagnosticPort { get; set; }
-
+        public bool LiveMonitor { get; set; }
         public Arguments()
         {
+            LiveMonitor = false;
             DiagnosticPort = 5141;
             ConfigFile = "default.json";
             LogLevel = "Info";
@@ -147,7 +158,7 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
-            _manager = new TimberWinR.Manager(_args.ConfigFile, _args.LogLevel, _args.LogfileDir, _cancellationToken);
+            _manager = new TimberWinR.Manager(_args.ConfigFile, _args.LogLevel, _args.LogfileDir, _args.LiveMonitor, _cancellationToken);
             if (_args.DiagnosticPort > 0)
                 _diags = new Diagnostics.Diagnostics(_manager, _cancellationToken, _args.DiagnosticPort);
         }

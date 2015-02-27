@@ -227,8 +227,8 @@ namespace TimberWinR.Inputs
                     else
                     {
                         ProcessJson(json);
-                        Interlocked.Increment(ref _receivedMessages);                       
-                    }                                      
+                        Interlocked.Increment(ref _receivedMessages);
+                    }
                     lineOffset += line.Length;
                     // Console.WriteLine("File: {0}:{1}: {2}", fileName, reader.BaseStream.Position, line);
                 }
@@ -240,6 +240,8 @@ namespace TimberWinR.Inputs
         // threads.
         private void TailFileWatcher(string fileToWatch)
         {
+            Dictionary<string, string> _fnfmap = new Dictionary<string, string>();
+
             using (var syncHandle = new ManualResetEventSlim())
             {
                 // Execute the query
@@ -284,16 +286,15 @@ namespace TimberWinR.Inputs
                                 }
                                 LogsFileDatabase.Update(dbe);
                             }
-
-                           // LogManager.GetCurrentClassLogger().Info("Finished Scan...Sleeping");
-                            if (!Stop)
-                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                         }
                     }
                     catch (FileNotFoundException fnfex)
                     {
-                        string fn = fnfex.FileName;                       
-                        LogManager.GetCurrentClassLogger().Warn(fnfex.Message);                      
+                        string fn = fnfex.FileName;
+
+                        if (!_fnfmap.ContainsKey(fn))
+                            LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
+                        _fnfmap[fn] = fn;
                     }
                     catch (OperationCanceledException oce)
                     {
@@ -305,7 +306,8 @@ namespace TimberWinR.Inputs
                     }
                     finally
                     {
-
+                        if (!Stop)
+                            syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                     }
                 }
             }

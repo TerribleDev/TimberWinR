@@ -4,6 +4,8 @@ using System.Data.Odbc;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -16,6 +18,7 @@ using Newtonsoft.Json.Linq;
 using TimberWinR.Inputs;
 using TimberWinR.Filters;
 
+
 using NLog;
 using TimberWinR.Parser;
 using Topshelf.Configurators;
@@ -25,7 +28,12 @@ using WindowsEvent = TimberWinR.Parser.WindowsEvent;
 namespace TimberWinR
 {
     public class Configuration
-    {
+    {       
+        private CancellationToken _cancelToken;
+        private bool _stopService;
+        private FileSystemWatcher _dirWatcher;
+        private Manager _manager;
+ 
         private List<WindowsEvent> _events = new List<WindowsEvent>();
         public IEnumerable<WindowsEvent> Events
         {
@@ -102,11 +110,88 @@ namespace TimberWinR
             get { return _filters; }
         }
 
+        private void MonitorDirectory(string directoryToWatch, CancellationToken cancelToken, Manager manager)
+        {
+            _manager = manager;
+            _cancelToken = cancelToken;
+            if (_dirWatcher == null)
+            {
+                _dirWatcher = new FileSystemWatcher();
+                _dirWatcher.Path = directoryToWatch;
+                _dirWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+                // Only watch json files.
+                _dirWatcher.Filter = "*.json";
+                _dirWatcher.Created += DirWatcherOnCreated;
+                _dirWatcher.Changed += DirWatcherOnChanged;
+                _dirWatcher.Renamed += DirWatcherOnRenamed;
+                _dirWatcher.EnableRaisingEvents = true;
+            }       
+        }
 
-        public static Configuration FromDirectory(string jsonDirectory)
+        private void DirWatcherOnRenamed(object sender, RenamedEventArgs e)
+        {
+            // The Renamed file could be a different name from .json
+            FileInfo fi = new FileInfo(e.FullPath);
+            if (fi.Extension == ".json")
+            {
+                LogManager.GetCurrentClassLogger().Info("File: OnRenamed " + e.FullPath + " " + e.ChangeType);
+                ProcessNewJson(e.FullPath);
+            }
+        }
+
+        private void DirWatcherOnCreated(object sender, FileSystemEventArgs e)
+        {
+            FileInfo fi = new FileInfo(e.FullPath);
+            if (fi.Extension == ".json")
+            {
+                LogManager.GetCurrentClassLogger().Info("File: OnCreated " + e.FullPath + " " + e.ChangeType);
+                ProcessNewJson(e.FullPath);
+            }
+        }
+
+        private void DirWatcherOnChanged(object sender, FileSystemEventArgs e)
+        {
+            FileInfo fi = new FileInfo(e.FullPath);
+            if (fi.Extension == ".json")
+            {
+                // Specify what is done when a file is changed, created, or deleted.
+                LogManager.GetCurrentClassLogger()
+                    .Info("File: OnChanged " + e.ChangeType.ToString() + " " + e.FullPath + " " + e.ChangeType);
+                ProcessNewJson(e.FullPath);
+            }
+        }
+      
+        private void ProcessNewJson(string fileName)
+        {
+            try
+            {
+                Configuration c = new Configuration();
+                var config = Configuration.FromFile(fileName, c);
+                _manager.ProcessConfiguration(_cancelToken, config);
+
+            }
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);                         
+            }
+        }
+
+        private void ShutdownDirectoryMonitor()
+        {
+            _stopService = true;
+            _dirWatcher.EnableRaisingEvents = false;
+            LogManager.GetCurrentClassLogger().Info("Stopping Directory Monitor");            
+        }
+
+        private void DirectoryWatcher(string directoryToWatch)
+        {
+            LogManager.GetCurrentClassLogger().Info("Starting Directory Monitor {0}", directoryToWatch);                       
+        }
+
+        public static Configuration FromDirectory(string jsonDirectory, CancellationToken cancelToken, Manager manager)
         {
             Configuration c = null;
-
+      
             foreach (string jsonConfFile in Directory.GetFiles(jsonDirectory, "*.json"))
             {
                 if (!string.IsNullOrEmpty(jsonConfFile))
@@ -114,6 +199,10 @@ namespace TimberWinR
                     c = FromFile(jsonConfFile, c);
                 }
             }
+
+            // Startup Directory Monitor
+            if (manager.LiveMonitor)           
+                c.MonitorDirectory(jsonDirectory, cancelToken, manager);            
 
             return c;
         }

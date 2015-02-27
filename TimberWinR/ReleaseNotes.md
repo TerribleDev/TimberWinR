@@ -3,14 +3,14 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version History
-### 1.3.20.0 - 01/29/2015
-1. Added new TailFiles input type which uses a native implementation (more-efficient) than using LogParser's Log
-2. Updated Udp input listner to use UTF8 Encoding rather than ASCII
-3. Reduced noisy complaint about missing log files for Logs listener
-
-### 1.3.19.0 - 01/12/2015
+### 1.3.19.0 - 02/26/2015
 
 1. Added support for Multiline codecs for Stdin and Logs listeners, closes issue [#23](https://github.com/Cimpress-MCP/TimberWinR/issues/23)
+2. Added new TailFiles input type which uses a native implementation (more-efficient) than using LogParser's Log
+3. Updated Udp input listner to use UTF8 Encoding rather than ASCII
+4. Reduced noisy complaint about missing log files for Logs listener
+5. Fixed bug when tailing non-existent log files which resulted in high cpu-usage.
+6. Added feature to watch the configuration directory
 
 ### 1.3.18.0 - 12/22/2014
 
