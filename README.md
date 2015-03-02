@@ -208,8 +208,8 @@ Options:
 -configFile:       Specifies the path to the JSON config file, or directory which contains .json file(s).
                    Default is -configFile:default.json
 -diagnosticPort:   Specifies the diagnostic port which can be used to get a health check of the service.
-                   Default Port is 5142, A value of 0 will disable it.  Open a browser
-                      http://localhost:5142
+                   Default Port is 5141, A value of 0 will disable it.  Open a browser
+                      http://localhost:5141
 ```
 #### -configFile
 This may be a single .json file or a directory containing .json file(s).  If it is a directory, all
