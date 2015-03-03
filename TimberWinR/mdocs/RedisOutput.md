@@ -9,6 +9,7 @@ The following parameters are allowed when configuring the Redis output.
 | :-------------|:---------|:------------------------------------------------------------| :---------------------------  | :-- |
 | *threads*     | string   | Location of log files(s) to monitor                         | Number of worker theads to send messages | 1 |
 | *batch_count* | integer  | Sent as a single message                         | Number of messages to aggregate | 10 |
+| *max_batch_count* | integer  | Dynamically adjusted count maximum                      | Increases over time | batch_count*10 |
 | *interval*    | integer  | Interval in milliseconds to sleep during batch sends        | Interval      | 5000 |
 | *index*       | string   | The name of the redis list                                  | logstash index name | logstash |
 | *host*        | [string] | The hostname(s) of your Redis server(s) | IP or DNS name |  |

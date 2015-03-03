@@ -576,6 +576,8 @@ namespace TimberWinR.Parser
         public int Timeout { get; set; }
         [JsonProperty(PropertyName = "batch_count")]
         public int BatchCount { get; set; }
+        [JsonProperty(PropertyName = "max_batch_count")]
+        public int MaxBatchCount { get; set; }
         [JsonProperty(PropertyName = "threads")]
         public int NumThreads { get; set; }
         [JsonProperty(PropertyName = "interval")]
@@ -592,6 +594,7 @@ namespace TimberWinR.Parser
             Host = new string[] { "localhost" };
             Timeout = 10000;
             BatchCount = 10;
+            MaxBatchCount = BatchCount*10;
             NumThreads = 1;
             Interval = 5000;
             QueueOverflowDiscardOldest = true;

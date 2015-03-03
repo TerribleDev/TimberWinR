@@ -3,6 +3,10 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version History
+### 1.3.20.0 - 03/03/2015
+1. Added new Redis parameter _max\_batch\_count_ which increases the _batch\_count_ dynamically over time 
+   to handle input flooding.   Default is _batch\_count_ * 10 
+
 ### 1.3.19.0 - 02/26/2015
 
 1. Added support for Multiline codecs for Stdin and Logs listeners, closes issue [#23](https://github.com/Cimpress-MCP/TimberWinR/issues/23)
