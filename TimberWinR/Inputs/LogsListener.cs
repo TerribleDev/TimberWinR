@@ -21,7 +21,7 @@ using LogRecordSet = Interop.MSUtil.ILogRecordset;
 using TimberWinR.Parser;
 
 namespace TimberWinR.Inputs
-{   
+{
     /// <summary>
     /// Tail a file.
     /// </summary>
@@ -317,15 +317,15 @@ namespace TimberWinR.Inputs
                                 rs.close();
                                 rs = null;
                                 GC.Collect();
-                            }                          
+                            }
                         }
                         catch (FileNotFoundException fnfex)
                         {
                             string fn = fnfex.FileName;
 
                             if (!_fnfmap.ContainsKey(fn))
-                                LogManager.GetCurrentClassLogger().Warn(fnfex.Message);       
-                    
+                                LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
+
                             _fnfmap[fn] = fn;
                         }
                         catch (OperationCanceledException oce)
@@ -338,10 +338,20 @@ namespace TimberWinR.Inputs
                         }
                         finally
                         {
-                            oLogQuery = null;
-                            // Sleep 
-                            if (!Stop)
-                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                            try
+                            {
+                                oLogQuery = null;
+                                // Sleep 
+                                if (!Stop)
+                                    syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                            }
+                            catch (OperationCanceledException oce)
+                            {                               
+                            }
+                            catch (Exception ex1)
+                            {
+                                LogManager.GetCurrentClassLogger().Warn(ex1);
+                            }
                         }
                     }
                 }

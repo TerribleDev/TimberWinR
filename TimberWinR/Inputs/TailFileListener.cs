@@ -306,8 +306,18 @@ namespace TimberWinR.Inputs
                     }
                     finally
                     {
-                        if (!Stop)
-                            syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                        try
+                        {
+                            if (!Stop)
+                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                        }
+                        catch (Exception ex1)
+                        {
+                            LogManager.GetCurrentClassLogger().Warn(ex1);
+                        }                      
                     }
                 }
             }
