@@ -61,15 +61,16 @@ namespace TimberWinR.Outputs
                 try
                 {
                     RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port, _timeout);
-
-                    _redisHostIndex++;
-                    if (_redisHostIndex >= _redisHosts.Length)
-                        _redisHostIndex = 0;
-
                     return client;
                 }
                 catch (Exception)
                 {
+                }
+                finally
+                {
+                    _redisHostIndex++;
+                    if (_redisHostIndex >= _redisHosts.Length)
+                        _redisHostIndex = 0;
                 }
                 numTries++;
             }
