@@ -20,11 +20,14 @@ namespace TimberWinR.Outputs
 {
     internal class BatchCounter
     {
+        public int ReachedMaxBatchCount { get; set; }
+
         private readonly int[] _sampleQueueDepths;
         private int _sampleCountIndex;
         private const int QUEUE_SAMPLE_SIZE = 30; // 30 samples over 2.5 minutes (default)
         private object _locker = new object();
         private bool _warnedReachedMax;
+    
         private readonly int _maxBatchCount;
         private readonly int _batchCount;
         private int _totalSamples;
@@ -41,6 +44,7 @@ namespace TimberWinR.Outputs
             _sampleQueueDepths = new int[QUEUE_SAMPLE_SIZE];
             _sampleCountIndex = 0;
             _totalSamples = 0;
+            ReachedMaxBatchCount = 0;
         }
         public void SampleQueueDepth(int queueDepth)
         {
@@ -61,21 +65,28 @@ namespace TimberWinR.Outputs
         {
             lock (_locker)
             {
-                var samples = _sampleQueueDepths.Take(_totalSamples);
-                return (int) samples.Average();
+                if (_totalSamples > 0)
+                {
+                    var samples = _sampleQueueDepths.Take(_totalSamples);
+                    int avg = (int) samples.Average();
+                    return avg;
+                }
+                return 0;
             }
         }
-       
+
         // Sample the queue and adjust the batch count if needed (ramp up slowly)
         public int UpdateCurrentBatchCount(int queueSize, int currentBatchCount)
         {
             if (currentBatchCount < _maxBatchCount && currentBatchCount < queueSize && AverageQueueDepth() > currentBatchCount)
             {
-                currentBatchCount += _maxBatchCount / QUEUE_SAMPLE_SIZE;
+                currentBatchCount += Math.Max(_maxBatchCount/_batchCount, 1);
                 if (currentBatchCount >= _maxBatchCount && !_warnedReachedMax)
                 {
                     LogManager.GetCurrentClassLogger().Warn("Maximum Batch Count of {0} reached.", currentBatchCount);
                     _warnedReachedMax = true; // Only complain when it's reached (1 time, unless reset)
+                    ReachedMaxBatchCount++;
+                    currentBatchCount = _maxBatchCount;
                 }
             }
             else // Reset to default
@@ -91,6 +102,16 @@ namespace TimberWinR.Outputs
 
     public class RedisOutput : OutputSender
     {
+        public int QueueDepth
+        {
+            get { return _jsonQueue.Count; }
+        }
+
+        public long SentMessages
+        {
+            get { return _sentMessages; }
+        }
+
         private readonly string _logstashIndexName;
         private readonly int _port;
         private readonly int _timeout;
@@ -107,10 +128,10 @@ namespace TimberWinR.Outputs
         private long _sentMessages;
         private long _errorCount;
         private long _redisDepth;
-        private DateTime? _lastErrorTime;       
+        private DateTime? _lastErrorTimeUTC;       
         private readonly int _maxQueueSize;
         private readonly bool _queueOverflowDiscardOldest;
-        private bool _warnedReachedMax;
+        private bool _warnedReachedMax;      
         private BatchCounter _batchCounter;
 
         public bool Stop { get; set; }
@@ -154,7 +175,7 @@ namespace TimberWinR.Outputs
                     new JObject(
                         new JProperty("host", string.Join(",", _redisHosts)),
                         new JProperty("errors", _errorCount),
-                        new JProperty("lastErrorTime", _lastErrorTime),
+                        new JProperty("lastErrorTimeUTC", _lastErrorTimeUTC),
                         new JProperty("redis_depth", _redisDepth),
                         new JProperty("sent_messages", _sentMessages),
                         new JProperty("queued_messages", _jsonQueue.Count),
@@ -165,6 +186,7 @@ namespace TimberWinR.Outputs
                         new JProperty("threads", _numThreads),
                         new JProperty("batchcount", _batchCount),
                         new JProperty("currentBatchCount", _currentBatchCount),
+                        new JProperty("reachedMaxBatchCount",  _batchCounter.ReachedMaxBatchCount),
                         new JProperty("maxBatchCount", _maxBatchCount),
                         new JProperty("averageQueueDepth", _batchCounter.AverageQueueDepth()),   
                         new JProperty("queueSamples", new JArray(_batchCounter.Samples())),
@@ -186,8 +208,8 @@ namespace TimberWinR.Outputs
             _maxBatchCount = ro.MaxBatchCount;
             // Make sure maxBatchCount is larger than batchCount
             if (_maxBatchCount < _batchCount)
-                _maxBatchCount = _batchCount*10;    
-        
+                _maxBatchCount = _batchCount*10;
+           
             _manager = manager;
             _redisHostIndex = 0;
             _redisHosts = ro.Host;          
@@ -198,7 +220,7 @@ namespace TimberWinR.Outputs
             _interval = ro.Interval;
             _numThreads = ro.NumThreads;
             _errorCount = 0;
-            _lastErrorTime = null;
+            _lastErrorTimeUTC = null;
             _maxQueueSize = ro.MaxQueueSize;
             _queueOverflowDiscardOldest = ro.QueueOverflowDiscardOldest;
             _batchCounter = new BatchCounter(_batchCount, _maxBatchCount);
@@ -328,13 +350,13 @@ namespace TimberWinR.Outputs
                                                 {
                                                     LogManager.GetCurrentClassLogger().Warn(ex);
                                                     Interlocked.Increment(ref _errorCount);
-                                                    _lastErrorTime = DateTime.UtcNow;
+                                                    _lastErrorTimeUTC = DateTime.UtcNow;
                                                 }
                                                 catch (Exception ex)
                                                 {
                                                     LogManager.GetCurrentClassLogger().Error(ex);
                                                     Interlocked.Increment(ref _errorCount);
-                                                    _lastErrorTime = DateTime.UtcNow;
+                                                    _lastErrorTimeUTC = DateTime.UtcNow;
                                                 }                                               
                                                 break;
                                             }
@@ -344,7 +366,7 @@ namespace TimberWinR.Outputs
                                                 LogManager.GetCurrentClassLogger()
                                                     .Fatal("Unable to connect with any Redis hosts, {0}",
                                                         String.Join(",", _redisHosts));
-                                                _lastErrorTime = DateTime.UtcNow;
+                                                _lastErrorTimeUTC = DateTime.UtcNow;
                                             }
                                         }
                                     }
@@ -352,7 +374,7 @@ namespace TimberWinR.Outputs
                                     {
                                         LogManager.GetCurrentClassLogger().Error(ex);
                                         Interlocked.Increment(ref _errorCount);
-                                        _lastErrorTime = DateTime.UtcNow;                                
+                                        _lastErrorTimeUTC = DateTime.UtcNow;                                
                                     }
                                 } // No more hosts to try.
 
@@ -365,7 +387,7 @@ namespace TimberWinR.Outputs
                                     }
                                 }
                             }
-                            GC.Collect();
+                           // GC.Collect();
                             if (!Stop)
                                 syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);
                         }
@@ -373,9 +395,13 @@ namespace TimberWinR.Outputs
                         {
                             break;
                         }
+                        catch(ThreadAbortException tex)
+                        {
+                            break;
+                        }
                         catch (Exception ex)
                         {
-                            _lastErrorTime = DateTime.UtcNow;
+                            _lastErrorTimeUTC = DateTime.UtcNow;
                             Interlocked.Increment(ref _errorCount);
                             LogManager.GetCurrentClassLogger().Error(ex);                         
                         }

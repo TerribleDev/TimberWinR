@@ -129,7 +129,7 @@ namespace TimberWinR.Outputs
                                                         if (response.StatusCode != HttpStatusCode.Created)
                                                         {
                                                             LogManager.GetCurrentClassLogger()
-                                                                .Error("Failed to send: {0}", response.ErrorMessage);
+                                                                .Error("Failed to send: {0}, code: {1}, descr: {2}, resp: {3}", response.ErrorMessage, response.StatusCode, response.StatusDescription, response.ResponseStatus);
                                                             Interlocked.Increment(ref _errorCount);
                                                         }
                                                         else
