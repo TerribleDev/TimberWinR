@@ -153,7 +153,7 @@ namespace TimberWinR.Inputs
                             if (!Stop)
                                 syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                         }
-                        catch (OperationCanceledException oce)
+                        catch (OperationCanceledException)
                         {
                             break;
                         }

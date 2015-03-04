@@ -30,7 +30,7 @@ namespace TimberWinR
     public class Configuration
     {       
         private CancellationToken _cancelToken;
-        private bool _stopService;
+        
         private FileSystemWatcher _dirWatcher;
         private Manager _manager;
  
@@ -177,8 +177,7 @@ namespace TimberWinR
         }
 
         private void ShutdownDirectoryMonitor()
-        {
-            _stopService = true;
+        {           
             _dirWatcher.EnableRaisingEvents = false;
             LogManager.GetCurrentClassLogger().Info("Stopping Directory Monitor");            
         }

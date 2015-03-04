@@ -328,7 +328,7 @@ namespace TimberWinR.Inputs
 
                             _fnfmap[fn] = fn;
                         }
-                        catch (OperationCanceledException oce)
+                        catch (OperationCanceledException)
                         {
                             break;
                         }
@@ -345,7 +345,7 @@ namespace TimberWinR.Inputs
                                 if (!Stop)
                                     syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                             }
-                            catch (OperationCanceledException oce)
+                            catch (OperationCanceledException)
                             {                               
                             }
                             catch (Exception ex1)

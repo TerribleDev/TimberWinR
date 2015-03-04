@@ -99,9 +99,7 @@ namespace TimberWinR.ExtractID
                 Console.WriteLine("Updated {0} ProductID: {1}", args[2], productCode);
 
                 return 0;
-            }
-
-            Console.Error.WriteLine("Failed for some reason");
+            }           
         }
     }
 }

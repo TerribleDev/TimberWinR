@@ -169,7 +169,7 @@ namespace TimberWinR.Outputs
                                 syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);  
                             }
                           }
-                        catch (OperationCanceledException oce)
+                        catch (OperationCanceledException)
                         {
                             break;
                         }

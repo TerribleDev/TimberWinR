@@ -21,9 +21,7 @@ namespace TimberWinR.UnitTests
         private Thread _listenThreadV6;
         private readonly int _port;
         private CancellationToken _cancelToken;
-        private bool _shutdown;
-        public event Action<JObject> OnMessageRecieved;
-
+        private bool _shutdown;     
 
         public FakeRediServer(CancellationToken cancelToken, int port = 6379)
         {
@@ -107,7 +105,7 @@ namespace TimberWinR.UnitTests
                           //  System.Diagnostics.Debug.WriteLine(String.Format("Sent: {0}", data));
                         }
                     }
-                    catch (IOException ioex)
+                    catch (IOException)
                     {                       
                     }
                 } while (true);

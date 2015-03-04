@@ -130,8 +130,7 @@ namespace TimberWinR.Outputs
         private long _redisDepth;
         private DateTime? _lastErrorTimeUTC;       
         private readonly int _maxQueueSize;
-        private readonly bool _queueOverflowDiscardOldest;
-        private bool _warnedReachedMax;      
+        private readonly bool _queueOverflowDiscardOldest;       
         private BatchCounter _batchCounter;
 
         public bool Stop { get; set; }
@@ -201,8 +200,7 @@ namespace TimberWinR.Outputs
 
         public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutput ro, CancellationToken cancelToken)
             : base(cancelToken, "Redis")
-        {
-            _warnedReachedMax = false;         
+        {              
             _redisDepth = 0;
             _batchCount = ro.BatchCount;
             _maxBatchCount = ro.MaxBatchCount;
@@ -391,11 +389,11 @@ namespace TimberWinR.Outputs
                             if (!Stop)
                                 syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);
                         }
-                        catch (OperationCanceledException oce)
+                        catch (OperationCanceledException)
                         {
                             break;
                         }
-                        catch(ThreadAbortException tex)
+                        catch(ThreadAbortException)
                         {
                             break;
                         }
