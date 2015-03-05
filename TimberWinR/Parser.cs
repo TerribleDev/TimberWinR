@@ -327,7 +327,7 @@ namespace TimberWinR.Parser
         }
     }
 
-    public class Log : IValidateSchema
+    public class LogParameters : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }
@@ -346,7 +346,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "codec")]
         public Codec Codec { get; set; }
 
-        public Log()
+        public LogParameters()
         {
             Fields = new List<Field>();
             Fields.Add(new Field("LogFilename", "string"));
@@ -361,12 +361,12 @@ namespace TimberWinR.Parser
         }
     }
 
-    public class Tcp : IValidateSchema
+    public class TcpParameters : IValidateSchema
     {
         [JsonProperty(PropertyName = "port")]
         public int Port { get; set; }
 
-        public Tcp()
+        public TcpParameters()
         {
             Port = 5140;
         }
@@ -378,12 +378,12 @@ namespace TimberWinR.Parser
     }
 
 
-    public class Udp : IValidateSchema
+    public class UdpParameters : IValidateSchema
     {
         [JsonProperty(PropertyName = "port")]
         public int Port { get; set; }
 
-        public Udp()
+        public UdpParameters()
         {
             Port = 5142;
         }
@@ -393,7 +393,7 @@ namespace TimberWinR.Parser
 
         }
     }
-    public class W3CLog : IValidateSchema
+    public class W3CLogParameters : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }
@@ -410,7 +410,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "fields")]
         public List<Field> Fields { get; set; }
 
-        public W3CLog()
+        public W3CLogParameters()
         {
             CodePage = 0;
             DtLines = 10;
@@ -428,7 +428,7 @@ namespace TimberWinR.Parser
     }
 
 
-    public class IISW3CLog : IValidateSchema
+    public class IISW3CLogParameters : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }
@@ -448,7 +448,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "fields")]
         public List<Field> Fields { get; set; }
 
-        public IISW3CLog()
+        public IISW3CLogParameters()
         {
             CodePage = -2;
             Recurse = 0;
@@ -494,7 +494,7 @@ namespace TimberWinR.Parser
         }
     }
 
-    public class ElasticsearchOutput
+    public class ElasticsearchOutputParameters
     {
         const string IndexDatePattern = "(%\\{(?<format>[^\\}]+)\\})";
 
@@ -513,7 +513,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "interval")]
         public int Interval { get; set; }
 
-        public ElasticsearchOutput()
+        public ElasticsearchOutputParameters()
         {
             Protocol = "http";
             Port = 9200;
@@ -564,7 +564,7 @@ namespace TimberWinR.Parser
 
     }
 
-    public class RedisOutput
+    public class RedisOutputParameters
     {
         [JsonProperty(PropertyName = "host")]
         public string[] Host { get; set; }
@@ -587,7 +587,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "queue_overflow_discard_oldest")]
         public bool QueueOverflowDiscardOldest { get; set; }
 
-        public RedisOutput()
+        public RedisOutputParameters()
         {
             Port = 6379;
             Index = "logstash";
@@ -602,12 +602,12 @@ namespace TimberWinR.Parser
         }
     }
 
-    public class StdoutOutput
+    public class StdoutOutputParameters
     {
         [JsonProperty(PropertyName = "interval")]
         public int Interval { get; set; }
 
-        public StdoutOutput()
+        public StdoutOutputParameters()
         {
             Interval = 1000;
         }
@@ -616,13 +616,13 @@ namespace TimberWinR.Parser
     public class OutputTargets
     {
         [JsonProperty("Redis")]
-        public RedisOutput[] Redis { get; set; }
+        public RedisOutputParameters[] Redis { get; set; }
 
         [JsonProperty("Elasticsearch")]
-        public ElasticsearchOutput[] Elasticsearch { get; set; }
+        public ElasticsearchOutputParameters[] Elasticsearch { get; set; }
 
         [JsonProperty("Stdout")]
-        public StdoutOutput[] Stdout { get; set; }
+        public StdoutOutputParameters[] Stdout { get; set; }
     }
 
     public class InputSources
@@ -631,22 +631,22 @@ namespace TimberWinR.Parser
         public WindowsEvent[] WindowsEvents { get; set; }
 
         [JsonProperty("Logs")]
-        public Log[] Logs { get; set; }
+        public LogParameters[] Logs { get; set; }
 
         [JsonProperty("TailFiles")]
         public TailFile[] TailFiles { get; set; }
 
         [JsonProperty("Tcp")]
-        public Tcp[] Tcps { get; set; }
+        public TcpParameters[] Tcps { get; set; }
 
         [JsonProperty("Udp")]
-        public Udp[] Udps { get; set; }
+        public UdpParameters[] Udps { get; set; }
 
         [JsonProperty("IISW3CLogs")]
-        public IISW3CLog[] IISW3CLogs { get; set; }
+        public IISW3CLogParameters[] IISW3CLogs { get; set; }
 
         [JsonProperty("W3CLogs")]
-        public W3CLog[] W3CLogs { get; set; }
+        public W3CLogParameters[] W3CLogs { get; set; }
 
         [JsonProperty("Stdin")]
         public Stdin[] Stdins { get; set; }

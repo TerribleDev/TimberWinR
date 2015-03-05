@@ -22,7 +22,6 @@ using TimberWinR.Filters;
 using NLog;
 using TimberWinR.Parser;
 using Topshelf.Configurators;
-using IISW3CLog = TimberWinR.Parser.IISW3CLog;
 using WindowsEvent = TimberWinR.Parser.WindowsEvent;
 
 namespace TimberWinR
@@ -40,39 +39,39 @@ namespace TimberWinR
             get { return _events; }
         }
 
-        private List<RedisOutput> _redisOutputs = new List<RedisOutput>();
-        public IEnumerable<RedisOutput> RedisOutputs
+        private List<RedisOutputParameters> _redisOutputs = new List<RedisOutputParameters>();
+        public IEnumerable<RedisOutputParameters> RedisOutputs
         {
             get { return _redisOutputs; }
         }
 
 
-        private List<ElasticsearchOutput> _elasticsearchOutputs = new List<ElasticsearchOutput>();
-        public IEnumerable<ElasticsearchOutput> ElasticsearchOutputs
+        private List<ElasticsearchOutputParameters> _elasticsearchOutputs = new List<ElasticsearchOutputParameters>();
+        public IEnumerable<ElasticsearchOutputParameters> ElasticsearchOutputs
         {
             get { return _elasticsearchOutputs; }
         }
 
-        private List<StdoutOutput> _stdoutOutputs = new List<StdoutOutput>();
-        public IEnumerable<StdoutOutput> StdoutOutputs
+        private List<StdoutOutputParameters> _stdoutOutputs = new List<StdoutOutputParameters>();
+        public IEnumerable<StdoutOutputParameters> StdoutOutputs
         {
             get { return _stdoutOutputs; }
         }
 
-        private List<Tcp> _tcps = new List<Tcp>();
-        public IEnumerable<Tcp> Tcps
+        private List<TcpParameters> _tcps = new List<TcpParameters>();
+        public IEnumerable<TcpParameters> Tcps
         {
             get { return _tcps; }
         }
 
-        private List<Udp> _udps = new List<Udp>();
-        public IEnumerable<Udp> Udps
+        private List<UdpParameters> _udps = new List<UdpParameters>();
+        public IEnumerable<UdpParameters> Udps
         {
             get { return _udps; }
         }     
 
-        private List<Log> _logs = new List<Log>();
-        public IEnumerable<Log> Logs
+        private List<LogParameters> _logs = new List<LogParameters>();
+        public IEnumerable<LogParameters> Logs
         {
             get { return _logs; }
         }
@@ -83,16 +82,16 @@ namespace TimberWinR
             get { return _tails; }
         }    
 
-        private List<IISW3CLog> _iisw3clogs = new List<IISW3CLog>();
+        private List<IISW3CLogParameters> _iisw3clogs = new List<IISW3CLogParameters>();
 
-        public IEnumerable<IISW3CLog> IISW3C
+        public IEnumerable<IISW3CLogParameters> IISW3C
         {
             get { return _iisw3clogs; }
         }
 
-        private List<W3CLog> _w3clogs = new List<W3CLog>();
+        private List<W3CLogParameters> _w3clogs = new List<W3CLogParameters>();
 
-        public IEnumerable<W3CLog> W3C
+        public IEnumerable<W3CLogParameters> W3C
         {
             get { return _w3clogs; }
         }
@@ -290,13 +289,13 @@ namespace TimberWinR
         {
             _filters = new List<LogstashFilter>();
             _events = new List<WindowsEvent>();
-            _iisw3clogs = new List<IISW3CLog>();
-            _logs = new List<Log>();
-            _redisOutputs = new List<RedisOutput>();
-            _elasticsearchOutputs = new List<ElasticsearchOutput>();
-            _stdoutOutputs = new List<StdoutOutput>();
-            _tcps = new List<Tcp>();
-            _udps = new List<Udp>();
+            _iisw3clogs = new List<IISW3CLogParameters>();
+            _logs = new List<LogParameters>();
+            _redisOutputs = new List<RedisOutputParameters>();
+            _elasticsearchOutputs = new List<ElasticsearchOutputParameters>();
+            _stdoutOutputs = new List<StdoutOutputParameters>();
+            _tcps = new List<TcpParameters>();
+            _udps = new List<UdpParameters>();
         }
 
         public static Object GetPropValue(String name, Object obj)

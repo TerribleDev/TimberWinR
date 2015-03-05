@@ -30,7 +30,7 @@ namespace TimberWinR.UnitTests
 
             FakeRediServer fr = new FakeRediServer(cancelToken);
 
-            var redisParams = new RedisOutput();
+            var redisParams = new RedisOutputParameters();
             redisParams.BatchCount = 10;
             redisParams.MaxBatchCount = 40;
             redisParams.Interval = 100;
@@ -68,8 +68,8 @@ namespace TimberWinR.UnitTests
             System.Diagnostics.Debug.WriteLine(redisOutput.QueueDepth);
 
             JObject json = redisOutput.ToJson();
-            var mbc = json["redis"]["reachedMaxBatchCount"].Value<int>();
-            var sm = json["redis"]["sent_messages"].Value<int>();
+            var mbc = json["redis"]["reachedMaxBatchCountTimes"].Value<int>();
+            var sm = json["redis"]["sentMessageCount"].Value<int>();
             var errs = json["redis"]["errors"].Value<int>();
             var cbc = json["redis"]["currentBatchCount"].Value<int>();
             

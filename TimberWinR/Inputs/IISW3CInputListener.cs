@@ -16,12 +16,12 @@ namespace TimberWinR.Inputs
     public class IISW3CInputListener : InputListener
     {
         private readonly int _pollingIntervalInSeconds;
-        private readonly Parser.IISW3CLog _arguments;
+        private readonly Parser.IISW3CLogParameters _arguments;
         private long _receivedMessages;
         public bool Stop { get; set; }
         private IisW3CRowReader rowReader;      
 
-        public IISW3CInputListener(Parser.IISW3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
+        public IISW3CInputListener(Parser.IISW3CLogParameters arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
             : base(cancelToken, "Win32-IISLog")
         {          
             _arguments = arguments;

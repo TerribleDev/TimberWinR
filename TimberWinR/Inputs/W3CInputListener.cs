@@ -23,11 +23,11 @@ namespace TimberWinR.Inputs
     public class W3CInputListener : InputListener
     {
         private readonly int _pollingIntervalInSeconds;
-        private readonly TimberWinR.Parser.W3CLog _arguments;
+        private readonly TimberWinR.Parser.W3CLogParameters _arguments;
         private long _receivedMessages;
         public bool Stop { get; set; }
 
-        public W3CInputListener(TimberWinR.Parser.W3CLog arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
+        public W3CInputListener(TimberWinR.Parser.W3CLogParameters arguments, CancellationToken cancelToken, int pollingIntervalInSeconds = 5)
             : base(cancelToken, "Win32-W3CLog")
         {
             _arguments = arguments;

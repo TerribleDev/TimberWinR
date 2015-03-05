@@ -20,7 +20,8 @@ namespace TimberWinR.Outputs
 {
     internal class BatchCounter
     {
-        public int ReachedMaxBatchCount { get; set; }
+        // Total number of times reached max batch count (indicates we are under pressure)
+        public int ReachedMaxBatchCountTimes { get; set; }
 
         private readonly int[] _sampleQueueDepths;
         private int _sampleCountIndex;
@@ -44,7 +45,7 @@ namespace TimberWinR.Outputs
             _sampleQueueDepths = new int[QUEUE_SAMPLE_SIZE];
             _sampleCountIndex = 0;
             _totalSamples = 0;
-            ReachedMaxBatchCount = 0;
+            ReachedMaxBatchCountTimes = 0;
         }
         public void SampleQueueDepth(int queueDepth)
         {
@@ -85,7 +86,7 @@ namespace TimberWinR.Outputs
                 {
                     LogManager.GetCurrentClassLogger().Warn("Maximum Batch Count of {0} reached.", currentBatchCount);
                     _warnedReachedMax = true; // Only complain when it's reached (1 time, unless reset)
-                    ReachedMaxBatchCount++;
+                    ReachedMaxBatchCountTimes++;
                     currentBatchCount = _maxBatchCount;
                 }
             }
@@ -175,9 +176,9 @@ namespace TimberWinR.Outputs
                         new JProperty("host", string.Join(",", _redisHosts)),
                         new JProperty("errors", _errorCount),
                         new JProperty("lastErrorTimeUTC", _lastErrorTimeUTC),
-                        new JProperty("redis_depth", _redisDepth),
-                        new JProperty("sent_messages", _sentMessages),
-                        new JProperty("queued_messages", _jsonQueue.Count),
+                        new JProperty("redisQueueDepth", _redisDepth),
+                        new JProperty("sentMessageCount", _sentMessages),
+                        new JProperty("queuedMessageCount", _jsonQueue.Count),
                         new JProperty("port", _port),
                         new JProperty("maxQueueSize", _maxQueueSize),
                         new JProperty("overflowDiscardOldest", _queueOverflowDiscardOldest),
@@ -185,7 +186,7 @@ namespace TimberWinR.Outputs
                         new JProperty("threads", _numThreads),
                         new JProperty("batchcount", _batchCount),
                         new JProperty("currentBatchCount", _currentBatchCount),
-                        new JProperty("reachedMaxBatchCount",  _batchCounter.ReachedMaxBatchCount),
+                        new JProperty("reachedMaxBatchCountTimes",  _batchCounter.ReachedMaxBatchCountTimes),
                         new JProperty("maxBatchCount", _maxBatchCount),
                         new JProperty("averageQueueDepth", _batchCounter.AverageQueueDepth()),   
                         new JProperty("queueSamples", new JArray(_batchCounter.Samples())),
@@ -198,33 +199,33 @@ namespace TimberWinR.Outputs
             return json;
         }
 
-        public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutput ro, CancellationToken cancelToken)
+        public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutputParameters parameters, CancellationToken cancelToken)
             : base(cancelToken, "Redis")
         {              
             _redisDepth = 0;
-            _batchCount = ro.BatchCount;
-            _maxBatchCount = ro.MaxBatchCount;
+            _batchCount = parameters.BatchCount;
+            _maxBatchCount = parameters.MaxBatchCount;
             // Make sure maxBatchCount is larger than batchCount
             if (_maxBatchCount < _batchCount)
                 _maxBatchCount = _batchCount*10;
            
             _manager = manager;
             _redisHostIndex = 0;
-            _redisHosts = ro.Host;          
+            _redisHosts = parameters.Host;          
             _jsonQueue = new List<string>();
-            _port = ro.Port;
-            _timeout = ro.Timeout;
-            _logstashIndexName = ro.Index;
-            _interval = ro.Interval;
-            _numThreads = ro.NumThreads;
+            _port = parameters.Port;
+            _timeout = parameters.Timeout;
+            _logstashIndexName = parameters.Index;
+            _interval = parameters.Interval;
+            _numThreads = parameters.NumThreads;
             _errorCount = 0;
             _lastErrorTimeUTC = null;
-            _maxQueueSize = ro.MaxQueueSize;
-            _queueOverflowDiscardOldest = ro.QueueOverflowDiscardOldest;
+            _maxQueueSize = parameters.MaxQueueSize;
+            _queueOverflowDiscardOldest = parameters.QueueOverflowDiscardOldest;
             _batchCounter = new BatchCounter(_batchCount, _maxBatchCount);
             _currentBatchCount = _batchCount;
            
-            for (int i = 0; i < ro.NumThreads; i++)
+            for (int i = 0; i < parameters.NumThreads; i++)
             {
                 var redisThread = new Task(RedisSender, cancelToken);
                 redisThread.Start();
@@ -310,12 +311,13 @@ namespace TimberWinR.Outputs
                             lock (_locker)
                             {
                                 _batchCounter.SampleQueueDepth(_jsonQueue.Count);
-                                                                                                           
+                                // Re-compute current batch size
+                                _currentBatchCount = _batchCounter.UpdateCurrentBatchCount(_jsonQueue.Count, _currentBatchCount);
+                                                                              
                                 messages = _jsonQueue.Take(_currentBatchCount).ToArray();
                                 _jsonQueue.RemoveRange(0, messages.Length);
 
-                                // Re-compute current batch size
-                               _currentBatchCount = _batchCounter.UpdateCurrentBatchCount(_jsonQueue.Count, _currentBatchCount);
+                              
                             }
 
                             if (messages.Length > 0)

@@ -94,7 +94,7 @@ namespace TimberWinR.UnitTests
 
 
             Configuration c = Configuration.FromString(redisJson);
-            RedisOutput redis = c.RedisOutputs.First() as RedisOutput;
+            RedisOutputParameters redis = c.RedisOutputs.First() as RedisOutputParameters;
             Assert.IsTrue(redis.Host.Length >= 1);
         }
 
