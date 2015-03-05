@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace TimberWinR.UnitTests
 {
-    [TestFixture]
+  //  [TestFixture]
     public class TestDynamicBatchCount
     {
         [Test]
