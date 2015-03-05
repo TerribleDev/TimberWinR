@@ -27,10 +27,10 @@ namespace TimberWinR.Outputs
         private readonly int _numThreads;
         private long _sentMessages;
         private long _errorCount;
-        private Parser.ElasticsearchOutput eo;
+        private Parser.ElasticsearchOutputParameters eo;
         public bool Stop { get; set; }
 
-        public ElasticsearchOutput(TimberWinR.Manager manager, Parser.ElasticsearchOutput eo, CancellationToken cancelToken)
+        public ElasticsearchOutput(TimberWinR.Manager manager, Parser.ElasticsearchOutputParameters eo, CancellationToken cancelToken)
             : base(cancelToken, "Elasticsearch")
         {
             _sentMessages = 0;
@@ -60,8 +60,8 @@ namespace TimberWinR.Outputs
                     new JObject(
                         new JProperty("host", string.Join(",", _host)),
                         new JProperty("errors", _errorCount),
-                        new JProperty("sent_messages", _sentMessages),
-                        new JProperty("queued_messages", _jsonQueue.Count),
+                        new JProperty("sentMmessageCount", _sentMessages),
+                        new JProperty("queuedMessageCount", _jsonQueue.Count),
                         new JProperty("port", _port),
                         new JProperty("interval", _interval),
                         new JProperty("threads", _numThreads),
@@ -129,7 +129,7 @@ namespace TimberWinR.Outputs
                                                         if (response.StatusCode != HttpStatusCode.Created)
                                                         {
                                                             LogManager.GetCurrentClassLogger()
-                                                                .Error("Failed to send: {0}", response.ErrorMessage);
+                                                                .Error("Failed to send: {0}, code: {1}, descr: {2}, resp: {3}", response.ErrorMessage, response.StatusCode, response.StatusDescription, response.ResponseStatus);
                                                             Interlocked.Increment(ref _errorCount);
                                                         }
                                                         else
@@ -169,7 +169,7 @@ namespace TimberWinR.Outputs
                                 syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);  
                             }
                           }
-                        catch (OperationCanceledException oce)
+                        catch (OperationCanceledException)
                         {
                             break;
                         }

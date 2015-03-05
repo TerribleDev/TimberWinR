@@ -179,7 +179,7 @@ namespace TimberWinR
                     }
                 }
 
-                foreach (Parser.IISW3CLog iisw3cConfig in config.IISW3C)
+                foreach (Parser.IISW3CLogParameters iisw3cConfig in config.IISW3C)
                 {
                     var elistner = new IISW3CInputListener(iisw3cConfig, cancelToken);
                     Listeners.Add(elistner);
@@ -187,7 +187,7 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
-                foreach (Parser.W3CLog iisw3cConfig in config.W3C)
+                foreach (Parser.W3CLogParameters iisw3cConfig in config.W3C)
                 {
                     var elistner = new W3CInputListener(iisw3cConfig, cancelToken);
                     Listeners.Add(elistner);

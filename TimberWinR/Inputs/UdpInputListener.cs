@@ -13,8 +13,8 @@ namespace TimberWinR.Inputs
     public class UdpInputListener : InputListener
     {
         private readonly System.Net.Sockets.UdpClient _udpListener;
-        private IPEndPoint groupV4;
-        private IPEndPoint groupV6;
+        private readonly IPEndPoint groupV4;
+        private readonly IPEndPoint groupV6;
 
         private Thread _listenThreadV4;
         private Thread _listenThreadV6;
@@ -46,6 +46,9 @@ namespace TimberWinR.Inputs
             : base(cancelToken, "Win32-Udp")
         {
             _port = port;
+
+            groupV4 = new IPEndPoint(IPAddress.Any, 0);
+            groupV6 = new IPEndPoint(IPAddress.IPv6Any, 0);
 
             LogManager.GetCurrentClassLogger().Info("Udp Input on Port {0} Ready", _port);
 

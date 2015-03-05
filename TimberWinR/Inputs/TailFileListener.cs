@@ -296,7 +296,7 @@ namespace TimberWinR.Inputs
                             LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
                         _fnfmap[fn] = fn;
                     }
-                    catch (OperationCanceledException oce)
+                    catch (OperationCanceledException)
                     {
                         break;
                     }

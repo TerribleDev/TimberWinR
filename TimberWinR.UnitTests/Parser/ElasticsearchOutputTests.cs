@@ -10,12 +10,12 @@
 
     public class ElasticsearchOutputTests
     {
-        private ElasticsearchOutput parser;
+        private ElasticsearchOutputParameters parser;
 
         [SetUp]
         public void Setup()
         {
-            this.parser = new ElasticsearchOutput();
+            this.parser = new ElasticsearchOutputParameters();
         }
 
         [Test]

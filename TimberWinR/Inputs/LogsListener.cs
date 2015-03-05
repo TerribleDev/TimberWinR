@@ -28,7 +28,7 @@ namespace TimberWinR.Inputs
     public class LogsListener : InputListener
     {
         private int _pollingIntervalInSeconds;
-        private TimberWinR.Parser.Log _arguments;
+        private TimberWinR.Parser.LogParameters _arguments;
         private long _receivedMessages;
         private Dictionary<string, Int64> _logFileMaxRecords;
         private Dictionary<string, DateTime> _logFileCreationTimes;
@@ -39,7 +39,7 @@ namespace TimberWinR.Inputs
 
         public bool Stop { get; set; }
 
-        public LogsListener(TimberWinR.Parser.Log arguments, CancellationToken cancelToken)
+        public LogsListener(TimberWinR.Parser.LogParameters arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-FileLog")
         {
             Stop = false;
@@ -328,7 +328,7 @@ namespace TimberWinR.Inputs
 
                             _fnfmap[fn] = fn;
                         }
-                        catch (OperationCanceledException oce)
+                        catch (OperationCanceledException)
                         {
                             break;
                         }
@@ -345,7 +345,7 @@ namespace TimberWinR.Inputs
                                 if (!Stop)
                                     syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                             }
-                            catch (OperationCanceledException oce)
+                            catch (OperationCanceledException)
                             {                               
                             }
                             catch (Exception ex1)

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -52,7 +51,7 @@ namespace TimberWinR.UnitTests
                         if (!cancelTokenSource.Token.IsCancellationRequested)
                             syncHandle.Wait(TimeSpan.FromSeconds(10000), cancelTokenSource.Token);
                     }
-                    catch (OperationCanceledException oex)
+                    catch (OperationCanceledException)
                     {
                     }
                 }
@@ -102,7 +101,7 @@ namespace TimberWinR.UnitTests
                         if (!cancelTokenSource.Token.IsCancellationRequested)
                             syncHandle.Wait(TimeSpan.FromSeconds(10000), cancelTokenSource.Token);
                     }
-                    catch (OperationCanceledException oex)
+                    catch (OperationCanceledException)
                     {
                     }
                 }

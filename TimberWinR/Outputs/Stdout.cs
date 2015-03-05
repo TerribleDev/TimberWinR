@@ -17,7 +17,7 @@ namespace TimberWinR.Outputs
         private long _sentMessages;
         public bool Stop { get; set; }
 
-        public StdoutOutput(TimberWinR.Manager manager, Parser.StdoutOutput eo, CancellationToken cancelToken)
+        public StdoutOutput(TimberWinR.Manager manager, Parser.StdoutOutputParameters eo, CancellationToken cancelToken)
             : base(cancelToken, "Stdout")
         {
             _sentMessages = 0;
@@ -34,7 +34,7 @@ namespace TimberWinR.Outputs
             JObject json = new JObject(
                 new JProperty("stdout",
                     new JObject(
-                        new JProperty("sent_messages", _sentMessages))));
+                        new JProperty("sentMessageCount", _sentMessages))));
 
             return json;
         }
@@ -78,7 +78,7 @@ namespace TimberWinR.Outputs
                             if (!Stop)
                                 syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);
                         }
-                        catch (OperationCanceledException oce)
+                        catch (OperationCanceledException)
                         {
                             break;
                         }
