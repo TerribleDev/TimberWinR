@@ -46,7 +46,7 @@ namespace TimberWinR.Outputs
         public bool Stop { get; set; }
       
         /// <summary>
-        /// Get the next client from the list of hosts.
+        /// Get the bulk connection pool of hosts
         /// </summary>
         /// <returns></returns>
         private ElasticClient getClient()
@@ -156,8 +156,7 @@ namespace TimberWinR.Outputs
                                 var client = getClient();
 
                                 LogManager.GetCurrentClassLogger()
-                                    .Debug("Sending {0} Messages to {1}", messages.Count, client.Connection.ToString());
-                                
+                                    .Debug("Sending {0} Messages to {1}", messages.Count, string.Join(",", _hosts));
                                 // This loop will process all messages we've taken from the queue
                                 // that have the same index and type (an elasticsearch requirement)
                                 do
@@ -239,16 +238,17 @@ namespace TimberWinR.Outputs
             else // Success!
             {
                 lastFlushTime = DateTime.UtcNow;
-                LogManager.GetCurrentClassLogger().Info(response);
+                LogManager.GetCurrentClassLogger()
+                    .Info("Successfully sent {0} messages in a single bulk request", numMessages);
                 Interlocked.Add(ref _sentMessages, numMessages);                              
             }
 
-            // Remove them from the work list
+            // Remove them from the working list
             messages.RemoveRange(0, numMessages);
             return lastFlushTime;
         }
 
-        // Places messages back into the queue
+        // Places messages back into the queue (for a future attempt)
         private void interlockedInsert(List<JObject> messages)
         {
             lock (_locker)
