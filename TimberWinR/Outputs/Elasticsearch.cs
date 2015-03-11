@@ -163,7 +163,7 @@ namespace TimberWinR.Outputs
                                 {
                                     try
                                     {
-                                        // Grab all messages with same index and type 
+                                        // Grab all messages with same index and type (this is the whole point, group the same ones) 
                                         var bulkTypeName = this._parameters.GetTypeName(messages[0]);
                                         var bulkIndexName = this._parameters.GetIndexName(messages[0]);
 

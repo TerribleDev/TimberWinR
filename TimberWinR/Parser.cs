@@ -524,7 +524,7 @@ namespace TimberWinR.Parser
         public ElasticsearchOutputParameters()
         {
             FlushSize = 5000;
-            IdleFlushTimeInSeconds = 1;
+            IdleFlushTimeInSeconds = 10;
             Protocol = "http";
             Port = 9200;
             Index = "";
