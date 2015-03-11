@@ -12,7 +12,7 @@ The following parameters are allowed when configuring the Redis output.
 | *idle_flush_time*               | integer  | Maximum number of seconds elapsed before triggering a flush           |   | 10  |
 | *index*                         | [string]    | The index name to use                                       | index used/created | logstash-yyyy.dd.mm |
 | *interval*                      | integer  | Interval in milliseconds to sleep during batch sends        | Interval       | 5000 |
-| *max_queue_size*                | integer  | Maximum Elasticsearch queue depth       |  | 5000 |
+| *max_queue_size*                | integer  | Maximum Elasticsearch queue depth       |  | 50000 |
 | *port*                          | integer  | Elasticsearch port number                                   | This port must be open  | 9200  |
 | *queue_overflow_discard_oldest* | bool  | If true, discard oldest messages when max_queue_size reached otherwise discard newest |  | true |
 | *threads*                       | [string]    | Number of Threads                         | Number of worker threads processing messages | 1 |
