@@ -512,9 +512,19 @@ namespace TimberWinR.Parser
         public string Protocol { get; set; }
         [JsonProperty(PropertyName = "interval")]
         public int Interval { get; set; }
+        [JsonProperty(PropertyName = "flush_size")]
+        public int FlushSize { get; set; }
+        [JsonProperty(PropertyName = "idle_flush_time")]
+        public int IdleFlushTimeInSeconds { get; set; }
+        [JsonProperty(PropertyName = "max_queue_size")]
+        public int MaxQueueSize { get; set; }
+        [JsonProperty(PropertyName = "queue_overflow_discard_oldest")]
+        public bool QueueOverflowDiscardOldest { get; set; }
 
         public ElasticsearchOutputParameters()
         {
+            FlushSize = 5000;
+            IdleFlushTimeInSeconds = 10;
             Protocol = "http";
             Port = 9200;
             Index = "";
@@ -522,6 +532,8 @@ namespace TimberWinR.Parser
             Timeout = 10000;
             NumThreads = 1;
             Interval = 1000;
+            QueueOverflowDiscardOldest = true;
+            MaxQueueSize = 50000;
         }
 
         public string GetIndexName(JObject json)
