@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 using NLog;
-
+using TimberWinR.Codecs;
 using LogQuery = Interop.MSUtil.LogQueryClassClass;
 using TextLineInputFormat = Interop.MSUtil.COMTextLineInputContextClass;
 using LogRecordSet = Interop.MSUtil.ILogRecordset;
@@ -34,8 +34,8 @@ namespace TimberWinR.Inputs
         private Dictionary<string, DateTime> _logFileCreationTimes;
         private Dictionary<string, DateTime> _logFileSampleTimes;
         private Dictionary<string, long> _logFileSizes;
-        private Codec _codec;
-        private List<string> _multiline { get; set; }
+        private CodecArguments _codecArguments;       
+        private ICodec _codec;   
 
         public bool Stop { get; set; }
 
@@ -44,7 +44,12 @@ namespace TimberWinR.Inputs
         {
             Stop = false;
 
-            _codec = arguments.Codec;
+            _codecArguments = arguments.CodecArguments;
+
+            _codecArguments = arguments.CodecArguments;
+            if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
+                _codec = new Multiline(_codecArguments);
+
             _logFileMaxRecords = new Dictionary<string, Int64>();
             _logFileCreationTimes = new Dictionary<string, DateTime>();
             _logFileSampleTimes = new Dictionary<string, DateTime>();
@@ -100,94 +105,22 @@ namespace TimberWinR.Inputs
                         )));
 
 
-            if (_codec != null)
+            if (_codecArguments != null)
             {
                 var cp = new JProperty("codec",
                     new JArray(
                         new JObject(
-                            new JProperty("type", _codec.Type.ToString()),
-                            new JProperty("what", _codec.What.ToString()),
-                            new JProperty("negate", _codec.Negate),
-                            new JProperty("multilineTag", _codec.MultilineTag),
-                            new JProperty("pattern", _codec.Pattern))));
+                            new JProperty("type", _codecArguments.Type.ToString()),
+                            new JProperty("what", _codecArguments.What.ToString()),
+                            new JProperty("negate", _codecArguments.Negate),
+                            new JProperty("multilineTag", _codecArguments.MultilineTag),
+                            new JProperty("pattern", _codecArguments.Pattern))));
                 json.Add(cp);
             }
 
 
             return json;
-        }
-
-        // return true to cancel codec
-        private void applyMultilineCodec(string msg)
-        {
-            if (_codec.Re == null)
-                _codec.Re = new Regex(_codec.Pattern);
-
-            Match match = _codec.Re.Match(msg);
-
-            bool isMatch = (match.Success && !_codec.Negate) || (!match.Success && _codec.Negate);
-
-            switch (_codec.What)
-            {
-                case Codec.WhatType.previous:
-                    if (isMatch)
-                    {
-                        if (_multiline == null)
-                            _multiline = new List<string>();
-
-                        _multiline.Add(msg);
-                    }
-                    else // No Match
-                    {
-                        if (_multiline != null)
-                        {
-                            string single = string.Join("\n", _multiline.ToArray());
-                            _multiline = null;
-                            JObject jo = new JObject();
-                            jo["message"] = single;
-                            jo.Add("tags", new JArray(_codec.MultilineTag));
-                            AddDefaultFields(jo);
-                            ProcessJson(jo);
-                            _receivedMessages++;
-                        }
-                        _multiline = new List<string>();
-                        _multiline.Add(msg);
-                    }
-                    break;
-                case Codec.WhatType.next:
-                    if (isMatch)
-                    {
-                        if (_multiline == null)
-                            _multiline = new List<string>();
-                        _multiline.Add(msg);
-                    }
-                    else // No match
-                    {
-                        if (_multiline != null)
-                        {
-                            _multiline.Add(msg);
-                            string single = string.Join("\n", _multiline.ToArray());
-                            _multiline = null;
-                            JObject jo = new JObject();
-                            jo["message"] = single;
-                            jo.Add("tags", new JArray(_codec.MultilineTag));
-                            AddDefaultFields(jo);
-                            ProcessJson(jo);
-                            _receivedMessages++;
-                        }
-                        else
-                        {
-                            JObject jo = new JObject();
-                            jo["message"] = msg;
-                            AddDefaultFields(jo);
-                            ProcessJson(jo);
-                            _receivedMessages++;
-                        }
-                    }
-                    break;
-            }
-        }
-
+        }   
 
         private void FileWatcher(string fileToWatch)
         {
@@ -298,8 +231,12 @@ namespace TimberWinR.Inputs
                                     string msg = json["Text"].ToString();
                                     if (!string.IsNullOrEmpty(msg))
                                     {
-                                        if (_codec != null && _codec.Type == Codec.CodecType.multiline)
-                                            applyMultilineCodec(msg);
+                                        if (_codecArguments != null &&
+                                            _codecArguments.Type == CodecArguments.CodecType.multiline)
+                                        {
+                                            _codec.Apply(msg, this);
+                                            _receivedMessages++;
+                                        }
                                         else
                                         {
                                             ProcessJson(json);

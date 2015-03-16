@@ -82,6 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Codecs\Multiline.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationErrors.cs" />
     <Compile Include="Diagnostics\Diagnostics.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Filters\GeoIPFilter.cs" />
     <Compile Include="Filters\JsonFilter.cs" />
     <Compile Include="Filters\MutateFilter.cs" />
+    <Compile Include="ICodec.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
     <Compile Include="Inputs\IISW3CRowReader.cs" />
     <Compile Include="Inputs\LogsFileDatabase.cs" />
