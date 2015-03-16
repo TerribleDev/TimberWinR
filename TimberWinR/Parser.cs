@@ -255,7 +255,7 @@ namespace TimberWinR.Parser
     public class Stdin : IValidateSchema
     {
         [JsonProperty(PropertyName = "codec")]
-        public Codec Codec { get; set; }
+        public CodecArguments CodecArguments { get; set; }
 
         public void Validate()
         {
@@ -263,7 +263,7 @@ namespace TimberWinR.Parser
         }
     }
 
-    public class Codec
+    public class CodecArguments
     {
         public enum CodecType
         {
@@ -290,7 +290,7 @@ namespace TimberWinR.Parser
 
         public Regex Re { get; set; }
 
-        public Codec()
+        public CodecArguments()
         {
             Negate = false;
             MultilineTag = "multiline";
@@ -310,7 +310,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "logSource")]
         public string LogSource { get; set; }
         [JsonProperty(PropertyName = "codec")]
-        public Codec Codec { get; set; }
+        public CodecArguments CodecArguments { get; set; }
 
         public TailFile()
         {
@@ -344,7 +344,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "logSource")]
         public string LogSource { get; set; }
         [JsonProperty(PropertyName = "codec")]
-        public Codec Codec { get; set; }
+        public CodecArguments CodecArguments { get; set; }
 
         public LogParameters()
         {

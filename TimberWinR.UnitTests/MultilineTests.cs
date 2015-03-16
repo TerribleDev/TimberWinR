@@ -17,7 +17,7 @@ namespace TimberWinR.UnitTests
     [TestFixture]
     public class MultilineTests
     {
-     //   [Test(Description = "Test using next")]
+       // [Test(Description = "Test using next")]
         public void TestMultiline1()
         {
             using (StreamReader sr = new StreamReader("Multiline1.txt"))
@@ -28,10 +28,10 @@ namespace TimberWinR.UnitTests
 
                 Stdin sin = new Stdin();
 
-                sin.Codec = new Codec();
-                sin.Codec.Pattern = "\\\\$";
-                sin.Codec.What = Codec.WhatType.next;
-                sin.Codec.Type = Codec.CodecType.multiline;
+                sin.CodecArguments = new CodecArguments();
+                sin.CodecArguments.Pattern = "\\\\$";
+                sin.CodecArguments.What = CodecArguments.WhatType.next;
+                sin.CodecArguments.Type = CodecArguments.CodecType.multiline;
 
                 var cancelTokenSource = new CancellationTokenSource();
 
@@ -66,7 +66,7 @@ namespace TimberWinR.UnitTests
             }
         }
 
-    //    [Test(Description = "Test using previous")]
+     //   [Test(Description = "Test using previous")]
         public void TestMultiline2()
         {
             using (StreamReader sr = new StreamReader("Multiline2.txt"))
@@ -77,11 +77,11 @@ namespace TimberWinR.UnitTests
 
                 Stdin sin = new Stdin();
 
-                sin.Codec = new Codec();
-                sin.Codec.Pattern = "^(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2},\\d{3})(.*)$";              
-                sin.Codec.What = Codec.WhatType.previous;
-                sin.Codec.Type = Codec.CodecType.multiline;
-                sin.Codec.Negate = true;
+                sin.CodecArguments = new CodecArguments();
+                sin.CodecArguments.Pattern = "^(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2},\\d{3})(.*)$";              
+                sin.CodecArguments.What = CodecArguments.WhatType.previous;
+                sin.CodecArguments.Type = CodecArguments.CodecType.multiline;
+                sin.CodecArguments.Negate = true;
 
                 var cancelTokenSource = new CancellationTokenSource();
 
