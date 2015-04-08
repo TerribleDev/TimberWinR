@@ -10,7 +10,8 @@ namespace TimberWinR.Inputs
 {
     public class UdpInputListener : InputListener
     {
-        private readonly UdpClient _udpListener;
+        private readonly UdpClient _udpListenerV4;
+        private readonly UdpClient _udpListenerV6;
 
         private readonly Thread _listenThreadV4;
         private readonly Thread _listenThreadV6;
@@ -43,28 +44,35 @@ namespace TimberWinR.Inputs
         {
             _port = port;
 
-            var groupV4 = new IPEndPoint(IPAddress.Any, 0);
-            var groupV6 = new IPEndPoint(IPAddress.IPv6Any, 0);
+            var groupV4 = new IPEndPoint(IPAddress.Any, port);
+            var groupV6 = new IPEndPoint(IPAddress.IPv6Any, port);
 
             LogManager.GetCurrentClassLogger().Info("Udp Input on Port {0} Ready", _port);
 
             _receivedMessages = 0;
 
-            _udpListener = new UdpClient(port);
+            _udpListenerV4 = new UdpClient(groupV4);
+            _udpListenerV6 = new UdpClient(groupV6);
 
             _listenThreadV4 = new Thread(StartListener);
-            _listenThreadV4.Start(new ListenProfile { EndPoint = groupV4, Client = _udpListener });
+            _listenThreadV4.Start(new ListenProfile { EndPoint = groupV4, Client = _udpListenerV4 });
 
             _listenThreadV6 = new Thread(StartListener);
-            _listenThreadV6.Start(new ListenProfile { EndPoint = groupV6, Client = _udpListener });
+            _listenThreadV6.Start(new ListenProfile { EndPoint = groupV6, Client = _udpListenerV6 });
         }
 
         public override void Shutdown()
         {
             LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
-            _udpListener.Close();
-            _listenThreadV4.Join(TimeSpan.FromSeconds(1));
-            _listenThreadV6.Join(TimeSpan.FromSeconds(1));
+
+            // close UDP listeners, which will end the listener threads
+            _udpListenerV4.Close();
+            _udpListenerV6.Close();
+
+            // wait for completion of the threads
+            _listenThreadV4.Join();
+            _listenThreadV6.Join();
+
             Finished();
             base.Shutdown();
         }
@@ -72,7 +80,7 @@ namespace TimberWinR.Inputs
         private void StartListener(object useProfile)
         {
             var profile = (ListenProfile)useProfile;
-            string lastMessage = "";
+            string lastMessage = string.Empty;
             try
             {
                 while (!CancelToken.IsCancellationRequested)
@@ -93,7 +101,7 @@ namespace TimberWinR.Inputs
                         _parsedErrors++;
                     }
                 }
-                _udpListener.Close();
+                profile.Client.Close();
             }
             catch (Exception ex)
             {
@@ -102,8 +110,6 @@ namespace TimberWinR.Inputs
                     LogManager.GetCurrentClassLogger().Error(ex);
                 }
             }
-
-            Finished();
         }
     }
 }
