@@ -69,7 +69,6 @@ A single Json filter using the single tag (this is only provided as a convienien
     }
 ]
 ```
-
 Multiple Json filters must use the jsonFilters and array syntax, also mutateFilters, grokFilters, dateFilters, geoipFilters.
 ```json
 "Filters": [
