@@ -113,6 +113,10 @@ namespace TimberWinR.Inputs
                             }
                             catch (Exception ex)
                             {
+                                var jex1 = LogErrors.LogException("Bad Json", ex);
+                                if (jex1 != null)
+                                    ProcessJson(jex1);
+
                                 LogManager.GetCurrentClassLogger().Warn(ex);
                             }
 

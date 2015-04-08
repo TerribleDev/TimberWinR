@@ -111,6 +111,7 @@
     <Compile Include="Inputs\TcpInputListener.cs" />
     <Compile Include="Inputs\LogsListener.cs" />
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
+    <Compile Include="LogErrors.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="Outputs\Elasticsearch.cs" />
     <Compile Include="Outputs\OutputSender.cs" />

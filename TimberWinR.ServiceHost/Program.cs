@@ -7,7 +7,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.Win32;
+
 using TimberWinR.Outputs;
 using TimberWinR.ServiceHost;
 using TimberWinR.Inputs;
@@ -26,6 +28,9 @@ namespace TimberWinR.ServiceHost
         
         private static void Main(string[] args)
         {
+
+           
+
             Arguments arguments = new Arguments();
            
             HostFactory.Run(hostConfigurator =>

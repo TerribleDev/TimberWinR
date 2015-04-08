@@ -15,6 +15,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using ServiceStack.Text.Jsv;
+using TimberWinR.Parser;
 
 
 namespace TimberWinR.TestGenerator
@@ -54,7 +55,6 @@ namespace TimberWinR.TestGenerator
 
             ramCounter.CategoryName = "Memory";
             ramCounter.CounterName = "% Committed Bytes In Use";
-
            
             Options = new CommandLineOptions();
 

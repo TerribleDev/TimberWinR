@@ -96,9 +96,14 @@ namespace TimberWinR.Inputs
                         break;
                     }
                     catch (Exception ex)
-                    {
+                    {                      
+                        var jex1 = LogErrors.LogException(string.Format("Invalid JSON: {0}", lastMessage), ex);
+                        if (jex1 != null)
+                            ProcessJson(jex1);
+      
                         LogManager.GetCurrentClassLogger().Warn("Bad JSON: {0}", lastMessage);
                         LogManager.GetCurrentClassLogger().Warn(ex);
+
                         Interlocked.Increment(ref _parsedErrors);
                     }
                 }
