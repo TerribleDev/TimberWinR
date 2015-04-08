@@ -94,13 +94,13 @@ namespace TimberWinR.Inputs
                         lastMessage = data;
                         JObject json = JObject.Parse(data);
                         ProcessJson(json);
-                        _receivedMessages++;
+                        Interlocked.Increment(ref _receivedMessages);
                     }
                     catch (Exception ex)
                     {
                         LogManager.GetCurrentClassLogger().Warn("Bad JSON: {0}", lastMessage);
                         LogManager.GetCurrentClassLogger().Warn(ex);
-                        _parsedErrors++;
+                        Interlocked.Increment(ref _parsedErrors);
                     }
                 }
                 profile.Client.Close();
