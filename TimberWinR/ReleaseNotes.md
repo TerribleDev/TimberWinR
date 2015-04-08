@@ -2,7 +2,16 @@
 ==================================
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
-Version History
+Version / Date
+
+### 1.4.0.0 - 04/03/2015
+1. A re-factoring of Logs and TailLogs to be more efficient and detect log rolling correctly,
+   this requires http://support.microsoft.com/en-us/kb/172190 which will be detected and
+   set by TimberWinR, however, requires a reboot.
+2. Fixed issue [#38](https://github.com/Cimpress-MCP/TimberWinR/issues/38) diagnostic output not showing drop flag for Grok filter.
+3. Created TimberWinR.TestGenerator for complete testing of TimberWinR
+4. Fixed ipv4/ipv6 thread-safe issue with UdpInputListener which might lead to corrupted input data.
+
 ### 1.3.19.1 - 03/03/2015
 1. Added new Redis parameter _max\_batch\_count_ which increases the _batch\_count_ dynamically over time 
    to handle input flooding.   Default is _batch\_count_ * 10 

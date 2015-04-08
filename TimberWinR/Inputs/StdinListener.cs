@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -15,10 +16,15 @@ namespace TimberWinR.Inputs
 {
     public class StdinListener : InputListener
     {
+        [DllImport("User32.Dll", EntryPoint = "PostMessageA")]
+        private static extern bool PostMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
+  
         private Thread _listenThread;
         private CodecArguments _codecArguments;
-        private ICodec _codec;     
-       
+        private ICodec _codec;
+        const int VK_RETURN = 0x0D;
+        const int WM_KEYDOWN = 0x100;
+
         public StdinListener(TimberWinR.Parser.Stdin arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-Console")
         {
@@ -54,7 +60,14 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
-            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);    
+            // This must come from another thread.
+            ThreadPool.QueueUserWorkItem((o) =>
+            {
+                Thread.Sleep(100);
+                var hWnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                PostMessage(hWnd, WM_KEYDOWN, VK_RETURN, 0);
+            });
             base.Shutdown();
         }
 

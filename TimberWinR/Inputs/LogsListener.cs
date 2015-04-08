@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Configuration;
 using System.Runtime.InteropServices;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using Interop.MSUtil;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -27,42 +29,45 @@ namespace TimberWinR.Inputs
     /// </summary>
     public class LogsListener : InputListener
     {
+        private object _locker = new object();
         private int _pollingIntervalInSeconds;
         private TimberWinR.Parser.LogParameters _arguments;
         private long _receivedMessages;
-        private Dictionary<string, Int64> _logFileMaxRecords;
-        private Dictionary<string, DateTime> _logFileCreationTimes;
-        private Dictionary<string, DateTime> _logFileSampleTimes;
-        private Dictionary<string, long> _logFileSizes;
-        private CodecArguments _codecArguments;       
-        private ICodec _codec;   
-
+        private CodecArguments _codecArguments;
+        private ICodec _codec;
+      
         public bool Stop { get; set; }
+        public bool IsWildcardFilePattern { get; set; }
+
 
         public LogsListener(TimberWinR.Parser.LogParameters arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-FileLog")
         {
             Stop = false;
+        
+            EnsureRollingCaught();
 
-            _codecArguments = arguments.CodecArguments;
+             _codecArguments = arguments.CodecArguments;
 
             _codecArguments = arguments.CodecArguments;
             if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
                 _codec = new Multiline(_codecArguments);
 
-            _logFileMaxRecords = new Dictionary<string, Int64>();
-            _logFileCreationTimes = new Dictionary<string, DateTime>();
-            _logFileSampleTimes = new Dictionary<string, DateTime>();
-            _logFileSizes = new Dictionary<string, long>();
-
             _receivedMessages = 0;
             _arguments = arguments;
             _pollingIntervalInSeconds = arguments.Interval;
 
+            IsWildcardFilePattern = arguments.Location.Contains('*');
+
             foreach (string srcFile in _arguments.Location.Split(','))
             {
                 string file = srcFile.Trim();
-                Task.Factory.StartNew(() => FileWatcher(file));
+                string dir = Path.GetDirectoryName(file);
+                if (string.IsNullOrEmpty(dir))
+                    dir = Environment.CurrentDirectory;
+                string fileSpec = Path.Combine(dir, file);
+
+                Task.Factory.StartNew(() => FileWatcher(fileSpec));
             }
         }
 
@@ -73,9 +78,9 @@ namespace TimberWinR.Inputs
             base.Shutdown();
         }
 
+      
         public override JObject ToJson()
         {
-
             JObject json = new JObject(
                 new JProperty("log",
                     new JObject(
@@ -86,21 +91,11 @@ namespace TimberWinR.Inputs
                         new JProperty("codepage", _arguments.CodePage),
                         new JProperty("splitLongLines", _arguments.SplitLongLines),
                         new JProperty("recurse", _arguments.Recurse),
-
+                        new JProperty("filedb",
+                            new JArray(from f in Files.ToList()
+                                       select JObject.FromObject(LogsFileDatabase.LookupLogFile(f)))),
                         new JProperty("files",
-                            new JArray(from f in _logFileMaxRecords.Keys
-                                       select new JValue(f))),
-                        new JProperty("fileSampleTimes",
-                            new JArray(from f in _logFileSampleTimes.Values
-                                       select new JValue(f))),
-                        new JProperty("fileSizes",
-                            new JArray(from f in _logFileSizes.Values
-                                       select new JValue(f))),
-                        new JProperty("fileIndices",
-                            new JArray(from f in _logFileMaxRecords.Values
-                                       select new JValue(f))),
-                        new JProperty("fileCreationDates",
-                            new JArray(from f in _logFileCreationTimes.Values
+                            new JArray(from f in Files.ToList()
                                        select new JValue(f)))
                         )));
 
@@ -120,7 +115,7 @@ namespace TimberWinR.Inputs
 
 
             return json;
-        }   
+        }
 
         private void FileWatcher(string fileToWatch)
         {
@@ -149,46 +144,34 @@ namespace TimberWinR.Inputs
                             {
                                 var record = rsfiles.getRecord();
                                 string logName = record.getValue("LogFilename") as string;
-                                FileInfo fi = new FileInfo(logName);
+                                FileInfo fi = new FileInfo(logName);                             
 
-                                if (!fi.Exists)
-                                {
-                                    _logFileCreationTimes.Remove(logName);
-                                    _logFileMaxRecords.Remove(logName);
-                                    _logFileSizes.Remove(logName);
-                                }
-
-                                _logFileSampleTimes[logName] = DateTime.UtcNow;
+                                var dbe = LogsFileDatabase.LookupLogFile(logName);
+                    
+                                SaveVisitedFileName(dbe.FileName);
 
                                 DateTime creationTime = fi.CreationTimeUtc;
-                                bool logHasRolled = (_logFileCreationTimes.ContainsKey(logName) &&
-                                                     creationTime > _logFileCreationTimes[logName]) ||
-                                                    (_logFileSizes.ContainsKey(logName) &&
-                                                     fi.Length < _logFileSizes[logName]);
+                                bool logHasRolled = dbe.NewFile || (creationTime != dbe.CreationTimeUtc || fi.Length < dbe.LastPosition);
 
-
-                                if (!_logFileMaxRecords.ContainsKey(logName) || logHasRolled)
+                                if (logHasRolled)
                                 {
-                                    _logFileCreationTimes[logName] = creationTime;
-                                    _logFileSizes[logName] = fi.Length;
-                                    var qcount = string.Format("SELECT max(Index) as MaxRecordNumber FROM {0}", logName);
-                                    var rcount = oLogQuery.Execute(qcount, iFmt);
-                                    var qr = rcount.getRecord();
-                                    var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
-                                    if (logHasRolled)
-                                    {
-                                        LogManager.GetCurrentClassLogger().Info("Log {0} has rolled", logName);
-                                        lrn = 0;
-                                    }
-                                    _logFileMaxRecords[logName] = lrn;
+                                    LogManager.GetCurrentClassLogger().Info("Log {0} has rolled", logName);
+                                    LogsFileDatabase.Roll(dbe);
                                 }
 
-                                _logFileSizes[logName] = fi.Length;
+                                // Log has rolled or this is a new file, or we haven't processed yet.
+                                bool processWholeFile = logHasRolled || !dbe.ProcessedFile;
+
+                                if (processWholeFile)
+                                    LogsFileDatabase.Update(dbe, true, 0);
+
                             }
                             rsfiles.close();
-                            foreach (string fileName in _logFileMaxRecords.Keys.ToList())
+                            foreach (string fileName in Files.ToList())
                             {
-                                var lastRecordNumber = _logFileMaxRecords[fileName];
+                                var dbe = LogsFileDatabase.LookupLogFile(fileName);
+
+                                var lastRecordNumber = dbe.LastPosition;
                                 var query = string.Format("SELECT * FROM {0} where Index > {1}", fileName,
                                     lastRecordNumber);
 
@@ -231,21 +214,22 @@ namespace TimberWinR.Inputs
                                     string msg = json["Text"].ToString();
                                     if (!string.IsNullOrEmpty(msg))
                                     {
-                                        if (_codecArguments != null &&
-                                            _codecArguments.Type == CodecArguments.CodecType.multiline)
+                                        if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
                                         {
                                             _codec.Apply(msg, this);
                                             _receivedMessages++;
+                                            dbe.IncrementLineCount();
                                         }
                                         else
                                         {
                                             ProcessJson(json);
-                                            _receivedMessages++;
+                                            dbe.IncrementLineCount();
+                                             _receivedMessages++;
                                         }
                                     }
 
                                     var lrn = (Int64)record.getValueEx("Index");
-                                    _logFileMaxRecords[fileName] = lrn;
+                                    LogsFileDatabase.Update(dbe, true, lrn);
                                     GC.Collect();
                                 }
 
@@ -254,16 +238,18 @@ namespace TimberWinR.Inputs
                                 rs.close();
                                 rs = null;
                                 GC.Collect();
+
                             }
                         }
                         catch (FileNotFoundException fnfex)
                         {
                             string fn = fnfex.FileName;
 
-                            if (!_fnfmap.ContainsKey(fn))
+                            if (!string.IsNullOrEmpty(fn) && !_fnfmap.ContainsKey(fn))
+                            {
                                 LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
-
-                            _fnfmap[fn] = fn;
+                                _fnfmap[fn] = fn;
+                            }
                         }
                         catch (OperationCanceledException)
                         {
@@ -283,7 +269,7 @@ namespace TimberWinR.Inputs
                                     syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                             }
                             catch (OperationCanceledException)
-                            {                               
+                            {
                             }
                             catch (Exception ex1)
                             {

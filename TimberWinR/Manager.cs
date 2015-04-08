@@ -28,6 +28,8 @@ namespace TimberWinR
         public List<InputListener> Listeners { get; set; }
         public bool LiveMonitor { get; set; }
 
+        public event Action<Configuration> OnConfigurationProcessed;
+
         public DateTime StartedOn { get; set; }
         public string JsonConfig { get; set; }
         public string LogfileDir { get; set; }
@@ -67,7 +69,7 @@ namespace TimberWinR
             LogsFileDatabase.Manager = this;                   
         }
 
-        public Manager(string jsonConfigFile, string logLevel, string logfileDir, bool liveMonitor, CancellationToken cancelToken)
+        public Manager(string jsonConfigFile, string logLevel, string logfileDir, bool liveMonitor, CancellationToken cancelToken, bool processConfiguration = true)
         {
             LogsFileDatabase.Manager = this;           
   
@@ -106,12 +108,14 @@ namespace TimberWinR
 
             LogManager.GlobalThreshold = LogLevel.FromString(logLevel);
 
-            LogManager.GetCurrentClassLogger()
-                .Info("TimberWinR Version {0}", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString());
+            //LogManager.GetCurrentClassLogger()
+            //    .Info("TimberWinR Version {0}", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString());
 
+            LogManager.GetCurrentClassLogger()
+                .Info("TimberWinR Version {0}", Assembly.GetEntryAssembly().GetName().Version.ToString());
 
             LogManager.GetCurrentClassLogger()
-                .Info("Database Directory: {0}", LogsFileDatabase.Instance.DatabaseFileName);
+                .Info("Database Filename: {0}", LogsFileDatabase.Instance.DatabaseFileName);
 
             try
             {
@@ -146,7 +150,16 @@ namespace TimberWinR
             LogManager.GetCurrentClassLogger().Info("Log Directory {0}", logfileDir);
             LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);
 
-            ProcessConfiguration(cancelToken, Config);
+            if (processConfiguration)
+            {
+                ProcessConfiguration(cancelToken, Config);
+                Start(cancelToken);
+            }
+        }
+
+        public void Start(CancellationToken cancelToken)
+        {
+            ProcessConfiguration(cancelToken, Config);          
         }
 
         public void ProcessConfiguration(CancellationToken cancelToken, Configuration config)
@@ -154,6 +167,9 @@ namespace TimberWinR
 // Read the Configuration file
             if (config != null)
             {
+                if (OnConfigurationProcessed != null)
+                    OnConfigurationProcessed(config);
+  
                 if (config.RedisOutputs != null)
                 {
                     foreach (var ro in config.RedisOutputs)
@@ -256,7 +272,8 @@ namespace TimberWinR
                         new JProperty("TimberWinR",
                             new JObject(
                                 new JProperty("version",
-                                    GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
+                                    Assembly.GetEntryAssembly().GetName().Version.ToString()),
+                                    //GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
                                 new JProperty("host", computerName),
                                 new JProperty("output", output.Name),
                                 new JProperty("initialized", DateTime.UtcNow)
@@ -264,7 +281,7 @@ namespace TimberWinR
                     json.Add(new JProperty("type", "Win32-TimberWinR"));
                     json.Add(new JProperty("host", computerName));
                     output.Startup(json);
-                }
+                }              
             }
         }
 

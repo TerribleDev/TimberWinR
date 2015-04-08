@@ -52,7 +52,7 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
-            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("{0}: Shutting Down {1}", Thread.CurrentThread.ManagedThreadId, InputType);
 
             this._tcpListenerV4.Stop();
             this._tcpListenerV6.Stop();

@@ -297,7 +297,7 @@ namespace TimberWinR.Parser
         }
     }
 
-    public class TailFile : IValidateSchema
+    public class TailFileArguments : IValidateSchema
     {
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }       
@@ -312,7 +312,7 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "codec")]
         public CodecArguments CodecArguments { get; set; }
 
-        public TailFile()
+        public TailFileArguments()
         {
             Fields = new List<Field>();
             Fields.Add(new Field("LogFilename", "string"));
@@ -605,7 +605,7 @@ namespace TimberWinR.Parser
             Index = "logstash";
             Host = new string[] { "localhost" };
             Timeout = 10000;
-            BatchCount = 10;
+            BatchCount = 50;
             MaxBatchCount = BatchCount*10;
             NumThreads = 1;
             Interval = 5000;
@@ -646,7 +646,7 @@ namespace TimberWinR.Parser
         public LogParameters[] Logs { get; set; }
 
         [JsonProperty("TailFiles")]
-        public TailFile[] TailFiles { get; set; }
+        public TailFileArguments[] TailFilesArguments { get; set; }
 
         [JsonProperty("Tcp")]
         public TcpParameters[] Tcps { get; set; }

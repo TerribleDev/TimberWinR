@@ -35,6 +35,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TimberWinR.Wix", "TimberWix
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimberWinR.ExtractID", "TimberWinR.ExtractID\TimberWinR.ExtractID.csproj", "{99096939-E9DD-4499-883D-4726745A5843}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimberWinR.TestGenerator", "TimberWinR.TestGenerator\TimberWinR.TestGenerator.csproj", "{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,16 @@ Global
 		{99096939-E9DD-4499-883D-4726745A5843}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{99096939-E9DD-4499-883D-4726745A5843}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{99096939-E9DD-4499-883D-4726745A5843}.Release|x86.ActiveCfg = Release|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F3960D6E-1EA0-4F4E-8F08-82FC185A0D29}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
