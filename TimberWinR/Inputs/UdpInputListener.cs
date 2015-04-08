@@ -55,9 +55,7 @@ namespace TimberWinR.Inputs
             _udpListenerV6.Close();
 
             // wait for completion of the threads         
-            _listenThreadV6.Join();
-
-            Finished();
+            _listenThreadV6.Join();          
 
             base.Shutdown();
         }
