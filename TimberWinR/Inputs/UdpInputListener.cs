@@ -38,8 +38,7 @@ namespace TimberWinR.Inputs
         {
             _port = port;
      
-            LogManager.GetCurrentClassLogger().Info("Udp Input on Port {0} Ready", _port);
-
+ 
             _receivedMessages = 0;
 
             _listenThreadV6 = new Thread(StartListener);
@@ -74,7 +73,9 @@ namespace TimberWinR.Inputs
             dualModeSocket.Bind(groupV6);
 
             _udpListenerV6 = new UdpClient();
-            _udpListenerV6.Client = dualModeSocket;           
+            _udpListenerV6.Client = dualModeSocket;
+
+            LogManager.GetCurrentClassLogger().Info("Udp Input on Port {0} Ready", groupV6);
 
             string lastMessage = "";
             try

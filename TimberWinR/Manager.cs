@@ -152,8 +152,7 @@ namespace TimberWinR
 
             if (processConfiguration)
             {
-                ProcessConfiguration(cancelToken, Config);
-                Start(cancelToken);
+                ProcessConfiguration(cancelToken, Config);               
             }
         }
 
