@@ -55,9 +55,11 @@ namespace TimberWinR.Inputs
             _udpListenerV6 = new UdpClient(groupV6);
 
             _listenThreadV4 = new Thread(StartListener);
+            _listenThreadV4.Name = "UdpInputListener-v4";
             _listenThreadV4.Start(new ListenProfile { EndPoint = groupV4, Client = _udpListenerV4 });
 
             _listenThreadV6 = new Thread(StartListener);
+            _listenThreadV6.Name = "UdpInputListener-v6";
             _listenThreadV6.Start(new ListenProfile { EndPoint = groupV6, Client = _udpListenerV6 });
         }
 
