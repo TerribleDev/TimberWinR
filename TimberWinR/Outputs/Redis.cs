@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using ctstone.Redis;
+using CSRedis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
@@ -150,7 +150,8 @@ namespace TimberWinR.Outputs
             {
                 try
                 {
-                    RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port, _timeout);
+                    RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port);
+                    client.SendTimeout = _timeout;
                     return client;
                 }
                 catch (Exception)
