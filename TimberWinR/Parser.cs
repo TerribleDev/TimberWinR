@@ -605,7 +605,7 @@ namespace TimberWinR.Parser
             Index = "logstash";
             Host = new string[] { "localhost" };
             Timeout = 10000;
-            BatchCount = 50;
+            BatchCount = 200;
             MaxBatchCount = BatchCount*10;
             NumThreads = 1;
             Interval = 5000;
