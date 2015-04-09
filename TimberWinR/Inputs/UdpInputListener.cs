@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
@@ -11,24 +12,14 @@ using NLog;
 namespace TimberWinR.Inputs
 {
     public class UdpInputListener : InputListener
-    {
-        private readonly System.Net.Sockets.UdpClient _udpListener;
-        private readonly IPEndPoint groupV4;
-        private readonly IPEndPoint groupV6;
-
-        private Thread _listenThreadV4;
-        private Thread _listenThreadV6;
+    {      
+        private UdpClient _udpListenerV6;      
+        private readonly Thread _listenThreadV6;
 
         private readonly int _port;
         private long _receivedMessages;
         private long _parsedErrors;
-
-        private struct listenProfile
-        {
-            public IPEndPoint endPoint;
-            public UdpClient client;
-        }
-
+       
         public override JObject ToJson()
         {
             JObject json = new JObject(
@@ -46,36 +37,46 @@ namespace TimberWinR.Inputs
             : base(cancelToken, "Win32-Udp")
         {
             _port = port;
-
-            groupV4 = new IPEndPoint(IPAddress.Any, 0);
-            groupV6 = new IPEndPoint(IPAddress.IPv6Any, 0);
-
-            LogManager.GetCurrentClassLogger().Info("Udp Input on Port {0} Ready", _port);
-
+     
+ 
             _receivedMessages = 0;
 
-            _udpListener = new System.Net.Sockets.UdpClient(port);
-
-            _listenThreadV4 = new Thread(new ParameterizedThreadStart(StartListener));
-            _listenThreadV4.Start(new listenProfile() { endPoint = groupV4, client = _udpListener });
-
-            _listenThreadV6 = new Thread(new ParameterizedThreadStart(StartListener));
-            _listenThreadV6.Start(new listenProfile() { endPoint = groupV6, client = _udpListener });
+            _listenThreadV6 = new Thread(StartListener);
+            _listenThreadV6.Start();
         }
 
 
         public override void Shutdown()
         {
             LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
-            _udpListener.Close();
-            Finished();
+
+            // close UDP listeners, which will end the listener threads          
+            _udpListenerV6.Close();
+
+            // wait for completion of the threads         
+            _listenThreadV6.Join();          
+
             base.Shutdown();
         }
 
+        private void StartListener()
+        {                      
+            var groupV6 = new IPEndPoint(IPAddress.IPv6Any, _port);
+            // Create the socket as IPv6
+            var dualModeSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+            
+            //
+            // Now, disable the IPV6only flag to make it compatable with both ipv4 and ipv6
+            // See: http://blogs.msdn.com/b/malarch/archive/2005/11/18/494769.aspx
+            //
+            dualModeSocket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0);
+            dualModeSocket.Bind(groupV6);
 
-        private void StartListener(object useProfile)
-        {
-            var profile = (listenProfile)useProfile;
+            _udpListenerV6 = new UdpClient();
+            _udpListenerV6.Client = dualModeSocket;
+
+            LogManager.GetCurrentClassLogger().Info("Udp Input on Port {0} Ready", groupV6);
+
             string lastMessage = "";
             try
             {
@@ -83,21 +84,30 @@ namespace TimberWinR.Inputs
                 {
                     try
                     {
-                        byte[] bytes = profile.client.Receive(ref profile.endPoint);  
-                        var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+                        byte[] bytes = _udpListenerV6.Receive(ref groupV6);  
+                        var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);                                                
                         lastMessage = data;
-                        JObject json = JObject.Parse(data);
+                        var json = JObject.Parse(data);
                         ProcessJson(json);
-                        _receivedMessages++;
+                        Interlocked.Increment(ref _receivedMessages);                       
                     }
-                    catch (Exception ex1)
-                    {
+                    catch(SocketException)
+                    {                       
+                        break;
+                    }
+                    catch (Exception ex)
+                    {                      
+                        var jex1 = LogErrors.LogException(string.Format("Invalid JSON: {0}", lastMessage), ex);
+                        if (jex1 != null)
+                            ProcessJson(jex1);
+      
                         LogManager.GetCurrentClassLogger().Warn("Bad JSON: {0}", lastMessage);
-                        LogManager.GetCurrentClassLogger().Warn(ex1);
-                        _parsedErrors++;
+                        LogManager.GetCurrentClassLogger().Warn(ex);
+
+                        Interlocked.Increment(ref _parsedErrors);
                     }
                 }
-                _udpListener.Close();
+                _udpListenerV6.Close();
             }
             catch (Exception ex)
             {

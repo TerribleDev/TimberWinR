@@ -28,7 +28,7 @@ namespace TimberWinR.UnitTests
             var mgr = new Manager();
             mgr.LogfileDir = ".";
 
-            var tf = new TailFile();
+            var tf = new TailFileArguments();
             var cancelTokenSource = new CancellationTokenSource();
             tf.Location = "TestTailFile1.log";
 

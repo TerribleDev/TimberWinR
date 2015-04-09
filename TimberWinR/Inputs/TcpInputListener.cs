@@ -52,7 +52,7 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
-            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("{0}: Shutting Down {1}", Thread.CurrentThread.ManagedThreadId, InputType);
 
             this._tcpListenerV4.Stop();
             this._tcpListenerV6.Stop();
@@ -113,6 +113,10 @@ namespace TimberWinR.Inputs
                             }
                             catch (Exception ex)
                             {
+                                var jex1 = LogErrors.LogException("Bad Json", ex);
+                                if (jex1 != null)
+                                    ProcessJson(jex1);
+
                                 LogManager.GetCurrentClassLogger().Warn(ex);
                             }
 

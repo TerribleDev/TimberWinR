@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,9 @@ namespace TimberWinR.Inputs
         private string _typeName;
         public AutoResetEvent FinishedEvent { get; set; }
         public string CheckpointFileName { get; set; }
-      
+        private object _locker = new object();
+        public List<string> Files { get; set; }
+
         public string InputType
         {
             get { return _typeName; }
@@ -28,6 +31,7 @@ namespace TimberWinR.Inputs
 
         public InputListener(CancellationToken token, string typeName)
         {
+            Files = new List<string>();
             CheckpointFileName = Path.Combine(System.IO.Path.GetTempPath(), string.Format("{0}.lpc", Guid.NewGuid().ToString()));          
           
             this.FinishedEvent = new AutoResetEvent(false);
@@ -40,6 +44,19 @@ namespace TimberWinR.Inputs
                              .ToString();    
         }
 
+        public bool HaveSeenFile(string fileName)
+        {
+            return Files.Contains(fileName);
+        }
+
+        protected void SaveVisitedFileName(string fileName)
+        {
+            lock (_locker)
+            {
+                if (!HaveSeenFile(fileName))
+                    Files.Add(fileName);
+            }
+        }
         protected string ToPrintable(string inputString)
         {
             string asAscii = Encoding.ASCII.GetString(
@@ -58,17 +75,17 @@ namespace TimberWinR.Inputs
 
         public void Finished()
         {
-            LogManager.GetCurrentClassLogger().Info("Signaling Event Shutdown {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("{0}: Signalling Event Shutdown {1}", Thread.CurrentThread.ManagedThreadId, InputType);
             FinishedEvent.Set();
-            LogManager.GetCurrentClassLogger().Info("Finished signaling Shutdown {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("{0}: Finished signalling Shutdown {1}", Thread.CurrentThread.ManagedThreadId, InputType);
         }
+
         public virtual void Shutdown()
         {
-            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("{0}: Shutting Down {1}", Thread.CurrentThread.ManagedThreadId, InputType);
 
             FinishedEvent.WaitOne();
-
-            LogManager.GetCurrentClassLogger().Info("Finished Wait For {0}", InputType);
+          
             try
             {
                 if (File.Exists(CheckpointFileName))
@@ -78,6 +95,32 @@ namespace TimberWinR.Inputs
             {
                 LogManager.GetCurrentClassLogger().Error(ex);
             }          
+        }
+
+        protected void EnsureRollingCaught()
+        {
+            try
+            {
+                const string mteKey = @"SYSTEM\CurrentControlSet\Control\FileSystem";
+
+                var mte = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(mteKey).GetValue("MaximumTunnelEntries");
+                if (mte == null || (int)mte != 0)
+                {
+                    LogManager.GetCurrentClassLogger()
+                        .Error(
+                            "HKLM\\{0}\\MaximumTunnelEntries is not set to accurately detect log rolling, a DWORD value of 0 is required.",
+                            mteKey);
+                    Microsoft.Win32.Registry.LocalMachine.CreateSubKey(mteKey).SetValue("MaximumTunnelEntries", 0, RegistryValueKind.DWord);
+                    LogManager.GetCurrentClassLogger()
+                      .Error(
+                          "HKLM\\{0}\\MaximumTunnelEntries is now set to 0, A reboot is now required to fix this issue.  See http://support.microsoft.com/en-us/kb/172190 for details",
+                          mteKey);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);
+            }           
         }
 
         public virtual void AddDefaultFields(JObject json)

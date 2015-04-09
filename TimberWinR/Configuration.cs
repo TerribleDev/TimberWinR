@@ -44,7 +44,7 @@ namespace TimberWinR
         {
             get { return _redisOutputs; }
         }
-
+       
 
         private List<ElasticsearchOutputParameters> _elasticsearchOutputs = new List<ElasticsearchOutputParameters>();
         public IEnumerable<ElasticsearchOutputParameters> ElasticsearchOutputs
@@ -76,8 +76,8 @@ namespace TimberWinR
             get { return _logs; }
         }
 
-        private List<TailFile> _tails = new List<TailFile>();
-        public IEnumerable<TailFile> TailFiles
+        private List<TailFileArguments> _tails = new List<TailFileArguments>();
+        public IEnumerable<TailFileArguments> TailFiles
         {
             get { return _tails; }
         }    
@@ -241,8 +241,8 @@ namespace TimberWinR
                     c._stdins.AddRange(x.TimberWinR.Inputs.Stdins.ToList());
                 if (x.TimberWinR.Inputs.Logs != null)
                     c._logs.AddRange(x.TimberWinR.Inputs.Logs.ToList());
-                if (x.TimberWinR.Inputs.TailFiles != null)
-                    c._tails.AddRange(x.TimberWinR.Inputs.TailFiles.ToList());
+                if (x.TimberWinR.Inputs.TailFilesArguments != null)
+                    c._tails.AddRange(x.TimberWinR.Inputs.TailFilesArguments.ToList());
                 if (x.TimberWinR.Inputs.Tcps != null)
                     c._tcps.AddRange(x.TimberWinR.Inputs.Tcps.ToList());
                 if (x.TimberWinR.Inputs.Udps != null)

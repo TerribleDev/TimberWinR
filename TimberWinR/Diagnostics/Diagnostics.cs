@@ -21,7 +21,7 @@ namespace TimberWinR.Diagnostics
         private CancellationToken CancelToken { get; set; }
         public int Port { get; set; }
         public Manager Manager { get; set; }
-
+        public bool Stop { get; set; }
         private HttpListener web;
 
         public Diagnostics(Manager manager, CancellationToken cancelToken, int port = 5141)
@@ -49,44 +49,60 @@ namespace TimberWinR.Diagnostics
         }
 
 
-        private void DiagnosticCallback(IAsyncResult result)
-        {       
-            if (web == null)         
-                return;
-
-            var context = web.EndGetContext(result);
-            var response = context.Response;
-
+        public JObject DiagnosticsOutput()
+        {
             JObject json = new JObject(
-                new JProperty("timberwinr",
-                    new JObject(
-                        new JProperty("version", GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
-                        new JProperty("messages", Manager.NumMessages),
-                        new JProperty("startedon", Manager.StartedOn),
-                        new JProperty("configfile", Manager.JsonConfig),
-                        new JProperty("logdir", Manager.LogfileDir),
-                        new JProperty("logginglevel", LogManager.GlobalThreshold.ToString()),
-                        new JProperty("inputs",
-                            new JArray(
-                                from i in Manager.Listeners
-                                select new JObject(i.ToJson()))),
-                        new JProperty("filters",
-                            new JArray(
-                                from f in Manager.Config.Filters
-                                select new JObject(f.ToJson()))),
-                        new JProperty("outputs",
-                            new JArray(
-                                from o in Manager.Outputs
-                                select new JObject(o.ToJson()))))));
-
-            response.StatusCode = (int)HttpStatusCode.OK;
-            response.StatusDescription = HttpStatusCode.OK.ToString();
-            byte[] buffer = Encoding.UTF8.GetBytes(json.ToString());
-            response.ContentLength64 = buffer.Length;
-            response.OutputStream.Write(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
+                           new JProperty("timberwinr",
+                               new JObject(
+                                   new JProperty("version", Assembly.GetEntryAssembly().GetName().Version.ToString()),
+                                   new JProperty("messages", Manager.NumMessages),
+                                   new JProperty("startedon", Manager.StartedOn),
+                                   new JProperty("configfile", Manager.JsonConfig),
+                                   new JProperty("logdir", Manager.LogfileDir),
+                                   new JProperty("logginglevel", LogManager.GlobalThreshold.ToString()),
+                                   new JProperty("inputs",
+                                       new JArray(
+                                           from i in Manager.Listeners
+                                           select new JObject(i.ToJson()))),
+                                   new JProperty("filters",
+                                       new JArray(
+                                           from f in Manager.Config.Filters
+                                           select new JObject(f.ToJson()))),
+                                   new JProperty("outputs",
+                                       new JArray(
+                                           from o in Manager.Outputs
+                                           select new JObject(o.ToJson()))))));
+            return json;
         }
 
+        private void DiagnosticCallback(IAsyncResult result)
+        {
+            if (web == null)
+                return;
+
+            try
+            {
+                var context = web.EndGetContext(result);
+                var response = context.Response;
+                var json = DiagnosticsOutput();
+
+                response.StatusCode = (int) HttpStatusCode.OK;
+                response.StatusDescription = HttpStatusCode.OK.ToString();
+                byte[] buffer = Encoding.UTF8.GetBytes(json.ToString());
+                response.ContentLength64 = buffer.Length;
+                response.OutputStream.Write(buffer, 0, buffer.Length);
+                response.OutputStream.Close();
+            }
+            catch (SocketException)
+            {
+                // Shutdown
+            }
+            catch (Exception ex)
+            {
+                if (!Stop)
+                    LogManager.GetCurrentClassLogger().Error(ex);
+            }
+        }
 
         private void HttpListen(object o)
         {
@@ -97,14 +113,19 @@ namespace TimberWinR.Diagnostics
                 web.Start();
 
                 while (web != null && web.IsListening)
-                {                  
-                    processRequest();                  
-                }               
+                {
+                    processRequest();
+                }
+            }
+            catch (SocketException)
+            {
+                // Shutdown
             }
             catch (Exception ex)
             {
+                if (!Stop)
                 LogManager.GetCurrentClassLogger().Error("Diagnostic Listener Error: {0}", ex.ToString());
-            }           
+            }
         }
 
         private void ListenForClients(object olistener)
@@ -140,7 +161,7 @@ namespace TimberWinR.Diagnostics
             var tcpClient = (TcpClient)client;
             NetworkStream clientStream = null;
 
-            Console.WriteLine("Handle new diag client: {0}, {1}", tcpClient.Connected, tcpClient.Client.RemoteEndPoint.ToString());
+            //     Console.WriteLine("Handle new diag client: {0}, {1}", tcpClient.Connected, tcpClient.Client.RemoteEndPoint.ToString());
             try
             {
                 using (clientStream = tcpClient.GetStream())
@@ -183,7 +204,7 @@ namespace TimberWinR.Diagnostics
 
         public void Shutdown()
         {
-            
+            Stop = true;
             try
             {
                 if (web != null && web.IsListening)
@@ -193,11 +214,9 @@ namespace TimberWinR.Diagnostics
                     web = null;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
-
     }
 }

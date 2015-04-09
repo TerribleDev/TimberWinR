@@ -63,9 +63,6 @@
     </WixExtension>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
-  <PropertyGroup>
-    <PreBuildEvent />
-  </PropertyGroup>
   <Target Name="BeforeBuild">
     <!-- Read the version from the to-be-installed .exe -->
     <GetAssemblyIdentity AssemblyFiles="..\TimberWinR.ServiceHost\bin\$(Configuration)\TimberWinR.ServiceHost.exe">
@@ -102,6 +99,9 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>$(SolutionDir)\TimberWinR.ExtractID\$(OutDir)\TimberWinR.ExtractID.exe $(TargetDir) $(SolutionDir)chocolateyUninstall.ps1.guid  $(SolutionDir)chocolateyUninstall.ps1.template</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>cmd.exe /c copy $(SolutionDir)chocolateyUninstall.ps1.template.orig  $(SolutionDir)chocolateyUninstall.ps1.template</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
