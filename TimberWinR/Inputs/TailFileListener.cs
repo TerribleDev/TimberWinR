@@ -26,32 +26,26 @@ namespace TimberWinR.Inputs
     /// </summary>
     public class TailFileListener : InputListener
     {
+        private object _locker = new object();
         private int _pollingIntervalInSeconds;
-        private TimberWinR.Parser.TailFile _arguments;
+        private TimberWinR.Parser.TailFileArguments _arguments;
         private long _receivedMessages;
-        private Dictionary<string, Int64> _logFileMaxRecords;
-        private Dictionary<string, DateTime> _logFileCreationTimes;
-        private Dictionary<string, DateTime> _logFileSampleTimes;
-        private Dictionary<string, long> _logFileSizes;       
-        private CodecArguments _codecArguments;
-        private ICodec _codec;     
 
+        private CodecArguments _codecArguments;
+        private ICodec _codec;
+       
         public bool Stop { get; set; }
 
-        public TailFileListener(TimberWinR.Parser.TailFile arguments, CancellationToken cancelToken)
+        public TailFileListener(TimberWinR.Parser.TailFileArguments arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-TailLog")
         {
             Stop = false;
+         
+            EnsureRollingCaught();    
 
             _codecArguments = arguments.CodecArguments;
             if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
                 _codec = new Multiline(_codecArguments);
-
-
-            _logFileMaxRecords = new Dictionary<string, Int64>();
-            _logFileCreationTimes = new Dictionary<string, DateTime>();
-            _logFileSampleTimes = new Dictionary<string, DateTime>();
-            _logFileSizes = new Dictionary<string, long>();
 
             _receivedMessages = 0;
             _arguments = arguments;
@@ -66,7 +60,7 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
-            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            LogManager.GetCurrentClassLogger().Info("{0}: Shutting Down {1} for {2}", Thread.CurrentThread.ManagedThreadId, InputType, _arguments.Location);
             Stop = true;
             base.Shutdown();
         }
@@ -74,29 +68,19 @@ namespace TimberWinR.Inputs
         public override JObject ToJson()
         {
             JObject json = new JObject(
-                new JProperty("log",
+                new JProperty("taillog",
                     new JObject(
                         new JProperty("messages", _receivedMessages),
                         new JProperty("type", InputType),
                         new JProperty("location", _arguments.Location),
                         new JProperty("logSource", _arguments.LogSource),
                         new JProperty("recurse", _arguments.Recurse),
-
                         new JProperty("files",
-                            new JArray(from f in _logFileMaxRecords.Keys
+                            new JArray(from f in Files
                                        select new JValue(f))),
-                        new JProperty("fileSampleTimes",
-                            new JArray(from f in _logFileSampleTimes.Values
-                                       select new JValue(f))),
-                        new JProperty("fileSizes",
-                            new JArray(from f in _logFileSizes.Values
-                                       select new JValue(f))),
-                        new JProperty("fileIndices",
-                            new JArray(from f in _logFileMaxRecords.Values
-                                       select new JValue(f))),
-                        new JProperty("fileCreationDates",
-                            new JArray(from f in _logFileCreationTimes.Values
-                                       select new JValue(f)))
+                        new JProperty("filedb",
+                            new JArray(from f in Files
+                                       select JObject.FromObject(LogsFileDatabase.LookupLogFile(f))))
                         )));
 
 
@@ -117,10 +101,9 @@ namespace TimberWinR.Inputs
             return json;
         }
 
-        private void TailFileContents(string fileName, long offset)
+        private void TailFileContents(string fileName, long offset, LogsFileDatabaseEntry dbe)
         {
-            using (StreamReader reader = new StreamReader(new FileStream(fileName,
-                     FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (StreamReader reader = new StreamReader(new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 //start at the end of the file
                 long lastMaxOffset = offset;
@@ -130,6 +113,8 @@ namespace TimberWinR.Inputs
                     return;
 
                 //seek to the last max offset
+                LogManager.GetCurrentClassLogger().Trace("{0}: File: {1} Seek to: {2}", Thread.CurrentThread.ManagedThreadId, fileName, lastMaxOffset);
+
                 reader.BaseStream.Seek(lastMaxOffset, SeekOrigin.Begin);
 
                 //read out of the file until the EOF
@@ -152,24 +137,31 @@ namespace TimberWinR.Inputs
                         else
                             json.Add(new JProperty("logSource", _arguments.LogSource));
                     }
+
                     json["Text"] = line;
                     json["Index"] = index;
                     json["LogFileName"] = fileName;
+
 
                     if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
                     {
                         _codec.Apply(line, this);
                         Interlocked.Increment(ref _receivedMessages);
+                        dbe.IncrementLineCount();
                     }
                     else
                     {
                         ProcessJson(json);
                         Interlocked.Increment(ref _receivedMessages);
-                    }
-                    lineOffset += line.Length;                   
+                        dbe.IncrementLineCount();
+                        //LogManager.GetCurrentClassLogger().Info("{0}: File: {1} {2} {3}", Thread.CurrentThread.ManagedThreadId, fileName, dbe.LinesProcessed, line);
+                    }                 
+
+                    lineOffset += line.Length;
                 }
                 //update the last max offset
                 lastMaxOffset = reader.BaseStream.Position;
+                LogsFileDatabase.Update(dbe, true, lastMaxOffset);               
             }
         }
         // One thread for each kind of file to watch, i.e. "*.log,*.txt" would be two separate
@@ -187,10 +179,13 @@ namespace TimberWinR.Inputs
                     {
                         if (!CancelToken.IsCancellationRequested)
                         {
+                            var isWildcardPattern = fileToWatch.Contains('*');
                             string path = Path.GetDirectoryName(fileToWatch);
                             string name = Path.GetFileName(fileToWatch);
                             if (string.IsNullOrEmpty(path))
                                 path = ".";
+
+                            LogManager.GetCurrentClassLogger().Trace(":{0} Tailing File: {1}", Thread.CurrentThread.ManagedThreadId, Path.Combine(path, name));
 
                             // Ok, we have a potential file filter here as 'fileToWatch' could be foo.log or *.log
 
@@ -201,26 +196,41 @@ namespace TimberWinR.Inputs
                             foreach (string fileName in Directory.GetFiles(path, name, so))
                             {
                                 var dbe = LogsFileDatabase.LookupLogFile(fileName);
-                                FileInfo fi = new FileInfo(dbe.FileName);
-                                //LogManager.GetCurrentClassLogger().Info("Located File: {0}, New: {1}", dbe.FileName, dbe.NewFile);
-                                long length = fi.Length;
-                                bool logHasRolled = false;
-                                if (fi.Length < dbe.Size || fi.CreationTimeUtc != dbe.CreationTimeUtc)
+
+                                // We only spin up 1 thread for a file we haven't yet seen.                               
+                                if (isWildcardPattern && !HaveSeenFile(fileName) && dbe.NewFile)
                                 {
-                                    LogManager.GetCurrentClassLogger().Info("Log has Rolled: {0}", dbe.FileName);
-                                    logHasRolled = true;
+                                    LogManager.GetCurrentClassLogger().Debug(":{0} Starting Thread Tailing File: {1}", Thread.CurrentThread.ManagedThreadId, dbe.FileName);
+                                    LogsFileDatabase.Update(dbe, false, dbe.LastPosition);
+                                    SaveVisitedFileName(fileName);
+                                    Task.Factory.StartNew(() => TailFileWatcher(fileName));
                                 }
-                                bool processWholeFile = logHasRolled || dbe.NewFile;
-                                if (processWholeFile)
+                                else if (!isWildcardPattern)
                                 {
-                                    LogManager.GetCurrentClassLogger().Info("Process Whole File: {0}", dbe.FileName);
-                                    TailFileContents(dbe.FileName, 0);
+                                    FileInfo fi = new FileInfo(dbe.FileName);
+
+                                    //LogManager.GetCurrentClassLogger().Info("Located File: {0}, New: {1}", dbe.FileName, dbe.NewFile);                                
+                                    long length = fi.Length;
+                                    bool logHasRolled = false;
+                                    if (fi.Length < dbe.LastPosition || fi.CreationTimeUtc != dbe.CreationTimeUtc)
+                                    {
+                                        LogManager.GetCurrentClassLogger().Info("{0}: Log has Rolled: {1}", Thread.CurrentThread.ManagedThreadId, dbe.FileName);
+                                        logHasRolled = true;
+                                        LogsFileDatabase.Roll(dbe);
+                                    }
+                                    // Log has rolled or this is a file we are seeing for the first time.
+                                    bool processWholeFile = logHasRolled || !dbe.ProcessedFile;
+                                    if (processWholeFile)
+                                    {
+                                        LogsFileDatabase.Update(dbe, true, 0);
+                                        LogManager.GetCurrentClassLogger().Debug("{0}: Process Whole File: {1}", Thread.CurrentThread.ManagedThreadId, dbe.FileName);
+                                        TailFileContents(dbe.FileName, 0, dbe);
+                                    }
+                                    else
+                                    {
+                                        TailFileContents(dbe.FileName, dbe.LastPosition, dbe);
+                                    }                                  
                                 }
-                                else
-                                {
-                                    TailFileContents(dbe.FileName, dbe.Size);
-                                }
-                                LogsFileDatabase.Update(dbe);
                             }
                         }
                     }
@@ -231,6 +241,10 @@ namespace TimberWinR.Inputs
                         if (!_fnfmap.ContainsKey(fn))
                             LogManager.GetCurrentClassLogger().Warn(fnfex.Message);
                         _fnfmap[fn] = fn;
+                    }
+                    catch (IOException ioex)
+                    {
+                        LogManager.GetCurrentClassLogger().Debug("Log has rolled: {0}", ioex.Message);
                     }
                     catch (OperationCanceledException)
                     {
@@ -249,16 +263,17 @@ namespace TimberWinR.Inputs
                         }
                         catch (OperationCanceledException)
                         {
+                            Stop = true;
                         }
                         catch (Exception ex1)
                         {
                             LogManager.GetCurrentClassLogger().Warn(ex1);
-                        }                      
+                        }
                     }
                 }
             }
             Finished();
-        }
+        }       
     }
 }
 

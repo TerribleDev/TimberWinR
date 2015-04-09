@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using ctstone.Redis;
+using CSRedis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
@@ -28,7 +28,7 @@ namespace TimberWinR.Outputs
         private const int QUEUE_SAMPLE_SIZE = 30; // 30 samples over 2.5 minutes (default)
         private object _locker = new object();
         private bool _warnedReachedMax;
-    
+
         private readonly int _maxBatchCount;
         private readonly int _batchCount;
         private int _totalSamples;
@@ -53,7 +53,7 @@ namespace TimberWinR.Outputs
             {
                 if (_totalSamples < QUEUE_SAMPLE_SIZE)
                     _totalSamples++;
-                
+
                 // Take a sample of the queue depth
                 if (_sampleCountIndex >= QUEUE_SAMPLE_SIZE)
                     _sampleCountIndex = 0;
@@ -69,7 +69,7 @@ namespace TimberWinR.Outputs
                 if (_totalSamples > 0)
                 {
                     var samples = _sampleQueueDepths.Take(_totalSamples);
-                    int avg = (int) samples.Average();
+                    int avg = (int)samples.Average();
                     return avg;
                 }
                 return 0;
@@ -81,7 +81,7 @@ namespace TimberWinR.Outputs
         {
             if (currentBatchCount < _maxBatchCount && currentBatchCount < queueSize && AverageQueueDepth() > currentBatchCount)
             {
-                currentBatchCount += Math.Max(_maxBatchCount/_batchCount, 1);
+                currentBatchCount += Math.Max(_maxBatchCount / _batchCount, 1);
                 if (currentBatchCount >= _maxBatchCount && !_warnedReachedMax)
                 {
                     LogManager.GetCurrentClassLogger().Warn("Maximum Batch Count of {0} reached.", currentBatchCount);
@@ -93,7 +93,7 @@ namespace TimberWinR.Outputs
             else // Reset to default
             {
                 currentBatchCount = _batchCount;
-                _warnedReachedMax = false;                
+                _warnedReachedMax = false;
             }
 
             return currentBatchCount;
@@ -117,21 +117,21 @@ namespace TimberWinR.Outputs
         private readonly int _port;
         private readonly int _timeout;
         private readonly object _locker = new object();
-        private readonly List<string> _jsonQueue;       
+        private readonly List<string> _jsonQueue;
         private readonly string[] _redisHosts;
         private int _redisHostIndex;
         private TimberWinR.Manager _manager;
         private readonly int _batchCount;
         private int _currentBatchCount;
-        private readonly int _maxBatchCount;       
+        private readonly int _maxBatchCount;
         private readonly int _interval;
-        private readonly int _numThreads;      
+        private readonly int _numThreads;
         private long _sentMessages;
         private long _errorCount;
         private long _redisDepth;
-        private DateTime? _lastErrorTimeUTC;       
+        private DateTime? _lastErrorTimeUTC;
         private readonly int _maxQueueSize;
-        private readonly bool _queueOverflowDiscardOldest;       
+        private readonly bool _queueOverflowDiscardOldest;
         private BatchCounter _batchCounter;
 
         public bool Stop { get; set; }
@@ -150,7 +150,8 @@ namespace TimberWinR.Outputs
             {
                 try
                 {
-                    RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port, _timeout);
+                    RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port);
+                    client.SendTimeout = _timeout;
                     return client;
                 }
                 catch (Exception)
@@ -186,9 +187,9 @@ namespace TimberWinR.Outputs
                         new JProperty("threads", _numThreads),
                         new JProperty("batchcount", _batchCount),
                         new JProperty("currentBatchCount", _currentBatchCount),
-                        new JProperty("reachedMaxBatchCountTimes",  _batchCounter.ReachedMaxBatchCountTimes),
+                        new JProperty("reachedMaxBatchCountTimes", _batchCounter.ReachedMaxBatchCountTimes),
                         new JProperty("maxBatchCount", _maxBatchCount),
-                        new JProperty("averageQueueDepth", _batchCounter.AverageQueueDepth()),   
+                        new JProperty("averageQueueDepth", _batchCounter.AverageQueueDepth()),
                         new JProperty("queueSamples", new JArray(_batchCounter.Samples())),
                         new JProperty("index", _logstashIndexName),
                         new JProperty("hosts",
@@ -201,17 +202,17 @@ namespace TimberWinR.Outputs
 
         public RedisOutput(TimberWinR.Manager manager, Parser.RedisOutputParameters parameters, CancellationToken cancelToken)
             : base(cancelToken, "Redis")
-        {              
+        {
             _redisDepth = 0;
             _batchCount = parameters.BatchCount;
             _maxBatchCount = parameters.MaxBatchCount;
             // Make sure maxBatchCount is larger than batchCount
-            if (_maxBatchCount < _batchCount)
-                _maxBatchCount = _batchCount*10;
-           
+            if (_maxBatchCount <= _batchCount)
+                _maxBatchCount = _batchCount * 10;
+
             _manager = manager;
             _redisHostIndex = 0;
-            _redisHosts = parameters.Host;          
+            _redisHosts = parameters.Host;
             _jsonQueue = new List<string>();
             _port = parameters.Port;
             _timeout = parameters.Timeout;
@@ -224,7 +225,7 @@ namespace TimberWinR.Outputs
             _queueOverflowDiscardOldest = parameters.QueueOverflowDiscardOldest;
             _batchCounter = new BatchCounter(_batchCount, _maxBatchCount);
             _currentBatchCount = _batchCount;
-           
+
             for (int i = 0; i < parameters.NumThreads; i++)
             {
                 var redisThread = new Task(RedisSender, cancelToken);
@@ -250,7 +251,7 @@ namespace TimberWinR.Outputs
             }
 
             var message = jsonMessage.ToString();
-            LogManager.GetCurrentClassLogger().Debug(message);
+            LogManager.GetCurrentClassLogger().Trace(message);
 
             lock (_locker)
             {
@@ -285,13 +286,13 @@ namespace TimberWinR.Outputs
             foreach (var filter in _manager.Config.Filters)
             {
                 if (!filter.Apply(json))
-                {  
-                    LogManager.GetCurrentClassLogger().Debug("Dropping: {0}", json.ToString());
+                {
+                    LogManager.GetCurrentClassLogger().Debug("{0}: Dropping: {1}", Thread.CurrentThread.ManagedThreadId, json.ToString());
                     drop = true;
-                }              
+                }
             }
             return drop;
-        }      
+        }
         // 
         // Pull off messages from the Queue, batch them up and send them all across
         // 
@@ -313,11 +314,9 @@ namespace TimberWinR.Outputs
                                 _batchCounter.SampleQueueDepth(_jsonQueue.Count);
                                 // Re-compute current batch size
                                 _currentBatchCount = _batchCounter.UpdateCurrentBatchCount(_jsonQueue.Count, _currentBatchCount);
-                                                                              
+
                                 messages = _jsonQueue.Take(_currentBatchCount).ToArray();
                                 _jsonQueue.RemoveRange(0, messages.Length);
-
-                              
                             }
 
                             if (messages.Length > 0)
@@ -335,12 +334,12 @@ namespace TimberWinR.Outputs
                                             {
                                                 client.StartPipe();
                                                 LogManager.GetCurrentClassLogger()
-                                                    .Debug("Sending {0} Messages to {1}", messages.Length, client.Host);
+                                                    .Debug("{0}: Sending {1} Messages to {2}", Thread.CurrentThread.ManagedThreadId, messages.Length, client.Host);
 
                                                 try
                                                 {
                                                     _redisDepth = client.RPush(_logstashIndexName, messages);
-                                                    _sentMessages += messages.Length;                                                  
+                                                    Interlocked.Add(ref _sentMessages, messages.Length);
                                                     client.EndPipe();
                                                     sentSuccessfully = true;
                                                     if (messages.Length > 0)
@@ -357,7 +356,7 @@ namespace TimberWinR.Outputs
                                                     LogManager.GetCurrentClassLogger().Error(ex);
                                                     Interlocked.Increment(ref _errorCount);
                                                     _lastErrorTimeUTC = DateTime.UtcNow;
-                                                }                                               
+                                                }
                                                 break;
                                             }
                                             else
@@ -374,20 +373,19 @@ namespace TimberWinR.Outputs
                                     {
                                         LogManager.GetCurrentClassLogger().Error(ex);
                                         Interlocked.Increment(ref _errorCount);
-                                        _lastErrorTimeUTC = DateTime.UtcNow;                                
+                                        _lastErrorTimeUTC = DateTime.UtcNow;
                                     }
                                 } // No more hosts to try.
 
- 
-                                if (!sentSuccessfully)                                
+                                // Couldn't send, put it back into the queue.
+                                if (!sentSuccessfully)
                                 {
                                     lock (_locker)
                                     {
                                         _jsonQueue.InsertRange(0, messages);
                                     }
                                 }
-                            }
-                           // GC.Collect();
+                            }                          
                             if (!Stop)
                                 syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);
                         }
@@ -395,7 +393,7 @@ namespace TimberWinR.Outputs
                         {
                             break;
                         }
-                        catch(ThreadAbortException)
+                        catch (ThreadAbortException)
                         {
                             break;
                         }
@@ -403,11 +401,11 @@ namespace TimberWinR.Outputs
                         {
                             _lastErrorTimeUTC = DateTime.UtcNow;
                             Interlocked.Increment(ref _errorCount);
-                            LogManager.GetCurrentClassLogger().Error(ex);                         
+                            LogManager.GetCurrentClassLogger().Error(ex);
                         }
                     }
                 }
             }
-        }      
+        }
     }
 }

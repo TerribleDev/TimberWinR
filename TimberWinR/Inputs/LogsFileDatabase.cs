@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using TimberWinR.Parser;
 
@@ -34,7 +37,10 @@ namespace TimberWinR.Inputs
                 return ExistingFileTest(logName);
             }
         }
-
+       
+        //
+        // Lookup the database entry for this log file, returns null if there isnt one.
+        //
         private LogsFileDatabaseEntry FindFile(string logName)
         {
             lock (_locker)
@@ -43,6 +49,7 @@ namespace TimberWinR.Inputs
                 return existingEntry;
             }
         }
+
         private bool ExistingFileTest(string logName)
         {
             var existingEntry = (from e in Entries where e.FileName == logName select e).FirstOrDefault();
@@ -67,45 +74,82 @@ namespace TimberWinR.Inputs
             var de = new LogsFileDatabaseEntry();
             lock (_locker)
             {
-                de.NewFile = true;
-                var fi = new FileInfo(logName);
+                var fi = new FileInfo(logName);             
                 de.FileName = logName;
-                de.Size = fi.Length;
+                de.LogFileExists = fi.Exists;
+                de.NewFile = true;
+                de.ProcessedFile = false;
+                de.LastPosition = fi.Length;
                 de.SampleTime = DateTime.UtcNow;
-                de.CreationTimeUtc = fi.CreationTimeUtc;
+                de.CreationTimeUtc = fi.CreationTimeUtc;               
+
                 Entries.Add(de);
                 WriteDatabaseFileNoLock();
             }
             return de;
-        }
+        }      
 
         public static LogsFileDatabaseEntry LookupLogFile(string logName)
         {
             LogsFileDatabaseEntry dbe = Instance.FindFile(logName);
             if (dbe == null)
                 dbe = Instance.AddFileEntry(logName);
-            else
-                dbe.NewFile = false;
-    
+
+            FileInfo fi = new FileInfo(logName);          
+
+            dbe.LogFileExists = fi.Exists;
+            var creationTime = fi.CreationTimeUtc;
+
+            if (dbe.LogFileExists && creationTime != dbe.CreationTimeUtc)
+                dbe.NewFile = true;           
+
+            dbe.CreationTimeUtc = creationTime;
+      
             return dbe;
         }
 
-        public static void Update(LogsFileDatabaseEntry dbe)
+        // Find all the non-existent entries and remove them.
+        private void PruneFiles()
         {
-            Instance.UpdateEntry(dbe);
-        }
-
-        private void UpdateEntry(LogsFileDatabaseEntry dbe)
-        {
-            lock(_locker)
+            lock (_locker)
             {
-                var fi = new FileInfo(dbe.FileName);
-                dbe.CreationTimeUtc = fi.CreationTimeUtc;
-                dbe.SampleTime = DateTime.UtcNow;
-                dbe.Size = fi.Length;
+                foreach(var entry in Entries.ToList())
+                {
+                    FileInfo fi = new FileInfo(entry.FileName);
+                    if (!fi.Exists)
+                        Entries.Remove(entry);
+                }
                 WriteDatabaseFileNoLock();
             }
-            
+        }
+
+        public static void Update(LogsFileDatabaseEntry dbe, bool processedFile, long lastOffset)
+        {
+            dbe.ProcessedFile = processedFile;
+            dbe.LogFileExists = File.Exists(dbe.FileName);
+            Instance.UpdateEntry(dbe, lastOffset);           
+        }
+
+        public static void Roll(LogsFileDatabaseEntry dbe)
+        {
+            dbe.ProcessedFile = false;
+            dbe.LastPosition = 0;          
+            Instance.UpdateEntry(dbe, 0);
+            dbe.NewFile = true;           
+        }
+
+        private void UpdateEntry(LogsFileDatabaseEntry dbe, long lastOffset)
+        {
+            lock (_locker)
+            {
+                var fi = new FileInfo(dbe.FileName);                
+                dbe.NewFile = !fi.Exists;
+                dbe.CreationTimeUtc = fi.CreationTimeUtc;
+                dbe.SampleTime = DateTime.UtcNow;                 
+                dbe.LastPosition = lastOffset;
+              
+                WriteDatabaseFileNoLock();
+            }
         }
         public static LogsFileDatabase Instance
         {
@@ -123,12 +167,19 @@ namespace TimberWinR.Inputs
                             instance.ReadDatabaseNoLock();
                         else
                             instance.WriteDatabaseFileNoLock();
+
+                        if (instance.Entries == null)
+                            instance.Entries = new List<LogsFileDatabaseEntry>();
+
+                        instance.PruneFiles();
                     }
                 }
                 return instance;
             }
         }
 
+
+        // Serialize in the Database
         private void ReadDatabaseNoLock()
         {
             try
@@ -152,7 +203,7 @@ namespace TimberWinR.Inputs
                 catch (Exception ex2)
                 {
                     LogManager.GetCurrentClassLogger().Info("Error Creating New Database '{0}': {1}", DatabaseFileName, ex2.ToString());
-                }              
+                }
             }
         }
         private void WriteDatabaseFileNoLock()
@@ -193,15 +244,30 @@ namespace TimberWinR.Inputs
 
     }
 
+
+    //
+    // Represents a log file to be tailed
+    // 
     public class LogsFileDatabaseEntry
     {
         [JsonIgnore]
         public bool NewFile { get; set; }
-        public string FileName { get; set; }
-        public Int64 MaxRecords { get; set; }
+        public bool ProcessedFile { get; set; }
+        public bool LogFileExists { get; set; }
+        public string FileName { get; set; }       
         public DateTime CreationTimeUtc { get; set; }
         public DateTime SampleTime { get; set; }
-        public long Size { get; set; }       
+        public long LastPosition { get; set; }
+        public long LinesProcessed
+        {
+            get { return _linesProcessed; }
+        }
+
+        private int _linesProcessed;
+        public void IncrementLineCount()
+        {
+            Interlocked.Increment(ref _linesProcessed);
+        }
     }
 
 }

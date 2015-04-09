@@ -1,17 +1,18 @@
 ﻿{
     "TimberWinR": {
-        "Inputs": {
-            "WindowsEvents": [
-                {
-                    "source": "Application,System",
-                    "binaryFormat": "PRINT",
-                    "resolveSIDS": true
-                }
-            ],
-            "Tcp": [
+        "Inputs": {           
+            "Udp": [
                 {
                     "_comment": "Output from NLog",
                     "port": 5140
+                }
+            ],
+             "TailFiles": [
+                {  
+                    "interval": 5,
+                    "logSource": "log files",
+                    "location": "*.jlog",
+                    "recurse": -1
                 }
             ]
         },
@@ -32,8 +33,10 @@
                 {
                     "_comment": "Change the host to your Redis instance",
                     "port": 6379,
+                    "batch_count": 500,
+                    "threads":  2,
                     "host": [
-                        "logaggregator.mycompany.svc"
+                        "tstlexiceapp006.vistaprint.svc"
                     ]
                 }
             ]

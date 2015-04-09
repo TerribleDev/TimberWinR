@@ -1,0 +1,14 @@
+﻿{
+    "test": "Test 2",
+    "arguments": {
+        "--testFile": "test2.json",
+        "--testDir": "test2",
+        "--timberWinRConfig": "test2-tw.json",
+        "--numMessages": 1234,
+        "--logLevel": "debug",
+        "--udp": "5140",
+        "--jroll": ["r1.jlog", "r2.jlog"],
+        "--json": ["1.jlog", "2.jlog", "3.jlog", "4.jlog"],
+        "--resultsFile": "results2.json"
+    }
+}

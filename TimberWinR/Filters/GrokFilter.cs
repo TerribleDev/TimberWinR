@@ -47,6 +47,7 @@ namespace TimberWinR.Parser
                          new JProperty("condition", Condition),
                          new JProperty("addfields", AddField),
                          new JProperty("addtags", AddTag),
+                         new JProperty("drop", DropIfMatch),
                          new JProperty("type", Type),
                          new JProperty("removefields", RemoveField),
                          new JProperty("removetag", RemoveTag)

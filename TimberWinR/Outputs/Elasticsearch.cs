@@ -268,7 +268,7 @@ namespace TimberWinR.Outputs
                 ApplyFilters(jsonMessage);
 
             var message = jsonMessage.ToString();
-            LogManager.GetCurrentClassLogger().Debug(message);
+            LogManager.GetCurrentClassLogger().Trace(message);
 
             lock (_locker)
             {

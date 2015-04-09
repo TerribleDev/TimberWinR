@@ -223,6 +223,7 @@ namespace TimberWinR.UnitTests
                     }
                 },
                 {"type", "Win32-FileLog"},
+                {"Type", "Win32-MyType"},
                 {"ComputerName", "dev.mycompany.net"}
             };
 
@@ -281,9 +282,33 @@ namespace TimberWinR.UnitTests
                 }
             }";
 
-            // Positive Tests
-            Configuration c = Configuration.FromString(grokJson1);
+            string grokJson4 = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""grok"":{  
+		                ""condition"": ""!\""[Type]\"".StartsWith(\""[\"") && !\""[Type]\"".EndsWith(\""]\"") && (\""[type]\"" == \""Win32-FileLog\"")"",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""remove_tag"":[  
+                            ""tag1""                          
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+            
+            Configuration c = Configuration.FromString(grokJson4);
             Grok grok = c.Filters.First() as Grok;
+            Assert.IsTrue(grok.Apply(json));
+
+
+            // Positive Tests
+            c = Configuration.FromString(grokJson1);
+            grok = c.Filters.First() as Grok;
             Assert.IsTrue(grok.Apply(json));
 
             c = Configuration.FromString(grokJson2);
