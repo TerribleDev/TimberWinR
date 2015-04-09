@@ -150,12 +150,13 @@ namespace TimberWinR.Outputs
             {
                 try
                 {
-                    RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port);
-                    client.SendTimeout = _timeout;
+                    RedisClient client = new RedisClient(_redisHosts[_redisHostIndex], _port);                   
                     return client;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    LogManager.GetCurrentClassLogger().Error(ex);
+
                 }
                 finally
                 {
