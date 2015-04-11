@@ -199,11 +199,18 @@ namespace TimberWinR.TestGenerator
                 switch (inputProp.Name)
                 {
                     case "udp":
-                        return VerifyConditions(json, new string[] { "udp" }, inputProp, jresult);
-
+                        if (VerifyConditions(json, new string[] {"udp"}, inputProp, jresult) != 0)
+                            return 1;
+                        break;
+                    case "tcp":
+                        if (VerifyConditions(json, new string[] {"tcp"}, inputProp, jresult) != 0)
+                            return 1;
+                        break;
                     case "log":
                     case "taillog":
-                        return VerifyConditions(json, new string[] { "log", "taillog" }, inputProp, jresult);
+                        if (VerifyConditions(json, new string[] {"log", "taillog"}, inputProp, jresult) != 0)
+                            return 1;
+                        break;
                 }
             }
 
@@ -356,9 +363,7 @@ namespace TimberWinR.TestGenerator
         }
 
         private static void TimberWinROnOnConfigurationProcessed(Configuration configuration)
-        {
-            Console.WriteLine("Processed Config: {0}", configuration.GetHashCode());
-
+        {         
             if (!string.IsNullOrEmpty(Options.RedisHost) && configuration.RedisOutputs != null && configuration.RedisOutputs.Count() > 0)
             {
                 foreach (var ro in configuration.RedisOutputs)

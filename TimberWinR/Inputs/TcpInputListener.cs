@@ -16,7 +16,9 @@ namespace TimberWinR.Inputs
         private Thread _listenThreadV4;
         private Thread _listenThreadV6;
         private readonly int _port;
+       
         private long _receivedMessages;
+        private long _errorCount;
 
         public override JObject ToJson()
         {
@@ -24,9 +26,9 @@ namespace TimberWinR.Inputs
                 new JProperty("tcp",
                     new JObject(
                         new JProperty("port", _port),
+                        new JProperty("errors", _errorCount),
                         new JProperty("messages", _receivedMessages)
                         )));
-
             return json;
         }
 
@@ -68,7 +70,6 @@ namespace TimberWinR.Inputs
 
             listener.Start();
 
-
             while (!CancelToken.IsCancellationRequested)
             {
                 try
@@ -79,7 +80,7 @@ namespace TimberWinR.Inputs
                     // Wait for a client, spin up a thread.
                     var clientThread = new Thread(new ParameterizedThreadStart(HandleNewClient));
                     clientThread.Start(client);
-                }
+                }                
                 catch (SocketException ex)
                 {
                     if (ex.SocketErrorCode == SocketError.Interrupted)
@@ -109,7 +110,7 @@ namespace TimberWinR.Inputs
                             {
                                 JObject json = JObject.Load(reader);
                                 ProcessJson(json);
-                                _receivedMessages++;
+                                Interlocked.Increment(ref _receivedMessages);
                             }
                             catch (Exception ex)
                             {
@@ -118,11 +119,15 @@ namespace TimberWinR.Inputs
                                     ProcessJson(jex1);
 
                                 LogManager.GetCurrentClassLogger().Warn(ex);
+                                Interlocked.Increment(ref _errorCount);
                             }
 
                         }
                     }
                 }
+            }
+            catch(OperationCanceledException)
+            {
             }
             catch (Exception ex)
             {

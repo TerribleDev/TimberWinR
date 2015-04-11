@@ -1,0 +1,45 @@
+﻿{
+    "TimberWinR": {
+        "Inputs": {           
+            "Tcp": [
+                {
+                    "_comment": "Output from NLog",
+                    "port": 5140
+                }
+            ],
+             "Logs": [
+                {  
+                    "interval": 5,
+                    "logSource": "log files",
+                    "location": "*.jlog",
+                    "recurse": -1
+                }
+            ]
+        },
+        "Filters": [
+            {
+                "grok": {
+                    "condition": "\"[EventTypeName]\" == \"Information Event\"",
+                    "match": [
+                        "Text",
+                        ""
+                    ],
+                    "drop": "true"
+                }
+            }
+        ],
+        "Outputs": {
+            "Redis": [
+                {
+                    "_comment": "Change the host to your Redis instance",
+                    "port": 6379,
+                    "batch_count": 500,
+                    "threads":  2,
+                    "host": [
+                        "tstlexiceapp006.vistaprint.svc"
+                    ]
+                }
+            ]
+        }
+    }
+}
