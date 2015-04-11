@@ -4,7 +4,7 @@ A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version / Date
 
-### 1.4.0.0 - 04/03/2015
+### 1.3.20.0 - 04/03/2015
 1. A re-factoring of Logs and TailLogs to be more efficient and detect log rolling correctly,
    this requires http://support.microsoft.com/en-us/kb/172190 which will be detected and
    set by TimberWinR, however, requires a reboot.
