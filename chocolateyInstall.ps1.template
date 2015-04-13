@@ -1,8 +1,14 @@
 ﻿$packageName = 'TimberWinR-${version}' 
-$installerType = 'msi'
-$url = 'http://www.ericfontana.com/TimberWinR/TimberWinR-${version}.0.msi'
+$fileType = 'msi'
 $silentArgs = '/quiet' 
-$validExitCodes = @(0)
-Install-ChocolateyPackage "$packageName" "$installerType" "$silentArgs" "$url" "$url64"  -validExitCodes $validExitCodes
+$scriptPath =  $(Split-Path $MyInvocation.MyCommand.Path)
+$fileFullPath = Join-Path $scriptPath 'TimberWinR-${version}'
+try { 
+  Install-ChocolateyInstallPackage $packageName $fileType $silentArgs $fileFullPath
+} catch {
+  Write-ChocolateyFailure $packageName $($_.Exception.Message)
+  throw 
+}
+
 
 
