@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using Interop.MSUtil;
-
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using NLog;
+using TimberWinR.Parser;
 using LogQuery = Interop.MSUtil.LogQueryClassClass;
 using EventLogInputFormat = Interop.MSUtil.COMEventLogInputContextClassClass;
 using LogRecordSet = Interop.MSUtil.ILogRecordset;
@@ -23,13 +16,13 @@ namespace TimberWinR.Inputs
     /// </summary>
     public class WindowsEvtInputListener : InputListener
     {
-        private int _pollingIntervalInSeconds = 1;
-        private TimberWinR.Parser.WindowsEvent _arguments;
+        private readonly int _pollingIntervalInSeconds = 1;
+        private readonly WindowsEvent _arguments;
         private long _receivedMessages;
-        private List<Thread> _tasks { get; set; }
+        private readonly List<Thread> _tasks;
         public bool Stop { get; set; }
 
-        public WindowsEvtInputListener(TimberWinR.Parser.WindowsEvent arguments, CancellationToken cancelToken)
+        public WindowsEvtInputListener(WindowsEvent arguments, CancellationToken cancelToken)
             : base(cancelToken, "Win32-Eventlog")
         {
             _arguments = arguments;
@@ -38,8 +31,7 @@ namespace TimberWinR.Inputs
 
             foreach (string eventHive in _arguments.Source.Split(','))
             {
-                string hive = eventHive.Trim();
-                var thread = new Thread(new ParameterizedThreadStart(EventWatcher));
+                var thread = new Thread(EventWatcher) {Name = "Win32-Eventlog-" + eventHive};
                 _tasks.Add(thread);
                 thread.Start(eventHive);
             }
@@ -48,7 +40,11 @@ namespace TimberWinR.Inputs
         public override void Shutdown()
         {
             Stop = true;
-            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);           
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            foreach (var thread in _tasks)
+            {
+                thread.Join();
+            }
             base.Shutdown();
         }
 
@@ -76,8 +72,6 @@ namespace TimberWinR.Inputs
         {
             string location = ploc.ToString();
 
-            LogQuery oLogQuery = new LogQuery();
-
             LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");
 
             // Instantiate the Event Log Input Format object
@@ -93,9 +87,7 @@ namespace TimberWinR.Inputs
                 resolveSIDs = _arguments.ResolveSIDS
             };
 
-            oLogQuery = null;
-
-            Dictionary<string, Int64> logFileMaxRecords = new Dictionary<string, Int64>();
+            var logFileMaxRecords = new Dictionary<string, Int64>();
 
             using (var syncHandle = new ManualResetEventSlim())
             {
@@ -107,7 +99,7 @@ namespace TimberWinR.Inputs
                     {
                         try
                         {                          
-                            oLogQuery = new LogQuery();
+                            var oLogQuery = new LogQuery();
 
                             var qfiles = string.Format("SELECT Distinct [EventLog] FROM {0}", location);
                             var rsfiles = oLogQuery.Execute(qfiles, iFmt);
@@ -145,21 +137,19 @@ namespace TimberWinR.Inputs
                                         object v = record.getValue(field.Name);
                                         if (field.Name == "Data")
                                             v = ToPrintable(v.ToString());
+                                        if ((field.Name == "TimeGenerated" || field.Name == "TimeWritten") && field.DataType == typeof (DateTime))
+                                            v = ((DateTime) v).ToUniversalTime();
                                         json.Add(new JProperty(field.Name, v));
                                     }
 
                                     var lrn = (Int64)record.getValueEx("RecordNumber");
                                     logFileMaxRecords[fileName] = lrn;
 
-                                    record = null;
                                     ProcessJson(json);
                                     _receivedMessages++;
-                                    json = null;
-
                                 }
                                 // Close the recordset
                                 rs.close();
-                                rs = null;
                                 GC.Collect();
                             }
                             if (!Stop)
