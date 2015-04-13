@@ -2,7 +2,7 @@
 $fileType = 'msi'
 $silentArgs = '/quiet' 
 $scriptPath =  $(Split-Path $MyInvocation.MyCommand.Path)
-$fileFullPath = Join-Path $scriptPath 'TimberWinR-${version}'
+$fileFullPath = Join-Path $scriptPath 'TimberWinR-${version}.msi'
 try { 
   Install-ChocolateyInstallPackage $packageName $fileType $silentArgs $fileFullPath
 } catch {
