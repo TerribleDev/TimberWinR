@@ -25,7 +25,8 @@ https://groups.google.com/forum/#!forum/timberwinr
 
 Latest Build:
 
-![alt tag](https://ci.appveyor.com/api/projects/status/github/Cimpress-MCP/TimberWinR)
+![alt tag](https://ci.appveyor.com/api/projects/status/qi5x2lg153h1tim6/branch/master?svg=true)
+
 
 ## Inputs
 The current supported Input format sources are:
