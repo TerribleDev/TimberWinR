@@ -167,7 +167,7 @@ following options:
 TimberWinR.ServiceHost.exe -configFile:myconfig.json -logLevel:Debug
 ```
 
-## Automatic Installation via Chocolatey
+## Automatic Installation via Chocolatey (embedded)
 
 [TimbeWinR Chocolatey](https://chocolatey.org/packages/TimberWinR)
 
