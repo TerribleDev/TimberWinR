@@ -19,7 +19,7 @@ namespace TimberWinR.Inputs
         private readonly int _pollingIntervalInSeconds = 1;
         private readonly WindowsEvent _arguments;
         private long _receivedMessages;
-        private List<Thread> _tasks;
+        private readonly List<Thread> _tasks;
         public bool Stop { get; set; }
 
         public WindowsEvtInputListener(WindowsEvent arguments, CancellationToken cancelToken)
@@ -31,7 +31,7 @@ namespace TimberWinR.Inputs
 
             foreach (string eventHive in _arguments.Source.Split(','))
             {
-                var thread = new Thread(EventWatcher);
+                var thread = new Thread(EventWatcher) {Name = "Win32-Eventlog-" + eventHive};
                 _tasks.Add(thread);
                 thread.Start(eventHive);
             }
@@ -40,7 +40,11 @@ namespace TimberWinR.Inputs
         public override void Shutdown()
         {
             Stop = true;
-            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);          
+            LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
+            foreach (var thread in _tasks)
+            {
+                thread.Join();
+            }
             base.Shutdown();
         }
 
