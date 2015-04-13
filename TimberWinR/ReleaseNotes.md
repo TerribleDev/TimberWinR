@@ -3,6 +3,9 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version / Date
+### 1.3.21.0 - 04/13/2015
+1. Rolled Udp listener support to V4 only, too many issues with dual mode sockets
+   and hosts file.  If we want to add this back, I will add a Udpv6 input.
 
 ### 1.3.20.0 - 04/03/2015
 1. A re-factoring of Logs and TailLogs to be more efficient and detect log rolling correctly,
