@@ -98,10 +98,12 @@
     </CreateProperty>
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)\TimberWinR.ExtractID\$(OutDir)\TimberWinR.ExtractID.exe $(TargetDir) $(SolutionDir)chocolateyUninstall.ps1.guid  $(SolutionDir)chocolateyUninstall.ps1.template</PostBuildEvent>
+    <PreBuildEvent>mkdir  $(SolutionDir)tools
+cmd.exe /c copy $(SolutionDir)chocolateyUninstall.ps1.template.orig  $(SolutionDir)chocolateyUninstall.ps1.template</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>cmd.exe /c copy $(SolutionDir)chocolateyUninstall.ps1.template.orig  $(SolutionDir)chocolateyUninstall.ps1.template</PreBuildEvent>
+    <PostBuildEvent>$(SolutionDir)\TimberWinR.ExtractID\$(OutDir)\TimberWinR.ExtractID.exe $(TargetDir) $(SolutionDir)chocolateyUninstall.ps1.guid  $(SolutionDir)chocolateyUninstall.ps1.template
+cmd.exe /c copy "$(TargetDir)%2a.msi" "$(SolutionDir)tools"</PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
