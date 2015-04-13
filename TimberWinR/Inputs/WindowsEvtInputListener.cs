@@ -137,6 +137,8 @@ namespace TimberWinR.Inputs
                                         object v = record.getValue(field.Name);
                                         if (field.Name == "Data")
                                             v = ToPrintable(v.ToString());
+                                        if ((field.Name == "TimeGenerated" || field.Name == "TimeWritten") && field.DataType == typeof (DateTime))
+                                            v = ((DateTime) v).ToUniversalTime();
                                         json.Add(new JProperty(field.Name, v));
                                     }
 
