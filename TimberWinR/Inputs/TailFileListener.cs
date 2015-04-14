@@ -115,7 +115,14 @@ namespace TimberWinR.Inputs
                 //seek to the last max offset
                 LogManager.GetCurrentClassLogger().Trace("{0}: File: {1} Seek to: {2}", Thread.CurrentThread.ManagedThreadId, fileName, lastMaxOffset);
 
-                reader.BaseStream.Seek(lastMaxOffset, SeekOrigin.Begin);
+                var seekedTo = reader.BaseStream.Seek(lastMaxOffset, SeekOrigin.Begin);
+
+                // We couldn't seek to the position, so remember what we have seeked to.
+                if (seekedTo != lastMaxOffset)
+                {
+                    lastMaxOffset = seekedTo;
+                    LogsFileDatabase.Update(dbe, true, lastMaxOffset);
+                }
 
                 //read out of the file until the EOF
                 string line = "";
@@ -196,18 +203,19 @@ namespace TimberWinR.Inputs
                             foreach (string fileName in Directory.GetFiles(path, name, so))
                             {
                                 var dbe = LogsFileDatabase.LookupLogFile(fileName);
-
+   
                                 // We only spin up 1 thread for a file we haven't yet seen.                               
                                 if (isWildcardPattern && !HaveSeenFile(fileName) && dbe.NewFile)
                                 {
                                     LogManager.GetCurrentClassLogger().Debug(":{0} Starting Thread Tailing File: {1}", Thread.CurrentThread.ManagedThreadId, dbe.FileName);
                                     LogsFileDatabase.Update(dbe, false, dbe.LastPosition);
-                                    SaveVisitedFileName(fileName);
+                                   
                                     Task.Factory.StartNew(() => TailFileWatcher(fileName));
                                 }
                                 else if (!isWildcardPattern)
                                 {
                                     FileInfo fi = new FileInfo(dbe.FileName);
+                                    SaveVisitedFileName(fileName);
 
                                     //LogManager.GetCurrentClassLogger().Info("Located File: {0}, New: {1}", dbe.FileName, dbe.NewFile);                                
                                     long length = fi.Length;
@@ -219,7 +227,7 @@ namespace TimberWinR.Inputs
                                         LogsFileDatabase.Roll(dbe);
                                     }
                                     // Log has rolled or this is a file we are seeing for the first time.
-                                    bool processWholeFile = logHasRolled || !dbe.ProcessedFile;
+                                    bool processWholeFile = logHasRolled || !dbe.ProcessedFile || dbe.NewFile;
                                     if (processWholeFile)
                                     {
                                         LogsFileDatabase.Update(dbe, true, 0);

@@ -1,14 +1,14 @@
 ﻿{
     "TimberWinR": {
-        "Inputs": {           
+        "Inputs": {
             "Udp": [
                 {
                     "_comment": "Output from NLog",
                     "port": 5140
                 }
             ],
-             "TailFiles": [
-                {  
+            "TailFiles": [
+                {
                     "interval": 5,
                     "logSource": "log files",
                     "location": "*.jlog",
@@ -25,6 +25,11 @@
                         ""
                     ],
                     "drop": "true"
+                },
+                "json": {
+                    "type": "Win32-TailFile",
+                    "source": "Text",
+                    "promote": "Text"
                 }
             }
         ],
@@ -34,7 +39,7 @@
                     "_comment": "Change the host to your Redis instance",
                     "port": 6379,
                     "batch_count": 500,
-                    "threads":  2,
+                    "threads": 2,
                     "host": [
                         "tstlexiceapp006.vistaprint.svc"
                     ]

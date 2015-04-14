@@ -3,6 +3,11 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version / Date
+
+### 1.3.22.0 - 2015-04-14
+1. Fixed minor bug with TailFiles and service re-starts not picking up
+   rolled files right away.
+
 ### 1.3.21.0 - 2015-04-13
 1. Rolled Udp listener support to V4 only, too many issues with dual mode sockets
    and hosts file.  If we want to add this back, I will add a Udpv6 input.
