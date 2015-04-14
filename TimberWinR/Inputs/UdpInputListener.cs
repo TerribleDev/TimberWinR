@@ -15,7 +15,7 @@ namespace TimberWinR.Inputs
         private IPEndPoint _udpEndpointV4;
         private readonly BlockingCollection<byte[]> _unprocessedRawData;
         private readonly Thread _rawDataProcessingThread;
-
+        public bool Stop { get; set; }
         private readonly int _port;
         private long _receivedMessages;
         private long _parseErrors;
@@ -29,7 +29,7 @@ namespace TimberWinR.Inputs
                     new JObject(new JProperty("port", _port),
                         new JProperty("receive_errors", _receiveErrors),
                         new JProperty("parse_errors", _parseErrors),
-                        new JProperty("received_messages", _receivedMessages),
+                        new JProperty("messages", _receivedMessages),
                         new JProperty("parsed_messages", _parsedMessages),
                         new JProperty("unprocessed_messages", _unprocessedRawData.Count))));
 
@@ -52,10 +52,14 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
+            Stop = true;
+
             LogManager.GetCurrentClassLogger().Info("Shutting Down {0}", InputType);
 
             // close UDP listeners, which will end the listener threads          
             _udpListenerV4.Close();
+
+            Finished();
 
             base.Shutdown();
         }
@@ -76,7 +80,8 @@ namespace TimberWinR.Inputs
 
         private void StartReceiving()
         {
-            _udpListenerV4.BeginReceive(DataReceived, null);
+            if (!CancelToken.IsCancellationRequested)
+                _udpListenerV4.BeginReceive(DataReceived, null);
         }
 
         private void DataReceived(IAsyncResult result)
@@ -114,12 +119,17 @@ namespace TimberWinR.Inputs
         }
 
         private void ProcessDataLoop()
-        {
-            while (!_unprocessedRawData.IsCompleted)
+        {           
+            while (!Stop && !_unprocessedRawData.IsCompleted)
             {
                 try
                 {
                     ProcessData(_unprocessedRawData.Take());
+                }
+                catch(OperationCanceledException)
+                {
+                    // we are shutting down.
+                    break;
                 }
                 catch (InvalidOperationException)
                 {
@@ -131,9 +141,7 @@ namespace TimberWinR.Inputs
                     LogManager.GetCurrentClassLogger().ErrorException("Error while processing data", ex);
                     Thread.Sleep(100);
                 }
-            }
-
-            Finished();
+            }              
         }
 
         private void ProcessData(byte[] bytes)

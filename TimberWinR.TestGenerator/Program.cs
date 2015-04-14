@@ -337,11 +337,11 @@ namespace TimberWinR.TestGenerator
 
         private static JObject ShutdownTimberWinR()
         {
-            _timberWinR.Shutdown();
-
             // Cancel any/all other threads
             _cancellationTokenSource.Cancel();
 
+            _timberWinR.Shutdown();
+          
             var json = Diagnostics.DiagnosticsOutput();
 
             LogManager.GetCurrentClassLogger()
