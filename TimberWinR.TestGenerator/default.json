@@ -1,19 +1,58 @@
+﻿//{
+//  "TimberWinR": {
+//    "Inputs": {
+//      "Udp": [
+//        {
+//          "_comment": "Output from NLog",
+//        "port": 5140
+//      }
+//   ],
+//  "TailFiles": [
+//   {
+//     "interval": 5,
+//     "logSource": "log files",
+//     "location": "*.jlog",
+//     "recurse": -1
+//  }
+//  ]
+//   },
+//   "Filters": [
+//      {
+//         "grok": {
+//            "condition": "\"[EventTypeName]\" == \"Information Event\"",
+//           "match": [
+//              "Text",
+//             ""
+//        ],
+//       "drop": "true"
+//      }
+//       }
+//     ],
+//   "Outputs": {
+//     "Redis": [
+//       {
+//         "_comment": "Change the host to your Redis instance",
+//       "port": 6379,
+//     "batch_count": 500,
+//   "threads":  2,
+// "host": [
+//"tstlexiceapp006.vistaprint.svc"
+//                ]
+//          }
+//    ]
+//        }
+//  }
+//}
+
 ﻿{
     "TimberWinR": {
-        "Inputs": {           
-            "Udp": [
-                {
-                    "_comment": "Output from NLog",
-                    "port": 5140
-                }
-            ],
-             "TailFiles": [
-                {  
-                    "interval": 5,
-                    "logSource": "log files",
-                    "location": "*.jlog",
-                    "recurse": -1
-                }
+        "Inputs": {
+            "WindowsEvents": [
+              {
+                "source": "Application",
+                "binaryFormat": "PRINT",
+                "resolveSIDS": true
+              }
             ]
         },
         "Filters": [
@@ -21,23 +60,16 @@
                 "grok": {
                     "condition": "\"[EventTypeName]\" == \"Information Event\"",
                     "match": [
-                        "Text",
+                        "Message",
                         ""
-                    ],
-                    "drop": "true"
+                    ]
                 }
             }
         ],
         "Outputs": {
-            "Redis": [
+            "Stdout": [
                 {
-                    "_comment": "Change the host to your Redis instance",
-                    "port": 6379,
-                    "batch_count": 500,
-                    "threads":  2,
-                    "host": [
-                        "tstlexiceapp006.vistaprint.svc"
-                    ]
+                    "_comment": "Output to Console"
                 }
             ]
         }
