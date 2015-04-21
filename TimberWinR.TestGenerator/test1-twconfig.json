@@ -34,15 +34,9 @@
             }
         ],
         "Outputs": {
-            "Redis": [
+            "Stdout": [
                 {
-                    "_comment": "Change the host to your Redis instance",
-                    "port": 6379,
-                    "batch_count": 500,
-                    "threads": 2,
-                    "host": [
-                        "tstlexiceapp006.vistaprint.svc"
-                    ]
+                    "_comment": "Change the host to your Redis instance"                    
                 }
             ]
         }

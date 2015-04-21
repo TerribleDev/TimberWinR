@@ -1,0 +1,31 @@
+﻿{
+    "TimberWinR": {
+        "Inputs": {
+            "WindowsEvents": [
+                {
+                    "source": "ForwardedEvents",
+                    "binaryFormat": "PRINT",
+                    "resolveSIDS": true
+                }
+            ]
+        },
+        "Filters": [
+            {
+                "grok": {
+                    "condition": "\"[type]\" == \"Win32-Eventlog\"",
+                    "match": [
+                        "Message",
+                        ""
+                    ]
+                }
+            }
+        ],
+        "Outputs": {
+            "Stdout": [
+                {
+                    "_comment": "Shuffle these hosts"
+                }
+            ]
+        }
+    }
+}

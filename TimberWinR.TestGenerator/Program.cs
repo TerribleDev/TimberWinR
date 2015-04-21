@@ -42,7 +42,7 @@ namespace TimberWinR.TestGenerator
         private static double _avgMemUsage;
         private static double _totalMemUsage;
         private static double _maxMemUsage;
-
+         
         private static CommandLineOptions Options;
 
         static int Main(string[] args)
