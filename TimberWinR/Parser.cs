@@ -241,7 +241,7 @@ namespace TimberWinR.Parser
             Fields.Add(new Field("SourceName", "string"));
             //Fields.Add(new Field("Strings", "string"));
             Fields.Add(new Field("ComputerName", "string"));
-            Fields.Add(new Field("SID", "string"));
+            //Fields.Add(new Field("SID", "string"));
             Fields.Add(new Field("Message", "string"));
             //Fields.Add(new Field("Data", "string"));
         }

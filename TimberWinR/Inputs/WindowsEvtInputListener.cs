@@ -89,7 +89,7 @@ namespace TimberWinR.Inputs
             //    resolveSIDs = _arguments.ResolveSIDS
             //};
 
-            var logFileMaxRecords = new List<long>();
+            var logFileMaxRecords = new Dictionary<string,List<long>>();
 
             using (var syncHandle = new ManualResetEventSlim())
             {
@@ -102,45 +102,109 @@ namespace TimberWinR.Inputs
                         try
                         {
                             EventLogQuery q = new EventLogQuery(location, PathType.LogName, "*[System]");
-                            EventLogReader reader = new EventLogReader(q);
                             q.ReverseDirection = true;
+                            q.TolerateQueryErrors = true;
+                            EventLogReader reader = new EventLogReader(q);
+                            
                             for (eventRecord = reader.ReadEvent(); null != eventRecord; eventRecord = reader.ReadEvent())
                             {
-                                long latestRecord = eventRecord.RecordId.Value;
-                                
-                                if(latestRecord > logFileMaxRecords.Count)
+                                if(eventRecord.RecordId != null)
                                 {
-                                    logFileMaxRecords.Add(latestRecord);                                    
-                                    var json = new JObject();
-                                    if(eventRecord.LogName != null)
-                                        json.Add(new JProperty("EventLog", eventRecord.LogName));                                  
-                                    
-                                    if(eventRecord.RecordId != null)
-                                        json.Add(new JProperty("RecordNumber", eventRecord.RecordId));
+                                    long latestRecord = eventRecord.RecordId.Value;
 
-                                    if(eventRecord.TimeCreated!= null)
-                                        json.Add(new JProperty("TimeGenerated", ((DateTime) eventRecord.TimeCreated).ToUniversalTime()));
+                                    if (!logFileMaxRecords.ContainsKey(eventRecord.MachineName) & eventRecord.MachineName != null)
+                                    {
+                                        logFileMaxRecords.Add(eventRecord.MachineName, new List<long>());
+                                    }
 
-                                    if(eventRecord.Id != null)
-                                        json.Add(new JProperty("EventID", eventRecord.Id));
+                                    if (logFileMaxRecords.ContainsKey(eventRecord.MachineName))
+                                    {
+                                        if (!logFileMaxRecords[eventRecord.MachineName].Contains(latestRecord))
+                                        {
+                                            logFileMaxRecords[eventRecord.MachineName].Add(latestRecord);
+                                            var json = new JObject();
+                                            try
+                                            {
+                                                json.Add(new JProperty("EventLog", eventRecord.LogName));
+                                            }
+                                            catch (Exception ex)
+                                            {
 
-                                    if(eventRecord.LevelDisplayName != null)
-                                        json.Add(new JProperty("EventTypeName", eventRecord.LevelDisplayName));
+                                            }
 
-                                    if(eventRecord.ProviderName != null)
-                                        json.Add(new JProperty("SourceName", eventRecord.ProviderName));
+                                            try
+                                            {
+                                                json.Add(new JProperty("RecordNumber", eventRecord.RecordId));
+                                            }
+                                            catch (Exception ex)
+                                            {
 
-                                    if(eventRecord.MachineName != null)
-                                        json.Add(new JProperty("ComputerName", eventRecord.MachineName));
+                                            }
 
-                                    if(eventRecord.UserId != null)
-                                        json.Add(new JProperty("SID", eventRecord.UserId.ToString()));
-                                    
-                                    json.Add(new JProperty("Message", eventRecord.FormatDescription()));
-                                   
-                                    ProcessJson(json);
-                                    _receivedMessages++;
-                                }                                               
+                                            try
+                                            {
+                                                json.Add(new JProperty("TimeGenerated", ((DateTime)eventRecord.TimeCreated).ToUniversalTime()));
+                                            }
+                                            catch (Exception ex)
+                                            {
+
+                                            }
+
+
+                                            try
+                                            {
+                                                json.Add(new JProperty("EventID", eventRecord.Id));
+                                            }
+                                            catch (Exception ex)
+                                            {
+
+                                            }
+
+                                            try
+                                            {
+                                                json.Add(new JProperty("EventTypeName", System.Enum.GetName(typeof(StandardEventLevel), eventRecord.Level)));
+                                            }
+                                            catch (Exception ex)
+                                            {
+
+                                            }
+
+                                            try
+                                            {
+                                                json.Add(new JProperty("SourceName", eventRecord.ProviderName));
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                            }
+
+                                            try
+                                            {
+                                                json.Add(new JProperty("ComputerName", eventRecord.MachineName));
+                                            }
+                                            catch (Exception ex)
+                                            {
+
+                                            }
+
+                                            try
+                                            {
+                                                json.Add(new JProperty("Message", eventRecord.FormatDescription()));
+                                            }
+                                            catch (Exception ex)
+                                            {
+
+                                            }
+
+                                            ProcessJson(json);
+                                            _receivedMessages++;
+                                        }
+                                        else
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }                                
+                                GC.Collect();
                             //var oLogQuery = new LogQuery();                            
                             //var qfiles = string.Format("SELECT Distinct [EventLog] FROM {0}", location);
                             //var rsfiles = oLogQuery.Execute(qfiles, iFmt);
@@ -189,8 +253,8 @@ namespace TimberWinR.Inputs
                             //        _receivedMessages++;
                             //    }
                                 // Close the recordset
-                                //rs.close();                            
-                                GC.Collect();
+                                //rs.close();                           
+                                
                             }
                             if (!Stop)
                                 syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
