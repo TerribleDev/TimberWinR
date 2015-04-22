@@ -3,40 +3,34 @@
         "Inputs": {
             "WindowsEvents": [
                 {
-                    "source": "Application,System",
+                    "source": "ForwardedEvents",
                     "binaryFormat": "PRINT",
                     "resolveSIDS": true
-                }
-            ],
-            "Tcp": [
-                {
-                    "_comment": "Output from NLog",
-                    "port": 5140
                 }
             ]
         },
         "Filters": [
             {
                 "grok": {
-                    "condition": "\"[EventTypeName]\" == \"Information Event\"",
+                    "condition": "\"[type]\" == \"Win32-Eventlog\"",
                     "match": [
-                        "Text",
+                        "Message",
                         ""
-                    ],
-                    "drop": "true"
+                    ]
                 }
             }
         ],
         "Outputs": {
-            "Redis": [
-                {
-                    "_comment": "Change the host to your Redis instance",
-                    "port": 6379,
-                    "host": [
-                        "logaggregator.mycompany.svc"
-                    ]
-                }
-            ]
+            "Elasticsearch": [
+             {
+                  "threads":  1,
+                  "interval": 5000,
+                  "host": [
+                      "11.41.25.64"
+                  ],
+                  "index": "logging-%{yyyy.MM.dd}"
+              }
+          ]
         }
     }
 }

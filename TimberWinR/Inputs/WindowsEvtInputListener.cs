@@ -9,6 +9,7 @@ using LogQuery = Interop.MSUtil.LogQueryClassClass;
 using EventLogInputFormat = Interop.MSUtil.COMEventLogInputContextClassClass;
 using LogRecordSet = Interop.MSUtil.ILogRecordset;
 using System.Diagnostics.Eventing.Reader;
+using System.Globalization;
 
 namespace TimberWinR.Inputs
 {
@@ -73,7 +74,8 @@ namespace TimberWinR.Inputs
         {
             string location = ploc.ToString();
             EventRecord eventRecord = null;
-
+            var beforeCulture = Thread.CurrentThread.CurrentCulture;
+            
             LogManager.GetCurrentClassLogger().Info("WindowsEvent Input Listener Ready");
 
             // Instantiate the Event Log Input Format object
@@ -96,6 +98,7 @@ namespace TimberWinR.Inputs
                 // Execute the query
                 while (!Stop)
                 {
+                    Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US"); //Sometimes Formatdescription is null. Bug in .NET
                     // Execute the query
                     if (!CancelToken.IsCancellationRequested)
                     {
@@ -269,6 +272,7 @@ namespace TimberWinR.Inputs
                         }
                     }
                 }
+                Thread.CurrentThread.CurrentCulture = beforeCulture;
                 Finished();
             }
         }
