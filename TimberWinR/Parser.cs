@@ -232,18 +232,18 @@ namespace TimberWinR.Parser
             Fields.Add(new Field("EventLog", "string"));
             Fields.Add(new Field("RecordNumber", "int"));
             Fields.Add(new Field("TimeGenerated", "DateTime"));
-            Fields.Add(new Field("TimeWritten", "DateTime"));
+            //Fields.Add(new Field("TimeWritten", "DateTime"));
             Fields.Add(new Field("EventID", "int"));
-            Fields.Add(new Field("EventType", "int"));
+            //Fields.Add(new Field("EventType", "int"));
             Fields.Add(new Field("EventTypeName", "string"));
-            Fields.Add(new Field("EventCategory", "int"));
-            Fields.Add(new Field("EventCategoryName", "string"));
+            //Fields.Add(new Field("EventCategory", "int"));
+            //Fields.Add(new Field("EventCategoryName", "string"));
             Fields.Add(new Field("SourceName", "string"));
-            Fields.Add(new Field("Strings", "string"));
+            //Fields.Add(new Field("Strings", "string"));
             Fields.Add(new Field("ComputerName", "string"));
-            Fields.Add(new Field("SID", "string"));
+            //Fields.Add(new Field("SID", "string"));
             Fields.Add(new Field("Message", "string"));
-            Fields.Add(new Field("Data", "string"));
+            //Fields.Add(new Field("Data", "string"));
         }
 
         public void Validate()
