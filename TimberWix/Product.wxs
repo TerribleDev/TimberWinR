@@ -49,6 +49,8 @@
         <File Id="TimberWinR.ServiceHost.exe.config" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.ServiceHost.exe.config" />
         <File Id="Interop.MSUtil.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Interop.MSUtil.dll"  />
         <File Id="csredis.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\csredis.dll"  />
+        <File Id="Nest.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Nest.dll"  />
+        <File Id="Elasticsearch.Net.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Elasticsearch.Net.dll"  />
         <File Id="default.json" Source="$(var.TimberWinR.ServiceHost.TargetDir)\default.json"  />
         <File Id="Newtonsoft.Json.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Newtonsoft.Json.dll"  />
         <File Id="Nlog.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Nlog.dll"  />
