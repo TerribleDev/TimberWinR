@@ -1,0 +1,11 @@
+﻿{
+    "test": "Test 4",
+    "arguments": {
+        "--testFile": "test4.json",                
+        "--testDir": "test4",
+        "--timberWinRConfig": "test4-tw.json",
+        "--numMessages": 1234,
+        "--logLevel": "debug",         
+        "--resultsFile": "results4.json"
+    }
+}

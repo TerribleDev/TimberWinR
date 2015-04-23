@@ -1,6 +1,7 @@
 ﻿{
     "test": "Test 3",
     "arguments": {
+        "--start":  "",
         "--testFile": "test3.json",
         "--testDir": "test3",
         "--timberWinRConfig": "test3-tw.json",

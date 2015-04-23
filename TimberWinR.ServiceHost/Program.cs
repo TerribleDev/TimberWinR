@@ -28,9 +28,6 @@ namespace TimberWinR.ServiceHost
         
         private static void Main(string[] args)
         {
-
-           
-
             Arguments arguments = new Arguments();
            
             HostFactory.Run(hostConfigurator =>

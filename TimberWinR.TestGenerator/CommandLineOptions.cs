@@ -15,6 +15,9 @@ namespace TimberWinR.TestGenerator
         [Option("timberWinRConfig", DefaultValue = "default.json", HelpText = "Config file/directory to use")]
         public string TimberWinRConfigFile { get; set; }
 
+        [Option("start", HelpText = "Start an instance of TimberWinR")]
+        public bool StartTimberWinR { get; set; }
+
         [Option("testDir", DefaultValue = ".", HelpText = "Test directory to use (created if necessary)")]
         public string TestDir { get; set; }
 

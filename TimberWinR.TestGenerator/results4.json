@@ -1,0 +1,20 @@
+﻿{
+    "Results": {
+        "Inputs": [
+            {
+                "taillog": {
+                    "test1: message sent count": "[messages] == 7404",
+                    "test2: average cpu": "[avgCpuUsage] <= 30",
+                    "test3: maximum memory": "[maxMemUsage] <= 15"
+                }
+            },
+            {
+                "tcp": {
+                    "test4: message sent count": "[messages] == 1234",
+                    "test5: average cpu": "[avgCpuUsage] <= 30",
+                    "test6: maximum memory": "[maxMemUsage] <= 15"
+                }
+            }
+        ]
+    }
+}

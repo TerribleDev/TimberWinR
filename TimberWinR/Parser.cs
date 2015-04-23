@@ -519,7 +519,11 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "max_queue_size")]
         public int MaxQueueSize { get; set; }
         [JsonProperty(PropertyName = "queue_overflow_discard_oldest")]
-        public bool QueueOverflowDiscardOldest { get; set; }
+        public bool QueueOverflowDiscardOldest { get; set; }        
+        [JsonProperty(PropertyName = "enable_ping")]
+        public bool EnablePing { get; set; }      
+        [JsonProperty(PropertyName = "ping_timeout")]
+        public int PingTimeout { get; set; }
 
         public ElasticsearchOutputParameters()
         {
@@ -534,6 +538,8 @@ namespace TimberWinR.Parser
             Interval = 1000;
             QueueOverflowDiscardOldest = true;
             MaxQueueSize = 50000;
+            EnablePing = false;
+            PingTimeout = 0;
         }
 
         public string GetIndexName(JObject json)
