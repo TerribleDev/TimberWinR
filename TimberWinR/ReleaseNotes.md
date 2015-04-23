@@ -3,6 +3,10 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version / Date
+### 1.3.23.0 - 2015-04-23
+1. Fixed bug with parsing a single json config file, rather than reading
+   JSON files from a directory.
+2. Diabled elasticsearch outputter ping by default and parameterized the ping capability.
 
 ### 1.3.22.0 - 2015-04-14
 1. Fixed minor bug with TailFiles and service re-starts not picking up

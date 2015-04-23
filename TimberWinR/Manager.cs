@@ -66,13 +66,13 @@ namespace TimberWinR
 
         public Manager()
         {
-            LogsFileDatabase.Manager = this;                   
+            LogsFileDatabase.Manager = this;
         }
 
         public Manager(string jsonConfigFile, string logLevel, string logfileDir, bool liveMonitor, CancellationToken cancelToken, bool processConfiguration = true)
         {
-            LogsFileDatabase.Manager = this;           
-  
+            LogsFileDatabase.Manager = this;
+
             StartedOn = DateTime.UtcNow;
             LiveMonitor = liveMonitor;
 
@@ -119,17 +119,9 @@ namespace TimberWinR
 
             try
             {
-                // Is it a directory?
-                if (Directory.Exists(jsonConfigFile))
+                var fi = new FileInfo(jsonConfigFile);
+                if (fi.Exists)
                 {
-                    DirectoryInfo di = new DirectoryInfo(jsonConfigFile);
-                    LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", di.FullName);
-                    Config = Configuration.FromDirectory(jsonConfigFile, cancelToken, this);
-                }
-                else
-                {
-                    var fi = new FileInfo(jsonConfigFile);
-
                     LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From File: {0}", fi.FullName);
 
                     if (!fi.Exists)
@@ -138,6 +130,12 @@ namespace TimberWinR
                     LogManager.GetCurrentClassLogger().Info("Initialized, Reading Config: {0}", fi.FullName);
                     Config = Configuration.FromFile(jsonConfigFile);
                 }
+                else if (Directory.Exists(jsonConfigFile))
+                {
+                    DirectoryInfo di = new DirectoryInfo(jsonConfigFile);
+                    LogManager.GetCurrentClassLogger().Info("Initialized, Reading Configurations From {0}", di.FullName);
+                    Config = Configuration.FromDirectory(jsonConfigFile, cancelToken, this);
+                }
             }
             catch (JsonSerializationException jse)
             {
@@ -145,30 +143,30 @@ namespace TimberWinR
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);               
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
             LogManager.GetCurrentClassLogger().Info("Log Directory {0}", logfileDir);
             LogManager.GetCurrentClassLogger().Info("Logging Level: {0}", LogManager.GlobalThreshold);
 
             if (processConfiguration)
             {
-                ProcessConfiguration(cancelToken, Config);               
+                ProcessConfiguration(cancelToken, Config);
             }
         }
 
         public void Start(CancellationToken cancelToken)
         {
-            ProcessConfiguration(cancelToken, Config);          
+            ProcessConfiguration(cancelToken, Config);
         }
 
         public void ProcessConfiguration(CancellationToken cancelToken, Configuration config)
         {
-// Read the Configuration file
+            // Read the Configuration file
             if (config != null)
             {
                 if (OnConfigurationProcessed != null)
                     OnConfigurationProcessed(config);
-  
+
                 if (config.RedisOutputs != null)
                 {
                     foreach (var ro in config.RedisOutputs)
@@ -272,7 +270,7 @@ namespace TimberWinR
                             new JObject(
                                 new JProperty("version",
                                     Assembly.GetEntryAssembly().GetName().Version.ToString()),
-                                    //GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
+                        //GetAssemblyByName("TimberWinR.ServiceHost").GetName().Version.ToString()),
                                 new JProperty("host", computerName),
                                 new JProperty("output", output.Name),
                                 new JProperty("initialized", DateTime.UtcNow)
@@ -280,7 +278,7 @@ namespace TimberWinR
                     json.Add(new JProperty("type", "Win32-TimberWinR"));
                     json.Add(new JProperty("host", computerName));
                     output.Startup(json);
-                }              
+                }
             }
         }
 

@@ -41,7 +41,10 @@ namespace TimberWinR.Outputs
         private long _sentMessages;
         private long _errorCount;
         private readonly int _maxQueueSize;
-        private readonly bool _queueOverflowDiscardOldest;    
+        private readonly bool _queueOverflowDiscardOldest;
+        private readonly bool _disablePing;
+        private readonly int _pingTimeout;
+
         private Parser.ElasticsearchOutputParameters _parameters;
         public bool Stop { get; set; }
       
@@ -61,6 +64,11 @@ namespace TimberWinR.Outputs
             var settings = new ConnectionSettings(pool)
                 .ExposeRawResponse();
 
+            if (_disablePing)
+                settings.DisablePing();
+            else if (_pingTimeout != 0)
+                settings.SetPingTimeout(_pingTimeout);
+
             var client = new ElasticClient(settings);
             return client;
         }
@@ -70,7 +78,7 @@ namespace TimberWinR.Outputs
         {
             _sentMessages = 0;
             _errorCount = 0;
-
+           
             _parameters = parameters;
             _flushSize = parameters.FlushSize;
             _idleFlushTimeSeconds = parameters.IdleFlushTimeInSeconds;
@@ -84,7 +92,8 @@ namespace TimberWinR.Outputs
             _numThreads = parameters.NumThreads;
             _maxQueueSize = parameters.MaxQueueSize;
             _queueOverflowDiscardOldest = parameters.QueueOverflowDiscardOldest;
-      
+            _disablePing = !parameters.EnablePing;
+            _pingTimeout = parameters.PingTimeout;
 
             for (int i = 0; i < parameters.NumThreads; i++)
             {
@@ -99,7 +108,7 @@ namespace TimberWinR.Outputs
                     new JObject(
                         new JProperty("host", string.Join(",", _hosts)),
                         new JProperty("errors", _errorCount),
-                        new JProperty("sentMmessageCount", _sentMessages),
+                        new JProperty("messages", _sentMessages),
                         new JProperty("queuedMessageCount", _jsonQueue.Count),
                         new JProperty("port", _port),
                         new JProperty("flushSize", _flushSize),                                       
@@ -122,6 +131,10 @@ namespace TimberWinR.Outputs
         {
             // Force an inital flush
             DateTime lastFlushTime = DateTime.MinValue;
+
+            LogManager.GetCurrentClassLogger()
+                            .Info("{0}: Elasticsarch Output To {1} Ready", Thread.CurrentThread.ManagedThreadId, string.Join(",", _hosts));
+         
 
             using (var syncHandle = new ManualResetEventSlim())
             {               
@@ -188,7 +201,7 @@ namespace TimberWinR.Outputs
                             }
                             GC.Collect();
                             if (!Stop)
-                            {
+                            {                               
                                 syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);
                             }
                         }
@@ -203,6 +216,10 @@ namespace TimberWinR.Outputs
                     }
                 }
             }
+
+            LogManager.GetCurrentClassLogger()
+                          .Info("{0}: Elasticsarch Output To {1} Terminated", Thread.CurrentThread.ManagedThreadId, string.Join(",", _hosts));         
+
         }
 
         //

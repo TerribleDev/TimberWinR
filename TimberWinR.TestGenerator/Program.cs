@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace TimberWinR.TestGenerator
 
             ramCounter.CategoryName = "Memory";
             ramCounter.CounterName = "% Committed Bytes In Use";
-           
+
             Options = new CommandLineOptions();
 
             if (CommandLine.Parser.Default.ParseArguments(args, Options))
@@ -86,7 +87,8 @@ namespace TimberWinR.TestGenerator
                 var sw = Stopwatch.StartNew();
 
                 // Startup TimberWinR
-                StartTimberWinR(Options.TimberWinRConfigFile, Options.LogLevel, ".", false);
+                if (Options.StartTimberWinR)
+                    StartTimberWinR(Options.TimberWinRConfigFile, Options.LogLevel, ".", false);
 
                 // Run the Generators
                 var arrayOfTasks = RunGenerators(Options);
@@ -114,7 +116,16 @@ namespace TimberWinR.TestGenerator
                 sw.Start();
 
                 // Get all the stats
-                var jsonTimberWinr = ShutdownTimberWinR();
+                JObject jsonTimberWinr;
+
+                if (Options.StartTimberWinR)
+                    jsonTimberWinr = ShutdownTimberWinR();
+                else
+                {
+                    jsonTimberWinr = GetDiagnosticsOutput();
+                    if (jsonTimberWinr == null)
+                        return 3;
+                }
 
                 LogManager.GetCurrentClassLogger().Info("Finished Shutdown: " + sw.Elapsed);
                 sw.Stop();
@@ -129,6 +140,30 @@ namespace TimberWinR.TestGenerator
             }
 
             return 1;
+        }
+
+        public static string GET(string url)
+        {
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream stream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(stream);
+
+                string data = reader.ReadToEnd();
+
+                reader.Close();
+                stream.Close();
+
+                return data;
+            }
+            catch (Exception e)
+            {
+                LogManager.GetCurrentClassLogger().ErrorException("Error in GET", e);
+            }
+
+            return null;
         }
 
         private static void CopySourceFile(string fileName, string outputDir)
@@ -199,16 +234,16 @@ namespace TimberWinR.TestGenerator
                 switch (inputProp.Name)
                 {
                     case "udp":
-                        if (VerifyConditions(json, new string[] {"udp"}, inputProp, jresult) != 0)
+                        if (VerifyConditions(json, new string[] { "udp" }, inputProp, jresult) != 0)
                             return 1;
                         break;
                     case "tcp":
-                        if (VerifyConditions(json, new string[] {"tcp"}, inputProp, jresult) != 0)
+                        if (VerifyConditions(json, new string[] { "tcp" }, inputProp, jresult) != 0)
                             return 1;
                         break;
                     case "log":
                     case "taillog":
-                        if (VerifyConditions(json, new string[] {"log", "taillog"}, inputProp, jresult) != 0)
+                        if (VerifyConditions(json, new string[] { "log", "taillog" }, inputProp, jresult) != 0)
                             return 1;
                         break;
                 }
@@ -269,13 +304,32 @@ namespace TimberWinR.TestGenerator
             return 0;
         }
 
+
+        private static JObject GetDiagnosticsOutput()
+        {
+            if (Diagnostics != null)
+                return Diagnostics.DiagnosticsOutput();
+            else
+            {
+                var jsonDiag = GET("http://localhost:5141");
+                if (jsonDiag == null)
+                {
+                    LogManager.GetCurrentClassLogger().Error("TimberWinR diagnostics port not responding.");
+                    return null;
+                }
+                return JObject.Parse(jsonDiag);
+            }        
+        }
+
         // Wait till all output has been transmitted.
         private static void WaitForOutputTransmission()
         {
             bool completed = false;
             do
             {
-                var json = Diagnostics.DiagnosticsOutput();
+                var json = GetDiagnosticsOutput();
+                if (json == null)
+                    return;
 
                 //Console.WriteLine(json.ToString(Formatting.Indented));
 
@@ -337,21 +391,27 @@ namespace TimberWinR.TestGenerator
 
         private static JObject ShutdownTimberWinR()
         {
-            // Cancel any/all other threads
-            _cancellationTokenSource.Cancel();
+            if (_timberWinR != null)
+            {
+                // Cancel any/all other threads
+                _cancellationTokenSource.Cancel();
 
-            _timberWinR.Shutdown();
-          
-            var json = Diagnostics.DiagnosticsOutput();
+                _timberWinR.Shutdown();
 
-            LogManager.GetCurrentClassLogger()
-                .Info("Average CPU Usage: {0}%, Average RAM Usage: {1}MB, Max CPU: {2}%, Max Mem: {3}MB", _avgCpuUsage, _avgMemUsage, _maxCpuUsage, _maxMemUsage);
+                var json = Diagnostics.DiagnosticsOutput();
 
-            LogManager.GetCurrentClassLogger().Info(json.ToString());
+                LogManager.GetCurrentClassLogger()
+                    .Info("Average CPU Usage: {0}%, Average RAM Usage: {1}MB, Max CPU: {2}%, Max Mem: {3}MB",
+                        _avgCpuUsage, _avgMemUsage, _maxCpuUsage, _maxMemUsage);
 
-            Diagnostics.Shutdown();
+                LogManager.GetCurrentClassLogger().Info(json.ToString());
 
-            return json;
+                Diagnostics.Shutdown();
+
+                return json;
+            }
+
+            return new JObject();
         }
 
         static void StartTimberWinR(string configFile, string logLevel, string logFileDir, bool enableLiveMonitor)
@@ -363,7 +423,7 @@ namespace TimberWinR.TestGenerator
         }
 
         private static void TimberWinROnOnConfigurationProcessed(Configuration configuration)
-        {         
+        {
             if (!string.IsNullOrEmpty(Options.RedisHost) && configuration.RedisOutputs != null && configuration.RedisOutputs.Count() > 0)
             {
                 foreach (var ro in configuration.RedisOutputs)

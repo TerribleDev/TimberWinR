@@ -16,6 +16,8 @@ The following parameters are allowed when configuring the Redis output.
 | *port*                          | integer  | Elasticsearch port number                                   | This port must be open  | 9200  |
 | *queue_overflow_discard_oldest* | bool  | If true, discard oldest messages when max_queue_size reached otherwise discard newest |  | true |
 | *threads*                       | [string]    | Number of Threads                         | Number of worker threads processing messages | 1 |
+| *enable_ping* | bool  | If true, pings the server to test for keep alive |  | false |
+| *ping_timeout* | integer  | Default ping timeout when enable_ping is true | milliseconds | 200 |
 
 ### Index parameter
 If you want to output your data everyday to a new index, use following index format: "index-%{yyyy.MM.dd}". Here date format could be any forwat which you need.
