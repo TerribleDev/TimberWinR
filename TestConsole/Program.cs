@@ -21,15 +21,12 @@ namespace TestConsole
 
         static void Main(string[] args)
         {
-            Process p = new Process();
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardError = true;
-           
 
-            //_timberWinR = new TimberWinR.Manager("default.json", "Debug", "D:\\logs", true, _cancellationTokenSource.Token, false);
-            ////_timberWinR.OnConfigurationProcessed += TimberWinROnOnConfigurationProcessed;
-            //_timberWinR.Start(_cancellationTokenSource.Token);
-            //Diagnostics = new Diagnostics(_timberWinR, _cancellationTokenSource.Token, 5141);
+
+            _timberWinR = new TimberWinR.Manager("default.json", "Debug", "D:\\logs", true, _cancellationTokenSource.Token, false);
+            //_timberWinR.OnConfigurationProcessed += TimberWinROnOnConfigurationProcessed;
+            _timberWinR.Start(_cancellationTokenSource.Token);
+            Diagnostics = new Diagnostics(_timberWinR, _cancellationTokenSource.Token, 5141);
             Console.ReadKey();
         }
     }
