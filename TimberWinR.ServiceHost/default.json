@@ -3,7 +3,7 @@
         "Inputs": {
             "WindowsEvents": [
                 {
-                    "source": "ForwardedEvents",
+                    "source": "System",
                     "binaryFormat": "PRINT",
                     "resolveSIDS": true
                 }

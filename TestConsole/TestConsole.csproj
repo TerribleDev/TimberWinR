@@ -57,6 +57,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TimberWinR.ServiceHost\TimberWinR.ServiceHost.csproj">
+      <Project>{2c0b4c56-0d63-4b89-852b-f9bff4431f00}</Project>
+      <Name>TimberWinR.ServiceHost</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TimberWinR\TimberWinR.csproj">
       <Project>{4ef96a08-21db-4178-be44-70dae594632c}</Project>
       <Name>TimberWinR</Name>

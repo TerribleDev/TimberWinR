@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using TimberWinR;
 using TimberWinR.Parser;
 using TimberWinR.Diagnostics;
+using TimberWinR.ServiceHost;
+using System.Diagnostics;
 
 namespace TestConsole
 {
@@ -19,10 +21,15 @@ namespace TestConsole
 
         static void Main(string[] args)
         {
-            _timberWinR = new TimberWinR.Manager("default.json", "Debug", "D:\\logs", true, _cancellationTokenSource.Token, false);
-            //_timberWinR.OnConfigurationProcessed += TimberWinROnOnConfigurationProcessed;
-            _timberWinR.Start(_cancellationTokenSource.Token);
-            Diagnostics = new Diagnostics(_timberWinR, _cancellationTokenSource.Token, 5141);
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardError = true;
+           
+
+            //_timberWinR = new TimberWinR.Manager("default.json", "Debug", "D:\\logs", true, _cancellationTokenSource.Token, false);
+            ////_timberWinR.OnConfigurationProcessed += TimberWinROnOnConfigurationProcessed;
+            //_timberWinR.Start(_cancellationTokenSource.Token);
+            //Diagnostics = new Diagnostics(_timberWinR, _cancellationTokenSource.Token, 5141);
             Console.ReadKey();
         }
     }
