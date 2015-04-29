@@ -22,9 +22,7 @@ namespace TimberWinR
     public class Manager
     {
         public Configuration Config { get; set; }
-        public List<OutputSender> Outputs { get; set; }
-        public List<TcpInputListener> Tcps { get; set; }
-        public List<TcpInputListener> Udps { get; set; }
+        public List<OutputSender> Outputs { get; set; }       
         public List<InputListener> Listeners { get; set; }
         public bool LiveMonitor { get; set; }
 
@@ -255,6 +253,15 @@ namespace TimberWinR
                     foreach (var output in Outputs)
                         output.Connect(elistner);
                 }
+
+                foreach (var stdin in config.Generators)
+                {
+                    var elistner = new GeneratorInput(stdin, cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
 
                 var computerName = System.Environment.MachineName + "." +
                                    Microsoft.Win32.Registry.LocalMachine.OpenSubKey(

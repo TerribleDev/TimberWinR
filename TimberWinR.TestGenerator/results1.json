@@ -5,14 +5,14 @@
                 "taillog": {
                     "test1: message sent count": "[messages] == 7404",
                     "test2: average cpu": "[avgCpuUsage] <= 30",
-                    "test3: maximum memory": "[maxMemUsage] <= 20"                
+                    "test3: maximum memory": "[maxMemUsage] <= 30"                
                 }
             },
             {
                 "udp": {
                     "test1: message sent count": "[messages] == 1234",
                     "test2: average cpu": "[avgCpuUsage] <= 30",
-                    "test3: maximum memory": "[maxMemUsage] <= 20"              
+                    "test3: maximum memory": "[maxMemUsage] <= 30"              
                 }
             }
         ]

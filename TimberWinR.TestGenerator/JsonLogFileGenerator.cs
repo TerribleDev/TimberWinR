@@ -63,8 +63,7 @@ namespace TimberWinR.TestGenerator
             // This text is always added, making the file longer over time 
             // if it is not deleted. 
             using (StreamWriter sw = File.AppendText(logFilePath))
-            {
-                sw.AutoFlush = true;
+            {               
                 for (int i = 0; i < parms.NumMessages; i++)
                 {
                     JObject o = new JObject

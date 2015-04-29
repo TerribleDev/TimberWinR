@@ -77,6 +77,7 @@ namespace TimberWinR.Inputs
                 var fi = new FileInfo(logName);             
                 de.FileName = logName;
                 de.LogFileExists = fi.Exists;
+                de.Previous = "";
                 de.NewFile = true;
                 de.ProcessedFile = false;
                 de.LastPosition = fi.Length;
@@ -101,8 +102,10 @@ namespace TimberWinR.Inputs
             var creationTime = fi.CreationTimeUtc;
 
             if (dbe.LogFileExists && creationTime != dbe.CreationTimeUtc)
-                dbe.NewFile = true;           
-
+            {
+                dbe.NewFile = true;
+                dbe.Previous = "";
+            }
             dbe.CreationTimeUtc = creationTime;
       
             return dbe;
@@ -133,7 +136,8 @@ namespace TimberWinR.Inputs
         public static void Roll(LogsFileDatabaseEntry dbe)
         {
             dbe.ProcessedFile = false;
-            dbe.LastPosition = 0;          
+            dbe.LastPosition = 0;
+            dbe.Previous = "";
             Instance.UpdateEntry(dbe, 0);
             dbe.NewFile = true;           
         }
@@ -268,6 +272,7 @@ namespace TimberWinR.Inputs
         {
             Interlocked.Increment(ref _linesProcessed);
         }
+        public string Previous { get; set; }
     }
 
 }

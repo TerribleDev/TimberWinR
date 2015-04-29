@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,6 +13,8 @@ namespace TimberWinR.Parser
 {
     public partial class Json : LogstashFilter
     {
+        private long _errorCount;
+
         public Json()
         {
             RemoveSource = true;
@@ -22,6 +25,7 @@ namespace TimberWinR.Parser
                new JProperty("json",
                    new JObject(
                        new JProperty("condition", Condition),
+                       new JProperty("errors", _errorCount),
                        new JProperty("source", Source),
                        new JProperty("promote", Source),
                        new JProperty("target", Target),
@@ -102,6 +106,7 @@ namespace TimberWinR.Parser
                 catch (Exception ex)
                 {
                     LogManager.GetCurrentClassLogger().Error(ex);
+                    Interlocked.Increment(ref _errorCount);
                     return true;
                 }
             }
