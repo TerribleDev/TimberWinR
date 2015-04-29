@@ -3,6 +3,11 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version / Date
+### 1.3.24.0 - 2015-04-29
+1. Fixed potential bug in TailFiles when tailing log files which are partially flushed
+   to disk, it now will not process the line until the \r\n has been seen.
+2. Added Generator input.
+
 ### 1.3.23.0 - 2015-04-23
 1. Fixed bug with parsing a single json config file, rather than reading
    JSON files from a directory.

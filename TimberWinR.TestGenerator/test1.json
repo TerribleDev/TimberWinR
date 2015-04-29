@@ -8,7 +8,7 @@
         "--numMessages": 1234,
         "--logLevel": "debug",
         "--udp-host":  "localhost",
-        "--udp": "5140",
+        "--udp": "5140",       
         "--jroll": ["r1.jlog", "r2.jlog"],
         "--json": ["1.jlog", "2.jlog", "3.jlog", "4.jlog"],
         "--resultsFile": "results1.json"

@@ -30,18 +30,19 @@ namespace TimberWinR.Inputs
         private int _pollingIntervalInSeconds;
         private TimberWinR.Parser.TailFileArguments _arguments;
         private long _receivedMessages;
-
+        private long _errorCount;      
         private CodecArguments _codecArguments;
         private ICodec _codec;
-       
+
         public bool Stop { get; set; }
 
-        public TailFileListener(TimberWinR.Parser.TailFileArguments arguments, CancellationToken cancelToken)
+        public TailFileListener(TimberWinR.Parser.TailFileArguments arguments,
+            CancellationToken cancelToken)
             : base(cancelToken, "Win32-TailLog")
-        {
+        {         
             Stop = false;
-         
-            EnsureRollingCaught();    
+
+            EnsureRollingCaught();
 
             _codecArguments = arguments.CodecArguments;
             if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
@@ -60,7 +61,9 @@ namespace TimberWinR.Inputs
 
         public override void Shutdown()
         {
-            LogManager.GetCurrentClassLogger().Info("{0}: Shutting Down {1} for {2}", Thread.CurrentThread.ManagedThreadId, InputType, _arguments.Location);
+            LogManager.GetCurrentClassLogger()
+                .Info("{0}: Shutting Down {1} for {2}", Thread.CurrentThread.ManagedThreadId, InputType,
+                    _arguments.Location);
             Stop = true;
             base.Shutdown();
         }
@@ -71,6 +74,7 @@ namespace TimberWinR.Inputs
                 new JProperty("taillog",
                     new JObject(
                         new JProperty("messages", _receivedMessages),
+                        new JProperty("errors", _errorCount),
                         new JProperty("type", InputType),
                         new JProperty("location", _arguments.Location),
                         new JProperty("logSource", _arguments.LogSource),
@@ -103,73 +107,100 @@ namespace TimberWinR.Inputs
 
         private void TailFileContents(string fileName, long offset, LogsFileDatabaseEntry dbe)
         {
-            using (StreamReader reader = new StreamReader(new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            const int bufSize = 16535;
+            long prevLen = offset;
+
+            FileInfo fi = new FileInfo(fileName);
+            if (!fi.Exists)
+                return;
+
+            LogManager.GetCurrentClassLogger().Trace(":{0} Tailing File: {1} as Pos: {2}", Thread.CurrentThread.ManagedThreadId, fileName, prevLen);
+
+            using (var stream = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite))
             {
-                //start at the end of the file
-                long lastMaxOffset = offset;
+                stream.Seek(prevLen, SeekOrigin.Begin);
 
-                //if the file size has not changed, idle
-                if (reader.BaseStream.Length == lastMaxOffset)
-                    return;
-
-                //seek to the last max offset
-                LogManager.GetCurrentClassLogger().Trace("{0}: File: {1} Seek to: {2}", Thread.CurrentThread.ManagedThreadId, fileName, lastMaxOffset);
-
-                var seekedTo = reader.BaseStream.Seek(lastMaxOffset, SeekOrigin.Begin);
-
-                // We couldn't seek to the position, so remember what we have seeked to.
-                if (seekedTo != lastMaxOffset)
+                char[] buffer = new char[bufSize];
+                StringBuilder current = new StringBuilder();
+                using (StreamReader sr = new StreamReader(stream))
                 {
-                    lastMaxOffset = seekedTo;
-                    LogsFileDatabase.Update(dbe, true, lastMaxOffset);
-                }
-
-                //read out of the file until the EOF
-                string line = "";
-                long lineOffset = 0;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (string.IsNullOrEmpty(line))
-                        continue;
-
-                    long index = lastMaxOffset + lineOffset;
-                    string text = line;
-                    string logFileName = fileName;
-                    var json = new JObject();
-
-                    if (json["logSource"] == null)
+                    int nRead;
+                    do
                     {
-                        if (string.IsNullOrEmpty(_arguments.LogSource))
-                            json.Add(new JProperty("logSource", fileName));
-                        else
-                            json.Add(new JProperty("logSource", _arguments.LogSource));
+                        // Read a buffered amount
+                        nRead = sr.ReadBlock(buffer, 0, bufSize);
+                        for (int i = 0; i < nRead; ++i)
+                        {
+                            // We need the terminator!
+                            if (buffer[i] == '\n' || buffer[i] == '\r')
+                            {
+                                if (current.Length > 0)
+                                {
+                                    string line = string.Concat(dbe.Previous, current);
+                                    var json = new JObject();
+
+                                    if (json["logSource"] == null)
+                                    {
+                                        if (string.IsNullOrEmpty(_arguments.LogSource))
+                                            json.Add(new JProperty("logSource", fileName));
+                                        else
+                                            json.Add(new JProperty("logSource", _arguments.LogSource));
+                                    }
+
+                                    //LogManager.GetCurrentClassLogger().Debug(":{0} File: {1}:{2}  {3}", Thread.CurrentThread.ManagedThreadId, fileName, dbe.LinesProcessed, line);
+
+                                    // We've processed the partial input
+                                    dbe.Previous = "";
+                                    json["Text"] = line;
+                                    json["Index"] = dbe.LinesProcessed;
+                                    json["LogFileName"] = fileName;
+                                    if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
+                                    {
+                                        try
+                                        {                                         
+                                            _codec.Apply(line, this);
+                                            Interlocked.Increment(ref _receivedMessages);
+                                            dbe.IncrementLineCount();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Interlocked.Increment(ref _errorCount);
+                                            LogManager.GetCurrentClassLogger().ErrorException("Filter Error", ex);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            ProcessJson(json);
+                                            dbe.IncrementLineCount();                                                                                      
+                                            Interlocked.Increment(ref _receivedMessages);
+                                            LogsFileDatabase.Update(dbe, true, sr.BaseStream.Position);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Interlocked.Increment(ref _errorCount);
+                                            LogManager.GetCurrentClassLogger().ErrorException("Process Error", ex);
+                                        }
+                                    }
+
+                                }
+                                current = new StringBuilder();
+                            }
+                            else // Copy character into the buffer
+                            {
+                                current.Append(buffer[i]);
+                            }
+                        }
+                    } while (nRead > 0);
+
+                    // We didn't encounter the newline, so save it.
+                    if (current.Length > 0)
+                    {
+                        dbe.Previous = current.ToString();
                     }
-
-                    json["Text"] = line;
-                    json["Index"] = index;
-                    json["LogFileName"] = fileName;
-
-
-                    if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
-                    {
-                        _codec.Apply(line, this);
-                        Interlocked.Increment(ref _receivedMessages);
-                        dbe.IncrementLineCount();
-                    }
-                    else
-                    {
-                        ProcessJson(json);
-                        Interlocked.Increment(ref _receivedMessages);
-                        dbe.IncrementLineCount();
-                        //LogManager.GetCurrentClassLogger().Info("{0}: File: {1} {2} {3}", Thread.CurrentThread.ManagedThreadId, fileName, dbe.LinesProcessed, line);
-                    }                 
-
-                    lineOffset += line.Length;
                 }
-                //update the last max offset
-                lastMaxOffset = reader.BaseStream.Position;
-                LogsFileDatabase.Update(dbe, true, lastMaxOffset);               
-            }
+            }         
         }
         // One thread for each kind of file to watch, i.e. "*.log,*.txt" would be two separate
         // threads.
@@ -203,13 +234,13 @@ namespace TimberWinR.Inputs
                             foreach (string fileName in Directory.GetFiles(path, name, so))
                             {
                                 var dbe = LogsFileDatabase.LookupLogFile(fileName);
-   
+
                                 // We only spin up 1 thread for a file we haven't yet seen.                               
                                 if (isWildcardPattern && !HaveSeenFile(fileName) && dbe.NewFile)
                                 {
                                     LogManager.GetCurrentClassLogger().Debug(":{0} Starting Thread Tailing File: {1}", Thread.CurrentThread.ManagedThreadId, dbe.FileName);
                                     LogsFileDatabase.Update(dbe, false, dbe.LastPosition);
-                                   
+
                                     Task.Factory.StartNew(() => TailFileWatcher(fileName));
                                 }
                                 else if (!isWildcardPattern)
@@ -237,7 +268,7 @@ namespace TimberWinR.Inputs
                                     else
                                     {
                                         TailFileContents(dbe.FileName, dbe.LastPosition, dbe);
-                                    }                                  
+                                    }
                                 }
                             }
                         }
@@ -281,7 +312,7 @@ namespace TimberWinR.Inputs
                 }
             }
             Finished();
-        }       
+        }
     }
 }
 

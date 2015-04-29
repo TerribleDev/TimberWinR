@@ -65,7 +65,7 @@ namespace TimberWinR.TestGenerator
             // if it is not deleted. 
             using (StreamWriter sw = File.AppendText(logFilePath))
             {
-                sw.AutoFlush = true;
+               // sw.AutoFlush = true;
                 for (int i = 0; i < parms.NumMessages; i++)
                 {
                     JObject o = new JObject

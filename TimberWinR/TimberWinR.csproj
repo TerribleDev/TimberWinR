@@ -82,7 +82,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Codecs\JsonCodec.cs" />
     <Compile Include="Codecs\Multiline.cs" />
+    <Compile Include="Codecs\PlainCodec.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationErrors.cs" />
     <Compile Include="Diagnostics\Diagnostics.cs" />
@@ -94,6 +96,7 @@
     <Compile Include="Filters\MutateFilter.cs" />
     <Compile Include="ICodec.cs" />
     <Compile Include="Inputs\FieldDefinitions.cs" />
+    <Compile Include="Inputs\GeneratorInput.cs" />
     <Compile Include="Inputs\IISW3CRowReader.cs" />
     <Compile Include="Inputs\LogsFileDatabase.cs" />
     <Compile Include="Inputs\TailFileListener.cs" />
@@ -137,6 +140,7 @@
     <None Include="mdocs\DateFilter.md" />
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GeoIPFilter.md" />
+    <None Include="mdocs\Generator.md" />
     <None Include="mdocs\TailFiles.md" />
     <None Include="mdocs\UdpInput.md" />
     <None Include="mdocs\W3CInput.md" />

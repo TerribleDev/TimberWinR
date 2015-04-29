@@ -263,12 +263,46 @@ namespace TimberWinR.Parser
         }
     }
 
+    public class GeneratorParameters : IValidateSchema
+    {
+        [JsonProperty(PropertyName = "type")]
+        public string Type { get; set; }
+
+        [JsonProperty(PropertyName = "codec")]
+        public CodecArguments CodecArguments { get; set; }       
+
+        [JsonProperty(PropertyName = "message")]
+        public string Message { get; set; }
+
+        [JsonProperty(PropertyName = "count")]
+        public int Count { get; set; }
+
+        [JsonProperty(PropertyName = "rate")]
+        public int Rate { get; set; }
+
+        public void Validate()
+        {                      
+        }
+
+        public GeneratorParameters()
+        {
+            Count = 0; // Infinity messages
+            Rate = 10; // Milliseconds
+            Message = "Hello, world!";
+            CodecArguments = new CodecArguments();
+            CodecArguments.Type = CodecArguments.CodecType.plain;
+        }
+    }
+
+
     public class CodecArguments
     {
         public enum CodecType
         {
             singleline,
-            multiline
+            multiline,
+            json,
+            plain
         };
 
         public enum WhatType
@@ -668,6 +702,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("Stdin")]
         public Stdin[] Stdins { get; set; }
+
+        [JsonProperty("Generator")]
+        public GeneratorParameters[] Generators { get; set; }
     }
 
     public partial class Grok : LogstashFilter, IValidateSchema

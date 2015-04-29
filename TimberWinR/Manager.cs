@@ -256,6 +256,15 @@ namespace TimberWinR
                         output.Connect(elistner);
                 }
 
+                foreach (var stdin in config.Generators)
+                {
+                    var elistner = new GeneratorInput(stdin, cancelToken);
+                    Listeners.Add(elistner);
+                    foreach (var output in Outputs)
+                        output.Connect(elistner);
+                }
+
+
                 var computerName = System.Environment.MachineName + "." +
                                    Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
                                        @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
