@@ -53,6 +53,9 @@ namespace TimberWinR.Inputs
             if (_codecArguments != null && _codecArguments.Type == CodecArguments.CodecType.multiline)
                 _codec = new Multiline(_codecArguments);
 
+            if (!string.IsNullOrEmpty(arguments.Type))
+                SetTypeName(arguments.Type);
+
             _receivedMessages = 0;
             _arguments = arguments;
             _pollingIntervalInSeconds = arguments.Interval;

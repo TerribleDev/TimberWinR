@@ -44,6 +44,11 @@ namespace TimberWinR.Inputs
                              .ToString();    
         }
 
+        public void SetTypeName(string newType)
+        {
+            _typeName = newType;
+        }
+
         public bool HaveSeenFile(string fileName)
         {
             return Files.Contains(fileName);

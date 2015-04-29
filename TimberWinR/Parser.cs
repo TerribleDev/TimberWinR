@@ -333,6 +333,8 @@ namespace TimberWinR.Parser
 
     public class TailFileArguments : IValidateSchema
     {
+        [JsonProperty(PropertyName = "type")]
+        public string Type { get; set; }
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }       
         [JsonProperty(PropertyName = "recurse")]
@@ -363,6 +365,8 @@ namespace TimberWinR.Parser
 
     public class LogParameters : IValidateSchema
     {
+        [JsonProperty(PropertyName = "type")]
+        public string Type { get; set; }
         [JsonProperty(PropertyName = "location")]
         public string Location { get; set; }
         [JsonProperty(PropertyName = "iCodepage")]
