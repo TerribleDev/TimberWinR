@@ -110,7 +110,7 @@ namespace TimberWinR.Inputs
             const int bufSize = 16535;
             long prevLen = offset;
 
-            FileInfo fi = new FileInfo(fileName);
+            var fi = new FileInfo(fileName);
             if (!fi.Exists)
                 return;
 
@@ -120,9 +120,9 @@ namespace TimberWinR.Inputs
             {
                 stream.Seek(prevLen, SeekOrigin.Begin);
 
-                char[] buffer = new char[bufSize];
-                StringBuilder current = new StringBuilder();
-                using (StreamReader sr = new StreamReader(stream))
+                var buffer = new char[bufSize];
+                var current = new StringBuilder();
+                using (var sr = new StreamReader(stream))
                 {
                     int nRead;
                     do

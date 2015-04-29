@@ -30,18 +30,10 @@ namespace TimberWinR.Inputs
 
         private static LogsFileDatabase instance;
 
-        private bool ExistingFile(string logName)
-        {
-            lock (_locker)
-            {
-                return ExistingFileTest(logName);
-            }
-        }
-       
         //
         // Lookup the database entry for this log file, returns null if there isnt one.
         //
-        private LogsFileDatabaseEntry FindFile(string logName)
+        private LogsFileDatabaseEntry FindFileWithLock(string logName)
         {
             lock (_locker)
             {
@@ -69,12 +61,12 @@ namespace TimberWinR.Inputs
             }
         }
 
-        private LogsFileDatabaseEntry AddFileEntry(string logName)
+        private LogsFileDatabaseEntry AddFileEntryWithLock(string logName)
         {
             var de = new LogsFileDatabaseEntry();
             lock (_locker)
             {
-                var fi = new FileInfo(logName);             
+                var fi = new FileInfo(logName);
                 de.FileName = logName;
                 de.LogFileExists = fi.Exists;
                 de.Previous = "";
@@ -82,21 +74,21 @@ namespace TimberWinR.Inputs
                 de.ProcessedFile = false;
                 de.LastPosition = fi.Length;
                 de.SampleTime = DateTime.UtcNow;
-                de.CreationTimeUtc = fi.CreationTimeUtc;               
+                de.CreationTimeUtc = fi.CreationTimeUtc;
 
                 Entries.Add(de);
                 WriteDatabaseFileNoLock();
             }
             return de;
-        }      
+        }
 
         public static LogsFileDatabaseEntry LookupLogFile(string logName)
         {
-            LogsFileDatabaseEntry dbe = Instance.FindFile(logName);
+            LogsFileDatabaseEntry dbe = Instance.FindFileWithLock(logName);
             if (dbe == null)
-                dbe = Instance.AddFileEntry(logName);
+                dbe = Instance.AddFileEntryWithLock(logName);
 
-            FileInfo fi = new FileInfo(logName);          
+            FileInfo fi = new FileInfo(logName);
 
             dbe.LogFileExists = fi.Exists;
             var creationTime = fi.CreationTimeUtc;
@@ -107,18 +99,18 @@ namespace TimberWinR.Inputs
                 dbe.Previous = "";
             }
             dbe.CreationTimeUtc = creationTime;
-      
+
             return dbe;
         }
 
         // Find all the non-existent entries and remove them.
-        private void PruneFiles()
+        private void PruneFilesWithLock()
         {
             lock (_locker)
             {
-                foreach(var entry in Entries.ToList())
+                foreach (var entry in Entries.ToList())
                 {
-                    FileInfo fi = new FileInfo(entry.FileName);
+                    var fi = new FileInfo(entry.FileName);
                     if (!fi.Exists)
                         Entries.Remove(entry);
                 }
@@ -130,7 +122,7 @@ namespace TimberWinR.Inputs
         {
             dbe.ProcessedFile = processedFile;
             dbe.LogFileExists = File.Exists(dbe.FileName);
-            Instance.UpdateEntry(dbe, lastOffset);           
+            Instance.UpdateEntryWithLock(dbe, lastOffset);
         }
 
         public static void Roll(LogsFileDatabaseEntry dbe)
@@ -138,20 +130,20 @@ namespace TimberWinR.Inputs
             dbe.ProcessedFile = false;
             dbe.LastPosition = 0;
             dbe.Previous = "";
-            Instance.UpdateEntry(dbe, 0);
-            dbe.NewFile = true;           
+            Instance.UpdateEntryWithLock(dbe, 0);
+            dbe.NewFile = true;
         }
 
-        private void UpdateEntry(LogsFileDatabaseEntry dbe, long lastOffset)
+        private void UpdateEntryWithLock(LogsFileDatabaseEntry dbe, long lastOffset)
         {
             lock (_locker)
             {
-                var fi = new FileInfo(dbe.FileName);                
+                var fi = new FileInfo(dbe.FileName);
                 dbe.NewFile = !fi.Exists;
                 dbe.CreationTimeUtc = fi.CreationTimeUtc;
-                dbe.SampleTime = DateTime.UtcNow;                 
+                dbe.SampleTime = DateTime.UtcNow;
                 dbe.LastPosition = lastOffset;
-              
+
                 WriteDatabaseFileNoLock();
             }
         }
@@ -175,7 +167,7 @@ namespace TimberWinR.Inputs
                         if (instance.Entries == null)
                             instance.Entries = new List<LogsFileDatabaseEntry>();
 
-                        instance.PruneFiles();
+                        instance.PruneFilesWithLock();
                     }
                 }
                 return instance;
@@ -195,18 +187,17 @@ namespace TimberWinR.Inputs
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger()
-                    .Error("Error reading database '{0}': {1}", DatabaseFileName, ex.ToString());
+                LogManager.GetCurrentClassLogger().Error("Error reading database '{0}': {1}", DatabaseFileName, ex.ToString());
                 try
                 {
                     if (File.Exists(DatabaseFileName))
                         File.Delete(DatabaseFileName);
-                    LogManager.GetCurrentClassLogger().Info("Creating New Database '{0}'", DatabaseFileName);
+                    LogManager.GetCurrentClassLogger().Error("Creating New Database '{0}'", DatabaseFileName);
                     WriteDatabaseLock();
                 }
                 catch (Exception ex2)
                 {
-                    LogManager.GetCurrentClassLogger().Info("Error Creating New Database '{0}': {1}", DatabaseFileName, ex2.ToString());
+                    LogManager.GetCurrentClassLogger().Error("Error Creating New Database '{0}': {1}", DatabaseFileName, ex2.ToString());
                 }
             }
         }
@@ -258,7 +249,7 @@ namespace TimberWinR.Inputs
         public bool NewFile { get; set; }
         public bool ProcessedFile { get; set; }
         public bool LogFileExists { get; set; }
-        public string FileName { get; set; }       
+        public string FileName { get; set; }
         public DateTime CreationTimeUtc { get; set; }
         public DateTime SampleTime { get; set; }
         public long LastPosition { get; set; }
