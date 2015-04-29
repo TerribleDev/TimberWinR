@@ -59,11 +59,10 @@ namespace TimberWinR.Inputs
         {
             LogManager.GetCurrentClassLogger().Info("Generator Creating {0} Lines", _params.Count);
 
-            int numMessages = _params.Count;
-            if (numMessages == 0)
-                numMessages = int.MaxValue;
+            int numMessages = _params.Count;         
 
-            for (int i = 0; i < numMessages; i++)
+            // Infinite or until done.
+            for (int i = 0; (_params.Count == 0 || i < numMessages); i++)
             {
                 if (CancelToken.IsCancellationRequested)
                     break;

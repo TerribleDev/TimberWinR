@@ -3,7 +3,7 @@
 The Generator input can be used to Generate log files for test purposes.
 
 ## Parameters
-The following parameters are allowed when configuring WindowsEvents.
+The following parameters are allowed when configuring the test log Generator.
 
 | Parameter         |     Type       |  Description                                                             | Details               |  Default |
 | :---------------- |:---------------| :----------------------------------------------------------------------- | :---------------------------  | :-- |
@@ -30,7 +30,7 @@ Example: Generate 100000 "Hello Win32-InputGen" messages
 }
 ```
 ## Fields
-After a successful parse of an event, the following fields are added:
+After a successful parse of the generated line, the following fields are added:
 
 | Name | Type | Description |
 | ---- |:-----| :-----------|
