@@ -22,9 +22,7 @@ namespace TimberWinR
     public class Manager
     {
         public Configuration Config { get; set; }
-        public List<OutputSender> Outputs { get; set; }
-        public List<TcpInputListener> Tcps { get; set; }
-        public List<TcpInputListener> Udps { get; set; }
+        public List<OutputSender> Outputs { get; set; }       
         public List<InputListener> Listeners { get; set; }
         public bool LiveMonitor { get; set; }
 
