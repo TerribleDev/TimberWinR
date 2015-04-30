@@ -33,7 +33,7 @@
                     "interval":  1000,
                     "threads": 4,
                     "host": [
-                        "tstlexiceapp006.vistaprint.svc"
+                        "tstlexiceapp006.mycompany.svc"
                     ]
                 }
             ]

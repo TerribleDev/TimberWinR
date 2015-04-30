@@ -41,7 +41,7 @@
                     "batch_count": 500,
                     "threads": 1,
                     "host": [
-                        "tstlexiceapp006.vistaprint.svc"
+                        "tstlexiceapp006.mycompany.svc"
                     ]
                 }
             ]
