@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Security.Cryptography;
+using System.Threading;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Config;
@@ -52,13 +54,27 @@ namespace TimberWinR.TestGenerator
                     {"Executable", "VP.Common.SvcFrm.Services.Host, Version=29.7.0.0, Culture=neutral, PublicKeyToken=null"},
                     {"RenderedMessage", "Responding to RequestSchedule message from 10.1.230.36 with Ack because: PRJ byte array is null."},
                     {"Team", "Manufacturing Software"},   
+                    {"RecordNumber", i},
                     {"Host", hostName},                   
                     {"UtcTimestamp", DateTime.UtcNow.ToString("o")},
                     {"Type", "VP.Fulfillment.Direct.Initialization.LogWrapper"},                
                     {"Message", "Testgenerator udp message " + DateTime.UtcNow.ToString("o")},
                     {"Index", "logstash"}
                 };
-                byte[] sendbuf = Encoding.UTF8.GetBytes(o.ToString());
+
+                string hashedString = "";
+                foreach(var key in o)
+                {
+                    hashedString += key.ToString();
+                }
+
+                var source = ASCIIEncoding.ASCII.GetBytes(hashedString);
+                var md5 = new MD5CryptoServiceProvider().ComputeHash(source);
+                var hash = string.Concat(md5.Select(x => x.ToString("X2")));
+
+                o["md5"] = hash;
+
+                byte[] sendbuf = Encoding.UTF8.GetBytes(o.ToString(Formatting.None));
                 IPEndPoint ep = new IPEndPoint(broadcast, parms.Port);
                 s.SendTo(sendbuf, ep);
 

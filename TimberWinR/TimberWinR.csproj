@@ -115,6 +115,7 @@
     <Compile Include="Outputs\Elasticsearch.cs" />
     <Compile Include="Outputs\OutputSender.cs" />
     <Compile Include="Outputs\Redis.cs" />
+    <Compile Include="Outputs\File.cs" />
     <Compile Include="Outputs\Stdout.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -141,6 +142,7 @@
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GeoIPFilter.md" />
     <None Include="mdocs\Generator.md" />
+    <None Include="mdocs\FileOutput.md" />
     <None Include="mdocs\TailFiles.md" />
     <None Include="mdocs\UdpInput.md" />
     <None Include="mdocs\W3CInput.md" />

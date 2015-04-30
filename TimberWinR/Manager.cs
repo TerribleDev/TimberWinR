@@ -190,6 +190,15 @@ namespace TimberWinR
                     }
                 }
 
+                if (config.FileOutputs != null)
+                {
+                    foreach (var ro in config.FileOutputs)
+                    {
+                        var output = new FileOutput(this, ro, cancelToken);
+                        Outputs.Add(output);
+                    }
+                }
+
                 foreach (Parser.IISW3CLogParameters iisw3cConfig in config.IISW3C)
                 {
                     var elistner = new IISW3CInputListener(iisw3cConfig, cancelToken);

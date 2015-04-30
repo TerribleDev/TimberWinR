@@ -8,6 +8,7 @@ Version / Date
 2. Fixed potential non-thread safe when renaming properties
 3. Added add_field, rename support to Udp/Tcp Input Listeners
 4. Fixed issue with multiple renames (was previously only renaming the first one)
+5. Added File outputter for testing.
 
 ### 1.3.24.0 - 2015-04-29
 1. Fixed potential bug in TailFiles when tailing log files which are partially flushed

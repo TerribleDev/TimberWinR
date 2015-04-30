@@ -9,7 +9,7 @@
                         "Environment",
                         "PLANT_TST_TIMBERWINR"
                     ],
-                     "rename": [
+                    "rename": [
                         "Type",
                         "type"
                     ]
@@ -25,16 +25,10 @@
             ]
         },
         "Outputs": {
-            "Redis": [
+            "File": [
                 {
-                    "_comment": "Change the host to your Redis instance",
-                    "port": 6379,
-                    "batch_count": 500,
-                    "interval":  1000,
-                    "threads": 4,
-                    "host": [
-                        "tstlexiceapp006.mycompany.svc"
-                    ]
+                    "format":  "indented",
+                    "file_name": "test5_output.txt"
                 }
             ]
         }

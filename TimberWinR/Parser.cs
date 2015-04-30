@@ -43,7 +43,7 @@ namespace TimberWinR.Parser
         {
             JToken token = json[oldName];
             if (token != null)
-            {                
+            {
                 json.Add(newName, token.DeepClone());
                 json.Remove(oldName);
             }
@@ -679,6 +679,43 @@ namespace TimberWinR.Parser
         }
     }
 
+    public class FileOutputParameters
+    {
+        public enum FormatKind
+        {
+            none, indented
+        };
+
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
+
+        [JsonProperty(PropertyName = "file_name")]
+        public string FileName { get; set; }
+
+        [JsonProperty(PropertyName = "format")]
+        public FormatKind Format { get; set; }
+
+        public FileOutputParameters()
+        {
+            Format = FormatKind.none;            
+            Interval = 1000;
+            FileName = "timberwinr.out";
+        }
+
+        public Newtonsoft.Json.Formatting ToFormat()
+        {
+            switch (Format)
+            {
+                case FormatKind.indented:
+                    return Newtonsoft.Json.Formatting.Indented;
+
+                case FormatKind.none:
+                default:
+                    return Newtonsoft.Json.Formatting.None;
+            }
+        }
+    }
+
     public class OutputTargets
     {
         [JsonProperty("Redis")]
@@ -689,6 +726,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("Stdout")]
         public StdoutOutputParameters[] Stdout { get; set; }
+
+        [JsonProperty("File")]
+        public FileOutputParameters[] File { get; set; }
     }
 
     public class InputSources

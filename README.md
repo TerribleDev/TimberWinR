@@ -107,6 +107,7 @@ represented as a JSON Property or Array.
 1. [Redis](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/RedisOutput.md)
 2. [Elasticsearch](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/ElasticsearchOutput.md)
 3. [Stdout](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/StdoutOutput.md)
+4. [File](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/FileOutput.md)
 
 ## Sample Configuration
 TimberWinR reads a JSON configuration file, an example file is shown here:

@@ -5,11 +5,11 @@
         "--testFile": "test5.json",
         "--testDir": "test5",
         "--timberWinRConfig": "test5-twconfig.json",
-        "--numMessages": 20000,
+        "--numMessages": 80000,
         "--logLevel": "debug",
         "--udp-host":  "localhost",
         "--udp": "5140",  
-        "--udp-rate":  5,            
+        "--udp-rate":  1,            
         "--resultsFile": "results5.json"
     }
 }
