@@ -8,6 +8,7 @@ The following parameters are allowed when configuring WindowsEvents.
 
 | Parameter         |     Type       |  Description                                                             | Details               |  Default |
 | :---------------- |:---------------| :----------------------------------------------------------------------- | :---------------------------  | :-- |
+| *type*            | string  |Typename for this Input                                         |  |  Win32-TailLog  |
 | *location*        | string  |Location of file(s) to monitor                                           | Path to text file(s) including wildcards. |     |
 | *logSource*       | string  |Source name                                  | Used for conditions |     |
 | *recurse*         | integer |Max subdirectory recursion level.                                       | 0 disables subdirectory recursion; -1 enables unlimited recursion. | 0 |
@@ -39,3 +40,4 @@ After a successful parse of an event, the following fields are added:
 | LogFilename | STRING |Full path of the file containing this line | 
 | Index | INTEGER | Line number |
 | Text | STRING | Text line content  |
+| type | STRING | Win32-TailLog |

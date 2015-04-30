@@ -4,7 +4,15 @@
             "Udp": [
                 {
                     "_comment": "Output from NLog",
-                    "port": 5140
+                    "port": 5140,
+                    "add_field": [
+                        "Environment",
+                        "PLANT_TST_TIMBERWINR"
+                    ],
+                     "rename": [
+                        "Type",
+                        "type"
+                    ]
                 }
             ],
             "TailFiles": [
@@ -16,30 +24,14 @@
                 }
             ]
         },
-        "Filters": [
-            {
-                "grok": {
-                    "condition": "\"[EventTypeName]\" == \"Information Event\"",
-                    "match": [
-                        "Text",
-                        ""
-                    ],
-                    "drop": "true"
-                },
-                "json": {
-                    "type": "Win32-TailFile",
-                    "source": "Text",
-                    "promote": "Text"
-                }
-            }
-        ],
         "Outputs": {
             "Redis": [
                 {
                     "_comment": "Change the host to your Redis instance",
                     "port": 6379,
                     "batch_count": 500,
-                    "threads": 1,
+                    "interval":  1000,
+                    "threads": 4,
                     "host": [
                         "tstlexiceapp006.vistaprint.svc"
                     ]

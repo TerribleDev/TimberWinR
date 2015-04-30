@@ -12,6 +12,7 @@ using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using NLog.Config;
 using TimberWinR.Outputs;
 using System.CodeDom.Compiler;
 
@@ -42,11 +43,9 @@ namespace TimberWinR.Parser
         {
             JToken token = json[oldName];
             if (token != null)
-            {
+            {                
+                json.Add(newName, token.DeepClone());
                 json.Remove(oldName);
-                JToken newToken = json[newName];
-                if (newToken == null)
-                    json.Add(newName, token);
             }
         }
 
@@ -269,7 +268,7 @@ namespace TimberWinR.Parser
         public string Type { get; set; }
 
         [JsonProperty(PropertyName = "codec")]
-        public CodecArguments CodecArguments { get; set; }       
+        public CodecArguments CodecArguments { get; set; }
 
         [JsonProperty(PropertyName = "message")]
         public string Message { get; set; }
@@ -281,7 +280,7 @@ namespace TimberWinR.Parser
         public int Rate { get; set; }
 
         public void Validate()
-        {                      
+        {
         }
 
         public GeneratorParameters()
@@ -336,9 +335,9 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "type")]
         public string Type { get; set; }
         [JsonProperty(PropertyName = "location")]
-        public string Location { get; set; }       
+        public string Location { get; set; }
         [JsonProperty(PropertyName = "recurse")]
-        public int Recurse { get; set; }        
+        public int Recurse { get; set; }
         [JsonProperty(PropertyName = "fields")]
         public List<Field> Fields { get; set; }
         [JsonProperty(PropertyName = "interval")]
@@ -403,15 +402,21 @@ namespace TimberWinR.Parser
     {
         [JsonProperty(PropertyName = "port")]
         public int Port { get; set; }
+        [JsonProperty(PropertyName = "type")]
+        public string Type { get; set; }
+        [JsonProperty("add_field")]
+        public string[] AddFields { get; set; }
+        [JsonProperty("rename")]
+        public string[] Renames { get; set; }
 
         public TcpParameters()
         {
             Port = 5140;
+            Type = "Win32-Tcp";
         }
 
         public void Validate()
         {
-
         }
     }
 
@@ -420,15 +425,21 @@ namespace TimberWinR.Parser
     {
         [JsonProperty(PropertyName = "port")]
         public int Port { get; set; }
+        [JsonProperty(PropertyName = "type")]
+        public string Type { get; set; }
+        [JsonProperty("add_field")]
+        public string[] AddFields { get; set; }
+        [JsonProperty("rename")]
+        public string[] Renames { get; set; }
 
         public UdpParameters()
         {
             Port = 5142;
+            Type = "Win32-Udp";
         }
 
         public void Validate()
         {
-
         }
     }
     public class W3CLogParameters : IValidateSchema
@@ -557,9 +568,9 @@ namespace TimberWinR.Parser
         [JsonProperty(PropertyName = "max_queue_size")]
         public int MaxQueueSize { get; set; }
         [JsonProperty(PropertyName = "queue_overflow_discard_oldest")]
-        public bool QueueOverflowDiscardOldest { get; set; }        
+        public bool QueueOverflowDiscardOldest { get; set; }
         [JsonProperty(PropertyName = "enable_ping")]
-        public bool EnablePing { get; set; }      
+        public bool EnablePing { get; set; }
         [JsonProperty(PropertyName = "ping_timeout")]
         public int PingTimeout { get; set; }
 
@@ -650,7 +661,6 @@ namespace TimberWinR.Parser
             Host = new string[] { "localhost" };
             Timeout = 10000;
             BatchCount = 200;
-            MaxBatchCount = BatchCount*10;
             NumThreads = 1;
             Interval = 5000;
             QueueOverflowDiscardOldest = true;
@@ -755,7 +765,7 @@ namespace TimberWinR.Parser
 
         public override void Validate()
         {
-            if (Match == null || Match.Length != 2)
+            if (Match == null || Match.Length % 2 != 0)
                 throw new GrokFilterException();
 
             if (AddTag != null && AddTag.Length % 2 != 0)
@@ -896,7 +906,7 @@ namespace TimberWinR.Parser
         }
     }
 
-   
+
     public partial class Json : LogstashFilter
     {
         public class JsonMissingSourceException : Exception
@@ -980,7 +990,7 @@ namespace TimberWinR.Parser
 
         [JsonProperty("grokFilters")]
         public Grok[] Groks { get; set; }
-      
+
         [JsonProperty("mutateFilters")]
         public Mutate[] Mutates { get; set; }
 
@@ -991,7 +1001,7 @@ namespace TimberWinR.Parser
         public Json[] Jsons { get; set; }
 
         [JsonProperty("geoipFilters")]
-        public GeoIP[] GeoIPs { get; set; }    
+        public GeoIP[] GeoIPs { get; set; }
     }
 
     public class TimberWinR

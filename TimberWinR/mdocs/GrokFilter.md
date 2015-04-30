@@ -26,14 +26,14 @@ The following operations are allowed when mutating a field.
 
 | Operation       |     Type        | Description                                                            
 | :---------------|:----------------|:-----------------------------------------------------------------------|
-| *type*          | property:string |Type to which this filter applyes, if empty, applies to all types.
-| *condition*     | property:string |C# expression
-| *rename*        | property:array  |Rename one or more fields                                       
-| *match*         | property:string |Required field must match before any subsequent grok operations are executed.
 | *add_field*     | property:array  |If the filter is successful, add an arbitrary field to this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.  This property must be specified in pairs.                                    
-| *remove_field*  | property:array  |If the filter is successful, remove arbitrary fields from this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.                                
 | *add_tag*       | property:array  |If the filter is successful, add an arbitrary tag to this event.  Tag names can be dynamic and include parts of the event using the %{field} syntax.                                  
+| *condition*     | property:string |C# expression
+| *match*         | property:array  |Required field must match (any) before any subsequent grok operations are executed.
+| *remove_field*  | property:array  |If the filter is successful, remove arbitrary fields from this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.                                
 | *remove_tag*    | property:array  |If the filter is successful, remove arbitrary tags from this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.                          
+| *rename*        | property:array  |Rename one or more fields                                       
+| *type*          | property:string |Type to which this filter applyes, if empty, applies to all types.
 
 ## Operation Details
 ### match 
@@ -67,6 +67,28 @@ Given this configuration
     }     
   ]
 ```
+
+Given this configuration
+```json
+  "Filters": [     
+    {
+	   "grok": {
+           "matches": [
+               "message",
+               "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}"
+           ],
+           "add_tag": [               
+               "http_log"
+           ],
+           "add_field": [
+               "verb", "%{method}"
+           ]
+        }           
+    }     
+  ]
+```
+
+
 And if the message matches, then 6 fields would be added to the event:
  1. client=55.3.244.1
  2. method=GET

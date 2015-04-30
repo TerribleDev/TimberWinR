@@ -101,6 +101,34 @@ namespace TimberWinR.Inputs
                 LogManager.GetCurrentClassLogger().Error(ex);
             }          
         }
+       
+        protected void AddOrModify(JObject json, string fieldName, string fieldValue)
+        {
+            if (json[fieldName] == null)
+                json.Add(fieldName, fieldValue);
+            else
+                json[fieldName] = fieldValue;
+        }
+
+        protected void RenameProperty(JObject json, string oldName, string newName)
+        {
+            JToken token = json[oldName];
+            if (token != null)
+            {
+                json.Add(newName, token.DeepClone());
+                json.Remove(oldName);
+            }
+        }
+
+        protected string ExpandField(string fieldName, JObject json)
+        {
+            foreach (var token in json.Children().ToList())
+            {
+                string replaceString = "%{" + token.Path + "}";
+                fieldName = fieldName.Replace(replaceString, json[token.Path].ToString());
+            }
+            return fieldName;
+        }
 
         protected void EnsureRollingCaught()
         {
@@ -127,6 +155,7 @@ namespace TimberWinR.Inputs
                 LogManager.GetCurrentClassLogger().Error(ex);
             }           
         }
+
 
         public virtual void AddDefaultFields(JObject json)
         {

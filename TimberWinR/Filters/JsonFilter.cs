@@ -92,9 +92,12 @@ namespace TimberWinR.Parser
 
                     if (Rename != null && Rename.Length > 0)
                     {
-                        string oldName = ExpandField(Rename[0], json);
-                        string newName = ExpandField(Rename[1], json);
-                        RenameProperty(json, oldName, newName);
+                        for (int i = 0; i < Rename.Length; i += 2)
+                        {
+                            string oldName = ExpandField(Rename[i], json);
+                            string newName = ExpandField(Rename[i+1], json);
+                            RenameProperty(json, oldName, newName);
+                        }
                     }
 
                     if (RemoveSource)

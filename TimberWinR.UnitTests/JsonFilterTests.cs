@@ -77,5 +77,56 @@ namespace TimberWinR.UnitTests
             Assert.IsNull(nostuff);
             Assert.AreEqual(6, jsonInputLine2.Count);            
         }
+
+        [Test]
+        public void TestRenameAndAdds()
+        {
+            JObject jsonInputLine1 = new JObject
+            {               
+                {"type", "Win32-FileLog"},
+                {"ComputerName", "dev.mycompany.net"},
+                {"Text", "{\"log4net:Username\" : \"NT AUTHORITY\",\"Email\":\"james@example.com\",\"Active\":true,\"CreatedDate\":\"2013-01-20T00:00:00Z\",\"Roles\":[\"User\",\"Admin\"]}"}
+            };
+
+
+            string jsonFilter = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""json"":{  
+		                ""type"": ""Win32-FileLog"",		               
+                        ""source"": ""Text"",
+                        ""promote"": ""Text"",
+                        ""add_field"":[  
+                            ""test1"",
+                            ""value1"",
+                            ""test2"",
+                            ""value2""
+                        ],       
+                        ""rename"":[  
+                            ""Active"",
+                            ""active"",
+                            ""log4net:Username"",
+                            ""lusername""
+                        ]          
+		            }
+	              }]
+                }
+            }";
+            
+
+            // Positive Tests
+            Configuration c = Configuration.FromString(jsonFilter);
+            Json jf = c.Filters.First() as Json;
+            Assert.IsTrue(jf.Apply(jsonInputLine1));
+
+            Assert.AreEqual("NT AUTHORITY", jsonInputLine1["lusername"].ToString());
+            Assert.AreEqual("True", jsonInputLine1["active"].ToString());
+            Assert.IsNotNull(jsonInputLine1["test1"]);
+            Assert.IsNotNull(jsonInputLine1["test2"]);
+            Assert.AreEqual("value1", jsonInputLine1["test1"].ToString());
+            Assert.AreEqual("value2", jsonInputLine1["test2"].ToString());
+        }
+ 
     }
 }

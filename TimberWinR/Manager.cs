@@ -232,7 +232,7 @@ namespace TimberWinR
 
                 foreach (var tcp in config.Tcps)
                 {
-                    var elistner = new TcpInputListener(cancelToken, tcp.Port);
+                    var elistner = new TcpInputListener(tcp, cancelToken, tcp.Port);
                     Listeners.Add(elistner);
                     foreach (var output in Outputs)
                         output.Connect(elistner);
@@ -240,7 +240,7 @@ namespace TimberWinR
 
                 foreach (var udp in config.Udps)
                 {
-                    var elistner = new UdpInputListener(cancelToken, udp.Port);
+                    var elistner = new UdpInputListener(udp, cancelToken, udp.Port);
                     Listeners.Add(elistner);
                     foreach (var output in Outputs)
                         output.Connect(elistner);

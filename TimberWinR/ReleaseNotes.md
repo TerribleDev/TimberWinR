@@ -3,6 +3,12 @@
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
 Version / Date
+### 1.3.25.0 - 2015-04-30
+1. Fixed Issue [#49](https://github.com/Cimpress-MCP/TimberWinR/issues/49)
+2. Fixed potential non-thread safe when renaming properties
+3. Added add_field, rename support to Udp/Tcp Input Listeners
+4. Fixed issue with multiple renames (was previousy only renaming the first one)
+
 ### 1.3.24.0 - 2015-04-29
 1. Fixed potential bug in TailFiles when tailing log files which are partially flushed
    to disk, it now will not process the line until the \r\n has been seen.
