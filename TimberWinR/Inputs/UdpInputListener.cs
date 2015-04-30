@@ -20,6 +20,7 @@ namespace TimberWinR.Inputs
         private long _parseErrors;
         private long _receiveErrors;
         private long _parsedMessages;
+        private TimberWinR.Parser.UdpParameters _arguments;
 
         public override JObject ToJson()
         {
@@ -35,10 +36,14 @@ namespace TimberWinR.Inputs
             return json;
         }
 
-        public UdpInputListener(CancellationToken cancelToken, int port = 5140) : base(cancelToken, "Win32-Udp")
+        public UdpInputListener(TimberWinR.Parser.UdpParameters arguments, CancellationToken cancelToken, int port = 5140) : base(cancelToken, "Win32-Udp")
         {
             _port = port;
             _receivedMessages = 0;
+            _arguments = arguments;
+
+            if (!string.IsNullOrEmpty(arguments.Type))
+                SetTypeName(arguments.Type);
 
             // setup raw data processor
             _unprocessedRawData = new BlockingCollection<byte[]>();
@@ -141,6 +146,32 @@ namespace TimberWinR.Inputs
             Finished();
         }
 
+        //
+        // Renames, and AddFields
+        //
+        private void ApplyFilters(JObject json)
+        {      
+            if (_arguments.Renames != null)
+            {
+                for (int i=0; i<_arguments.Renames.Length; i += 2)
+                {
+                    var oldName = ExpandField(_arguments.Renames[i], json);
+                    var newName = ExpandField(_arguments.Renames[i + 1], json);
+                    RenameProperty(json, oldName, newName);
+                }
+            }
+
+            if (_arguments.AddFields != null)
+            {
+                for (int i = 0; i < _arguments.AddFields.Length; i += 2)
+                {
+                    var fieldName = ExpandField(_arguments.AddFields[i], json);
+                    var fieldValue = ExpandField(_arguments.AddFields[i + 1], json);
+                    AddOrModify(json, fieldName, fieldValue);
+                }
+            }
+        }
+
         private void ProcessData(byte[] bytes)
         {
             var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
@@ -148,8 +179,8 @@ namespace TimberWinR.Inputs
             try
             {
                 var json = JObject.Parse(data);
+                ApplyFilters(json);
                 ProcessJson(json);
-
                 _parsedMessages++;
             }
             catch (Exception ex)

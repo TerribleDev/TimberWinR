@@ -1,0 +1,36 @@
+﻿{
+    "TimberWinR": {
+        "Inputs": {
+            "Udp": [
+                {
+                    "_comment": "Output from NLog",
+                    "port": 5140,
+                    "add_field": [
+                        "Environment",
+                        "PLANT_TST_TIMBERWINR"
+                    ],
+                    "rename": [
+                        "Type",
+                        "type"
+                    ]
+                }
+            ],
+            "TailFiles": [
+                {
+                    "interval": 5,
+                    "logSource": "log files",
+                    "location": "*.jlog",
+                    "recurse": -1
+                }
+            ]
+        },
+        "Outputs": {
+            "File": [
+                {
+                    "format":  "indented",
+                    "file_name": "test5_output.txt"
+                }
+            ]
+        }
+    }
+}

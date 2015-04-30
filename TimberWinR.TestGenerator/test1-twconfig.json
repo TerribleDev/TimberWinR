@@ -39,9 +39,9 @@
                     "_comment": "Change the host to your Redis instance",
                     "port": 6379,
                     "batch_count": 500,
-                    "threads": 2,
+                    "threads": 1,
                     "host": [
-                        "tstlexiceapp006.vistaprint.svc"
+                        "tstlexiceapp006.mycompany.svc"
                     ]
                 }
             ]

@@ -16,7 +16,7 @@ namespace TimberWinR.Inputs
         private Thread _listenThreadV4;
         private Thread _listenThreadV6;
         private readonly int _port;
-       
+        private TimberWinR.Parser.TcpParameters _arguments;
         private long _receivedMessages;
         private long _errorCount;
 
@@ -32,15 +32,19 @@ namespace TimberWinR.Inputs
             return json;
         }
 
-        public TcpInputListener(CancellationToken cancelToken, int port = 5140)
+        public TcpInputListener(TimberWinR.Parser.TcpParameters arguments, CancellationToken cancelToken, int port = 5140)
             : base(cancelToken, "Win32-Tcp")
         {
             _port = port;
+            _arguments = arguments;
 
             LogManager.GetCurrentClassLogger().Info("Tcp Input(v4/v6) on Port {0} Ready", _port);
 
-            _receivedMessages = 0;
+            if (!string.IsNullOrEmpty(arguments.Type))
+                SetTypeName(arguments.Type);
 
+            _receivedMessages = 0;
+           
             _tcpListenerV6 = new System.Net.Sockets.TcpListener(IPAddress.IPv6Any, port);
             _tcpListenerV4 = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
 
@@ -91,6 +95,33 @@ namespace TimberWinR.Inputs
             }
         }
 
+        //
+        // Renames, and AddFields
+        //
+        private void ApplyFilters(JObject json)
+        {
+            if (_arguments.Renames != null)
+            {
+                for (int i = 0; i < _arguments.Renames.Length; i += 2)
+                {
+                    var oldName = ExpandField(_arguments.Renames[i], json);
+                    var newName = ExpandField(_arguments.Renames[i + 1], json);
+                    RenameProperty(json, oldName, newName);
+                }
+            }
+
+            if (_arguments.AddFields != null)
+            {
+                for (int i = 0; i < _arguments.AddFields.Length; i += 2)
+                {
+                    var fieldName = ExpandField(_arguments.AddFields[i], json);
+                    var fieldValue = ExpandField(_arguments.AddFields[i + 1], json);
+                    AddOrModify(json, fieldName, fieldValue);
+                }
+            }
+        }
+
+
         private void HandleNewClient(object client)
         {
             var tcpClient = (TcpClient)client;
@@ -109,6 +140,7 @@ namespace TimberWinR.Inputs
                             try
                             {
                                 JObject json = JObject.Load(reader);
+                                ApplyFilters(json);
                                 ProcessJson(json);
                                 Interlocked.Increment(ref _receivedMessages);
                             }

@@ -79,9 +79,11 @@ namespace TimberWinR.Outputs
         // Sample the queue and adjust the batch count if needed (ramp up slowly)
         public int UpdateCurrentBatchCount(int queueSize, int currentBatchCount)
         {
-            if (currentBatchCount < _maxBatchCount && currentBatchCount < queueSize && AverageQueueDepth() > currentBatchCount)
+            var avgQueueDepth = AverageQueueDepth();
+        
+            if (currentBatchCount < _maxBatchCount && currentBatchCount < queueSize && avgQueueDepth > currentBatchCount)
             {
-                currentBatchCount += Math.Max(_maxBatchCount / _batchCount, 1);
+                currentBatchCount += Math.Max(avgQueueDepth / _batchCount, _batchCount / 5);
                 if (currentBatchCount >= _maxBatchCount && !_warnedReachedMax)
                 {
                     LogManager.GetCurrentClassLogger().Warn("Maximum Batch Count of {0} reached.", currentBatchCount);
@@ -314,6 +316,9 @@ namespace TimberWinR.Outputs
                             {
                                 _batchCounter.SampleQueueDepth(_jsonQueue.Count);
                                 // Re-compute current batch size
+
+                                LogManager.GetCurrentClassLogger().Trace("{0}: Average Queue Depth: {1}, Current Length: {2}", Thread.CurrentThread.ManagedThreadId, _batchCounter.AverageQueueDepth(), _jsonQueue.Count); 
+       
                                 _currentBatchCount = _batchCounter.UpdateCurrentBatchCount(_jsonQueue.Count, _currentBatchCount);
 
                                 messages = _jsonQueue.Take(_currentBatchCount).ToArray();

@@ -30,8 +30,6 @@ namespace TimberWinR.Parser
         }
     }
 
-
-
     public partial class Grok : LogstashFilter
     {
         public override JObject ToJson()
@@ -92,35 +90,37 @@ namespace TimberWinR.Parser
             return true;
         }
 
+        // Test for any true matching condition(s)
         private bool Matches(Newtonsoft.Json.Linq.JObject json)
         {
-            string field = Match[0];
-            string expr = Match[1];
-
-            JToken token = null;
-            if (json.TryGetValue(field, out token))
+            for (int i = 0; i < Match.Length; i += 2)
             {
-                string text = token.ToString();
-                if (!string.IsNullOrEmpty(text))
+                string field = Match[i];
+                string expr = Match[i + 1];
+
+                JToken token = null;
+                if (json.TryGetValue(field, out token))
                 {
-                    var resolver = new RegexGrokResolver();
-                    var pattern = resolver.ResolveToRegex(expr);
-                    var match = Regex.Match(text, pattern);
-                    if (match.Success)
+                    string text = token.ToString();
+                    if (!string.IsNullOrEmpty(text))
                     {
-                        var regex = new Regex(pattern);
-                        var namedCaptures = regex.MatchNamedCaptures(text);
-                        foreach (string fieldName in namedCaptures.Keys)
+                        var resolver = new RegexGrokResolver();
+                        var pattern = resolver.ResolveToRegex(expr);
+                        var match = Regex.Match(text, pattern);
+                        if (match.Success)
                         {
-                            AddOrModify(json, fieldName, namedCaptures[fieldName]);
+                            var regex = new Regex(pattern);
+                            var namedCaptures = regex.MatchNamedCaptures(text);
+                            foreach (string fieldName in namedCaptures.Keys)
+                            {
+                                AddOrModify(json, fieldName, namedCaptures[fieldName]);
+                            }
+                            return true; // Yes!
                         }
-                        return true; // Yes!
                     }
+                    if (string.IsNullOrEmpty(expr))
+                        return true; // Empty field is no match                 
                 }
-                if (string.IsNullOrEmpty(expr))
-                    return true; // Empty field is no match
-                else
-                    return false;
             }
             return false; // Not specified is failure
         }
@@ -136,7 +136,7 @@ namespace TimberWinR.Parser
                     AddOrModify(json, fieldName, fieldValue);
                 }
             }
-        }
+        }       
 
         private void RemoveFields(Newtonsoft.Json.Linq.JObject json)
         {
