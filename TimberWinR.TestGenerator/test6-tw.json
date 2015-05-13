@@ -1,7 +1,7 @@
 ﻿{
     "TimberWinR": {
         "Inputs": {
-            "Udp": [
+            "Tcp": [
                 {
                     "_comment": "Output from NLog",
                     "port": 5140
@@ -11,7 +11,7 @@
                 {
                     "interval": 5,
                     "logSource": "log files",
-                    "location": "d:\\logs\\sta\\sta.log",
+                    "location": "*.jlog",
                     "recurse": -1
                 }
             ]
@@ -38,9 +38,9 @@
                 {
                     "_comment": "Change the host to your Redis instance",
                     "port": 6379,
+                     "max_queue_size":  20000,
                     "batch_count": 500,
-                    "max_queue_size":  200,
-                    "threads": 2,
+                    "threads": 1,
                     "host": [
                         "tstlexiceapp006.vistaprint.svc"
                     ]

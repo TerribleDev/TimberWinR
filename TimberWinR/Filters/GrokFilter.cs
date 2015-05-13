@@ -45,6 +45,7 @@ namespace TimberWinR.Parser
                          new JProperty("condition", Condition),
                          new JProperty("addfields", AddField),
                          new JProperty("addtags", AddTag),
+                         new JProperty("rename", Rename),
                          new JProperty("drop", DropIfMatch),
                          new JProperty("type", Type),
                          new JProperty("removefields", RemoveField),
@@ -85,6 +86,7 @@ namespace TimberWinR.Parser
                 AddTags(json);
                 RemoveFields(json);
                 RemoveTags(json);
+                DoRenames(json);
             }
 
             return true;
@@ -123,6 +125,19 @@ namespace TimberWinR.Parser
                 }
             }
             return false; // Not specified is failure
+        }
+
+        private void DoRenames(Newtonsoft.Json.Linq.JObject json)
+        {
+            if (Rename != null && Rename.Length > 0)
+            {
+                for (int i = 0; i < Rename.Length; i += 2)
+                {
+                    string oldName = ExpandField(Rename[i], json);
+                    string newName = ExpandField(Rename[i + 1], json);
+                    RenameProperty(json, oldName, newName);
+                }
+            }
         }
 
         private void AddFields(Newtonsoft.Json.Linq.JObject json)

@@ -368,6 +368,55 @@ namespace TimberWinR.UnitTests
         }
 
         [Test]
+        public void TestRename()
+        {
+            JObject json = new JObject
+            {
+                {"LogFilename", @"C:\\Logs1\\test1.log"},
+                {"Index", 7},
+                {"Text", null},
+                {"tags", new JArray
+                    {
+                        "tag1",
+                        "tag2"
+                    }
+                },
+                {"type", "Win32-FileLog"},
+                {"ComputerName", "dev.mycompany.net"}
+            };
+
+            string grokJson = @"{  
+            ""TimberWinR"":{        
+                ""Filters"":[  
+	                {  
+		            ""mutate"":{  
+		                ""condition"": ""\""[type]\"" == \""Win32-FileLog\"""",
+		                ""match"":[  
+			                ""Text"",
+			                """"
+		                ],
+                        ""rename"":[  
+                            ""type"", ""newtype""
+                        ]		               
+		            }
+	                }]
+                }
+            }";
+
+            Configuration c = Configuration.FromString(grokJson);
+
+            Mutate grok = c.Filters.First() as Mutate;
+
+            Assert.IsTrue(grok.Apply(json));
+
+            Assert.IsNull(json["type"]);
+            Assert.AreEqual("Win32-FileLog", json["newtype"].ToString());
+            Assert.IsTrue(json["tags"].Children().Count() == 2);
+        
+        }
+
+
+        [Test]
         public void TestMatchCount()
         {
             string grokJson = @"{  
@@ -475,6 +524,9 @@ namespace TimberWinR.UnitTests
             Grok grok = c.Filters.First() as Grok;
             Assert.IsTrue(grok.AddTag.Length >= 1);
         }
+
+
+       
 
     }
 }

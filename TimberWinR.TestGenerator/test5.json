@@ -5,7 +5,7 @@
         "--testFile": "test5.json",
         "--testDir": "test5",
         "--timberWinRConfig": "test5-twconfig.json",
-        "--numMessages": 80000,
+        "--numMessages": 1000000,
         "--logLevel": "debug",
         "--udp-host":  "localhost",
         "--udp": "5140",  

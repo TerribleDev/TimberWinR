@@ -59,20 +59,24 @@ namespace TimberWinR.TestGenerator
                     {"UtcTimestamp", DateTime.UtcNow.ToString("o")},
                     {"Type", "VP.Fulfillment.Direct.Initialization.LogWrapper"},                
                     {"Message", "Testgenerator udp message " + DateTime.UtcNow.ToString("o")},
-                    {"Index", "logstash"}
+                    {"Index", "logstash"},
+                    {"HashedFields", "Application,Executable,RenderedMessage,Team,RecordNumber,Host,Message,Index"}
                 };
 
                 string hashedString = "";
-                foreach(var key in o)
+                if (o["HashedFields"] != null)
                 {
-                    hashedString += key.ToString();
+                    foreach (var key in o["HashedFields"].ToString().Split(new char[] {','}))
+                    {
+                        hashedString += string.Format("{0}:{1}", key, o[key].ToString());
+                    }
+
+                    var source = ASCIIEncoding.ASCII.GetBytes(hashedString);
+                    var md5 = new MD5CryptoServiceProvider().ComputeHash(source);
+                    var hash = string.Concat(md5.Select(x => x.ToString("X2")));
+
+                    o["md5"] = hash;
                 }
-
-                var source = ASCIIEncoding.ASCII.GetBytes(hashedString);
-                var md5 = new MD5CryptoServiceProvider().ComputeHash(source);
-                var hash = string.Concat(md5.Select(x => x.ToString("X2")));
-
-                o["md5"] = hash;
 
                 byte[] sendbuf = Encoding.UTF8.GetBytes(o.ToString(Formatting.None));
                 IPEndPoint ep = new IPEndPoint(broadcast, parms.Port);

@@ -803,6 +803,9 @@ namespace TimberWinR.Parser
         [JsonProperty("remove_tag")]
         public string[] RemoveTag { get; set; }
 
+        [JsonProperty("rename")]
+        public string[] Rename { get; set; }
+
         public override void Validate()
         {
             if (Match == null || Match.Length % 2 != 0)

@@ -38,10 +38,11 @@
                 {
                     "_comment": "Change the host to your Redis instance",
                     "port": 6379,
+                     "max_queue_size":  20000,
                     "batch_count": 500,
                     "threads": 1,
                     "host": [
-                        "tstlexiceapp006.mycompany.svc"
+                        "tstlexiceapp006.vistaprint.svc"
                     ]
                 }
             ]

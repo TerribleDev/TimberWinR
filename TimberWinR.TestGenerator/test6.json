@@ -1,0 +1,15 @@
+﻿{
+    "test": "Test 6",
+    "arguments": {
+        "--start":  "",
+        "--testFile": "test6.json",
+        "--testDir": "test6",
+        "--timberWinRConfig": "test6-tw.json",
+        "--numMessages": 10000,
+        "--logLevel": "debug",
+        "--tcp-host":  "localhost",
+        "--tcp-rate":  1,
+        "--tcp": "5140",               
+        "--resultsFile": "results1.json"
+    }
+}

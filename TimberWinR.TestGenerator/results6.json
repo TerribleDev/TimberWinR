@@ -1,0 +1,13 @@
+﻿{
+    "Results": {
+        "Inputs": [           
+            {
+                "udp": {
+                    "test1: message sent count": "[messages] == 80000",
+                    "test2: average cpu": "[avgCpuUsage] <= 30",
+                    "test3: maximum memory": "[maxMemUsage] <= 30"              
+                }
+            }
+        ]
+    }
+}

@@ -30,6 +30,7 @@ namespace TimberWinR.Parser
                        new JProperty("promote", Source),
                        new JProperty("target", Target),
                        new JProperty("type", Type),
+                       new JProperty("rename", Rename),
                        new JProperty("addfields", AddField),
                        new JProperty("addtags", AddTag),
                        new JProperty("removefields", RemoveField),
