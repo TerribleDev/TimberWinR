@@ -67,6 +67,12 @@
     <Reference Include="RestSharp">
       <HintPath>..\packages\RestSharp.105.0.0\lib\net4\RestSharp.dll</HintPath>
     </Reference>
+    <Reference Include="StatsdClient">
+      <HintPath>..\packages\StatsdClient.1.0.0.19\lib\net35\StatsdClient.dll</HintPath>
+    </Reference>
+    <Reference Include="StatsdClient.Configuration">
+      <HintPath>..\packages\StatsdClient.1.0.0.19\lib\net35\StatsdClient.Configuration.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -114,8 +120,6 @@
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
     <Compile Include="LogErrors.cs" />
     <Compile Include="Manager.cs" />
-    <Compile Include="NStatsD\Client.cs" />
-    <Compile Include="NStatsD\StatsDConfigurationSection.cs" />
     <Compile Include="Outputs\Elasticsearch.cs" />
     <Compile Include="Outputs\OutputSender.cs" />
     <Compile Include="Outputs\StatsD.cs" />

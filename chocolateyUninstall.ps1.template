@@ -2,6 +2,6 @@ $packageName = 'TimberWinR-${version}' # arbitrary name for the package, used in
 $installerType = 'msi' #only one of these: exe, msi, msu
 $scriptPath =  $(Split-Path $MyInvocation.MyCommand.Path)
 $fileFullPath = Join-Path $scriptPath 'TimberWinR-${version}.0.msi'
-$silentArgs = '{54D22382-5BDE-4CD7-90D4-91AEC0D9B447} /quiet' 
+$silentArgs = '{E001D138-669B-4604-88C5-02C756461C15} /quiet' 
 $validExitCodes = @(0) #please insert other valid exit codes here, exit codes for ms http://msdn.microsoft.com/en-us/library/aa368542(VS.85).aspx
 UnInstall-ChocolateyPackage "$packageName" "$installerType" "$silentArgs" "fileFullPath" -validExitCodes $validExitCodes

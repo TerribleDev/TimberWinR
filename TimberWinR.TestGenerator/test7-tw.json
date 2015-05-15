@@ -25,6 +25,7 @@
             "StatsD": [
                 {
                     "type": "Win32-TailLog",
+                    "namespace": "timberwinrtest",
                     "port": 8125,
                     "host": "devlexicesnu003.mycompany.svc",
                     "increment":  ["apache.response.%{response}"],

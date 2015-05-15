@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using RapidRegex.Core;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using StatsdClient;
 using TimberWinR.Parser;
 
 namespace TimberWinR.Outputs
@@ -86,8 +87,13 @@ namespace TimberWinR.Outputs
             _numThreads = parameters.NumThreads;
             _jsonQueue = new List<JObject>();
 
-            NStatsD.Client.Host = _host;
-            NStatsD.Client.Port = _port;
+            var metricsConfig = new MetricsConfig
+            {
+                StatsdServerName = _host,
+                Prefix = parameters.Namespace,
+            };
+
+            StatsdClient.Metrics.Configure(metricsConfig);
 
             for (int i = 0; i < _numThreads; i++)
             {
@@ -249,7 +255,7 @@ namespace TimberWinR.Outputs
 
         private string BuildMetricPath(string metric, JObject json)
         {
-            return string.Format("{0}.{1}.{2}", ExpandField(_params.Namespace, json), ExpandField(_params.Sender, json), ExpandField(metric, json));
+            return string.Format("{0}.{1}", ExpandField(_params.Sender, json), ExpandField(metric, json));
         }
        
         private void TransmitStats(List<JObject> messages)
@@ -305,7 +311,7 @@ namespace TimberWinR.Outputs
                 int value;
                 if (int.TryParse(gaugeName, out value))
                 {
-                    NStatsD.Client.Current.Gauge(metricPath, value, _params.SampleRate);
+                    Metrics.Gauge(metricPath, value);
                 }
             }
         }
@@ -317,10 +323,10 @@ namespace TimberWinR.Outputs
             {
                 string metricPath = BuildMetricPath(_params.Timings[i], json);
                 string timingName = ExpandField(_params.Timings[i + 1], json);
-                long value;
-                if (long.TryParse(timingName, out value))
+                int value;
+                if (int.TryParse(timingName, out value))
                 {
-                    NStatsD.Client.Current.Timing(metricPath, value, _params.SampleRate);
+                    Metrics.Timer(metricPath, value, _params.SampleRate);
                 }
             }
         }
@@ -335,7 +341,7 @@ namespace TimberWinR.Outputs
                 int value;
                 if (int.TryParse(countName, out value))
                 {
-                    NStatsD.Client.Current.UpdateStats(metricPath, value, _params.SampleRate);
+                   Metrics.Counter(metricPath, value, _params.SampleRate);
                 }
             }
         }
@@ -345,7 +351,7 @@ namespace TimberWinR.Outputs
             foreach (var metric in _params.Increments)
             {
                 string metricPath = BuildMetricPath(metric, json);
-                NStatsD.Client.Current.Increment(metricPath, _params.SampleRate);
+                Metrics.Counter(metricPath, 1,_params.SampleRate);
             }
         }
 
@@ -355,7 +361,7 @@ namespace TimberWinR.Outputs
             foreach (var metric in _params.Increments)
             {
                 string metricPath = BuildMetricPath(metric, json);
-                NStatsD.Client.Current.Decrement(metricPath, _params.SampleRate);
+                Metrics.Counter(metricPath, -1, _params.SampleRate);
             }
         }
     }
