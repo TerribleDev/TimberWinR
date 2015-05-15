@@ -35,6 +35,9 @@ sample-apache.log (snip)
 208.115.113.94 - - [13/May/2015:17:03:55 -0700] "GET /robots.txt HTTP/1.1" 200 37 "-" "Mozilla/5.0 (compatible; DotBot/1.1; http://www.opensiteexplorer.org/dotbot, help@moz.com)" "www.redlug.com"
 ```
 
+Note: [COMBINEDAPACHELOG](https://github.com/elastic/logstash/blob/v1.4.2/patterns/grok-patterns) is a standard
+Grok Pattern.
+
 TimberWinR configuration
 
 ```json
@@ -75,4 +78,17 @@ TimberWinR configuration
     }
 }
 
+```
+
+Assuming your FQDN is something like mymachine.mycompany.com, you should see the following in Graphite:
+
+```
+stats.counters.timberwinr.mymachine.mycompany.com.apache.bytes.count
+stats.counters.timberwinr.mymachine.mycompany.com.apache.bytes.rate
+stats.counters.timberwinr.mymachine.mycompany.com.apache.response.200.count
+stats.counters.timberwinr.mymachine.mycompany.com.apache.response.200.rate
+stats.counters.timberwinr.mymachine.mycompany.com.apache.response.404.count
+stats.counters.timberwinr.mymachine.mycompany.com.apache.response.404.rate
+...
+...
 ```
