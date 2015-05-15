@@ -1,0 +1,13 @@
+﻿{
+    "test": "Test 7",
+    "arguments": {
+        "--totalMessages":  2223,
+        "--start":  "",
+        "--testFile": "test7.json",
+        "--testDir": "test7",
+        "--timberWinRConfig": "test7-tw.json",
+        "--numMessages": 1234,
+        "--logLevel": "debug",       
+        "--resultsFile": "results7.json"
+    }
+}

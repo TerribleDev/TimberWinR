@@ -39,6 +39,12 @@ namespace TimberWinR
             get { return _events; }
         }
 
+        private List<StatsDOutputParameters> _statsdOutputs = new List<StatsDOutputParameters>();
+        public IEnumerable<StatsDOutputParameters> StatsDOutputs
+        {
+            get { return _statsdOutputs; }
+        }
+
         private List<RedisOutputParameters> _redisOutputs = new List<RedisOutputParameters>();
         public IEnumerable<RedisOutputParameters> RedisOutputs
         {
@@ -265,6 +271,8 @@ namespace TimberWinR
 
             if (x.TimberWinR.Outputs != null)
             {
+                if (x.TimberWinR.Outputs.StatsD != null)
+                    c._statsdOutputs.AddRange(x.TimberWinR.Outputs.StatsD.ToList());
                 if (x.TimberWinR.Outputs.Redis != null)
                     c._redisOutputs.AddRange(x.TimberWinR.Outputs.Redis.ToList());
                 if (x.TimberWinR.Outputs.Elasticsearch != null)
@@ -307,6 +315,7 @@ namespace TimberWinR
             _events = new List<WindowsEvent>();
             _iisw3clogs = new List<IISW3CLogParameters>();
             _logs = new List<LogParameters>();
+            _statsdOutputs = new List<StatsDOutputParameters>();
             _redisOutputs = new List<RedisOutputParameters>();
             _elasticsearchOutputs = new List<ElasticsearchOutputParameters>();
             _stdoutOutputs = new List<StdoutOutputParameters>();

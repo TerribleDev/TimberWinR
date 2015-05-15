@@ -60,13 +60,15 @@
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.3.2.0.0\lib\net40\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="RapidRegex.Core">
-      <HintPath>..\packages\RapidRegex.Core.1.0.0.2\lib\net40\RapidRegex.Core.dll</HintPath>
+    <Reference Include="RapidRegex.Core, Version=1.0.0.4, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\RapidRegex.Core.1.0.0.4\lib\net40\RapidRegex.Core.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\packages\RestSharp.105.0.0\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Linq.Dynamic">
       <HintPath>..\packages\System.Linq.Dynamic.1.0.4\lib\net40\System.Linq.Dynamic.dll</HintPath>
@@ -112,8 +114,11 @@
     <Compile Include="Inputs\WindowsEvtInputListener.cs" />
     <Compile Include="LogErrors.cs" />
     <Compile Include="Manager.cs" />
+    <Compile Include="NStatsD\Client.cs" />
+    <Compile Include="NStatsD\StatsDConfigurationSection.cs" />
     <Compile Include="Outputs\Elasticsearch.cs" />
     <Compile Include="Outputs\OutputSender.cs" />
+    <Compile Include="Outputs\StatsD.cs" />
     <Compile Include="Outputs\Redis.cs" />
     <Compile Include="Outputs\File.cs" />
     <Compile Include="Outputs\Stdout.cs" />
@@ -139,6 +144,7 @@
     </Content>
     <None Include="mdocs\Codec.md" />
     <None Include="mdocs\DateFilter.md" />
+    <None Include="mdocs\StatsD.md" />
     <None Include="mdocs\Filters.md" />
     <None Include="mdocs\GeoIPFilter.md" />
     <None Include="mdocs\Generator.md" />

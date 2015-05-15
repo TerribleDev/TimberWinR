@@ -25,11 +25,11 @@ namespace TimberWinR.ServiceHost
     {
         const string KeyPath = @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\TimberWinR";
         const string KeyName = "ImagePath";
-        
+
         private static void Main(string[] args)
         {
             Arguments arguments = new Arguments();
-           
+
             HostFactory.Run(hostConfigurator =>
             {
                 string cmdLine = Environment.CommandLine;
@@ -45,7 +45,7 @@ namespace TimberWinR.ServiceHost
                 hostConfigurator.AddCommandLineDefinition("configFile", c => arguments.ConfigFile = c);
                 hostConfigurator.AddCommandLineDefinition("logLevel", c => arguments.LogLevel = c);
                 hostConfigurator.AddCommandLineDefinition("logDir", c => arguments.LogfileDir = c);
-                hostConfigurator.AddCommandLineDefinition("diagnosticPort", c => arguments.DiagnosticPort = int.Parse(c));    
+                hostConfigurator.AddCommandLineDefinition("diagnosticPort", c => arguments.DiagnosticPort = int.Parse(c));
 
                 hostConfigurator.ApplyCommandLine();
                 hostConfigurator.RunAsLocalSystem();
@@ -56,7 +56,7 @@ namespace TimberWinR.ServiceHost
                 hostConfigurator.SetServiceName("TimberWinR");
 
                 hostConfigurator.AfterInstall(() =>
-                { 
+                {
                     var currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
                     if (!string.IsNullOrEmpty(currentValue))
                     {
@@ -72,18 +72,18 @@ namespace TimberWinR.ServiceHost
         }
 
         private static void AddServiceParameter(string paramName, string value)
-        {         
+        {
             string currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
 
-            if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0} ", paramName)))           
+            if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0} ", paramName)))
             {
-                currentValue += string.Format(" {0} \"{1}\"", paramName, value.Replace("\\\\", "\\"));               
-                Registry.SetValue(KeyPath, KeyName, currentValue);               
+                currentValue += string.Format(" {0} \"{1}\"", paramName, value.Replace("\\\\", "\\"));
+                Registry.SetValue(KeyPath, KeyName, currentValue);
             }
         }
 
         private static void AddServiceParameter(string paramName, int value)
-        {    
+        {
             string currentValue = Registry.GetValue(KeyPath, KeyName, "").ToString();
 
             if (!string.IsNullOrEmpty(paramName) && !currentValue.Contains(string.Format("{0}:", paramName)))
@@ -131,13 +131,15 @@ namespace TimberWinR.ServiceHost
         private readonly Arguments _args;
         private TimberWinR.Diagnostics.Diagnostics _diags;
         private TimberWinR.Manager _manager;
+        public bool StartingUp { get; set; }
+        public bool Started { get; set; }
 
         public TimberWinRService(Arguments args)
         {
             _args = args;
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
-            _serviceTask = new Task(RunService, _cancellationToken);           
+            _serviceTask = new Task(RunService, _cancellationToken);
         }
 
         public void Start()
@@ -147,12 +149,29 @@ namespace TimberWinR.ServiceHost
 
         public void Stop()
         {
+            WaitForStartupToComplete();
+
             _cancellationTokenSource.Cancel();
             if (_diags != null)
-             _diags.Shutdown();
+                _diags.Shutdown();
 
             if (_manager != null)
                 _manager.Shutdown();
+        }
+
+        // If you bounce the service too quickly, the shutdown can occur
+        // before the service has started, which results in a hang, this blocks until 
+        // all thread have properly started (waiting up to 10 seconds max) 
+        private void WaitForStartupToComplete()
+        {
+            int tries = 100; // 10 seconds max
+            if (StartingUp)
+            {
+                while (!Started && tries-- >= 0)
+                {                  
+                    Thread.Sleep(100);
+                }
+            }
         }
 
         /// <summary>
@@ -160,9 +179,11 @@ namespace TimberWinR.ServiceHost
         /// </summary>
         private void RunService()
         {
+            StartingUp = true;
             _manager = new TimberWinR.Manager(_args.ConfigFile, _args.LogLevel, _args.LogfileDir, _args.LiveMonitor, _cancellationToken);
             if (_args.DiagnosticPort > 0)
                 _diags = new Diagnostics.Diagnostics(_manager, _cancellationToken, _args.DiagnosticPort);
+            Started = true;
         }
     }
 }

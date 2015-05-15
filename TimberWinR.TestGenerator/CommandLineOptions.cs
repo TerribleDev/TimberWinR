@@ -27,6 +27,9 @@ namespace TimberWinR.TestGenerator
         [Option("resultsFile", HelpText = "Expected results Results json file")]
         public string ExpectedResultsFile { get; set; }
 
+        [Option("totalMessages", DefaultValue = 0, HelpText = "The total number of messages to send to the output(s)")]
+        public int TotalMessages { get; set; }
+
         [Option('n', "numMessages", DefaultValue = 1000, HelpText = "The number of messages to send to the output(s)")]
         public int NumMessages { get; set; }
 

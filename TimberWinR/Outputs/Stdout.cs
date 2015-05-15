@@ -34,6 +34,7 @@ namespace TimberWinR.Outputs
             JObject json = new JObject(
                 new JProperty("stdout",
                     new JObject(
+                        new JProperty("queuedMessageCount", _jsonQueue.Count),
                         new JProperty("sentMessageCount", _sentMessages))));
 
             return json;
@@ -67,7 +68,7 @@ namespace TimberWinR.Outputs
                                     foreach (JObject obj in messages)
                                     {
                                         Console.WriteLine(obj.ToString());
-                                        _sentMessages++;
+                                        Interlocked.Increment(ref _sentMessages);
                                     }
                                 }
                                 catch (Exception ex)

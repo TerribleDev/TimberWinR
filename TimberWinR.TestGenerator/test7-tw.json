@@ -1,0 +1,36 @@
+﻿{
+    "TimberWinR": {
+        "Inputs": {
+            "TailFiles": [
+                {
+                    "interval": 5,
+                    "logSource": "apache log files",
+                    "location": "..\\sample-apache.log",
+                    "recurse": -1
+                }
+            ]
+        },
+        "Filters": [
+            {
+                "grok": {
+                    "type": "Win32-TailLog",
+                    "match": [
+                        "Text",
+                        "%{COMBINEDAPACHELOG}"
+                    ]
+                }
+            }
+        ],
+        "Outputs": {            
+            "StatsD": [
+                {
+                    "type": "Win32-TailLog",
+                    "port": 8125,
+                    "host": "devlexicesnu003.vistaprint.svc",
+                    "increment":  ["apache.response.%{response}"],
+                    "count":  ["apache.bytes", "%{bytes}"]
+                }
+            ]
+        }
+    }
+}
