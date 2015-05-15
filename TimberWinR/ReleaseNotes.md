@@ -6,6 +6,7 @@ Version / Date
 ### 1.3.26.0 - 2015-05-15
 1. Added StatsD outputter
 2. Fixed shutdown hang if shutdown was received before service was fully started up.
+3. Closed issue [#36](https://github.com/Cimpress-MCP/TimberWinR/issues/36)
 
 ### 1.3.25.0 - 2015-04-30
 1. Fixed Issue [#49](https://github.com/Cimpress-MCP/TimberWinR/issues/49)
