@@ -543,6 +543,88 @@ namespace TimberWinR.Parser
         }
     }
 
+    public class StatsDOutputParameters : IValidateSchema
+    {
+        public class StatsDGaugeHashException : Exception
+        {
+            public StatsDGaugeHashException()
+                : base("StatsD output 'gauge' must be an array of pairs.")
+            {
+            }
+        }
+
+        public class StatsDCountHashException : Exception
+        {
+            public StatsDCountHashException()
+                : base("StatsD output 'count' must be an array of pairs.")
+            {
+            }
+        }
+        [JsonProperty(PropertyName = "type")]
+        public string InputType { get; set; }
+        [JsonProperty(PropertyName = "sender")]
+        public string Sender { get; set; }
+        [JsonProperty(PropertyName = "namespace")]
+        public string Namespace { get; set; }    
+        [JsonProperty(PropertyName = "host")]
+        public string Host { get; set; }
+        [JsonProperty(PropertyName = "port")]
+        public int Port { get; set; }
+        [JsonProperty(PropertyName = "interval")]
+        public int Interval { get; set; }
+        [JsonProperty(PropertyName = "flush_size")]
+        public int FlushSize { get; set; }
+        [JsonProperty(PropertyName = "idle_flush_time")]
+        public int IdleFlushTimeInSeconds { get; set; }
+        [JsonProperty(PropertyName = "max_queue_size")]
+        public int MaxQueueSize { get; set; }
+        [JsonProperty(PropertyName = "queue_overflow_discard_oldest")]
+        public bool QueueOverflowDiscardOldest { get; set; }
+        [JsonProperty(PropertyName = "threads")]
+        public int NumThreads { get; set; }
+        [JsonProperty(PropertyName = "sample_rate")]
+        public double SampleRate { get; set; }
+        [JsonProperty(PropertyName = "increment")] // Array: metric names
+        public string[] Increments { get; set; }
+        [JsonProperty(PropertyName = "decrement")] // Array: metric names
+        public string[] Decrements { get; set; }
+        [JsonProperty(PropertyName = "gauge")] // Hash: metric_name => gauge
+        public string[] Gauges { get; set; }
+        [JsonProperty(PropertyName = "count")] // Hash: metric_name => count
+        public string[] Counts { get; set; }
+        [JsonProperty(PropertyName = "timing")] // Hash: metric_name => count
+        public string[] Timings { get; set; }
+
+        public StatsDOutputParameters()
+        {
+            SampleRate = 1;
+            Port = 8125;
+            Host = "localhost";
+            Interval = 5000;
+            FlushSize = 5000;
+            IdleFlushTimeInSeconds = 10;
+            QueueOverflowDiscardOldest = true;
+            MaxQueueSize = 50000;
+            NumThreads = 1;
+            Namespace = "timberwinr";
+            Sender = System.Environment.MachineName.ToLower() + "." +
+                     Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                         @"SYSTEM\CurrentControlSet\services\Tcpip\Parameters")
+                         .GetValue("Domain", "")
+                         .ToString().ToLower();
+        }
+
+        public void Validate()
+        {
+            if (Gauges != null && Gauges.Length % 2 != 0)
+                throw new StatsDGaugeHashException();
+
+            if (Counts != null && Counts.Length % 2 != 0)
+                throw new StatsDCountHashException();
+        }
+    }
+
+
     public class ElasticsearchOutputParameters
     {
         const string IndexDatePattern = "(%\\{(?<format>[^\\}]+)\\})";
@@ -668,6 +750,8 @@ namespace TimberWinR.Parser
         }
     }
 
+
+
     public class StdoutOutputParameters
     {
         [JsonProperty(PropertyName = "interval")]
@@ -697,7 +781,7 @@ namespace TimberWinR.Parser
 
         public FileOutputParameters()
         {
-            Format = FormatKind.none;            
+            Format = FormatKind.none;
             Interval = 1000;
             FileName = "timberwinr.out";
         }
@@ -729,6 +813,9 @@ namespace TimberWinR.Parser
 
         [JsonProperty("File")]
         public FileOutputParameters[] File { get; set; }
+
+        [JsonProperty("StatsD")]
+        public StatsDOutputParameters[] StatsD { get; set; }
     }
 
     public class InputSources

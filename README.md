@@ -16,7 +16,7 @@ TimberWinR uses a configuration file to control how the logs are collected, filt
 These are broken down into:
  1. Inputs  (Collect data from different sources)
  2. Filters (Are applied to all Inputs)
- 3. Outputs (Redis, Elasticsearch or Stdout)
+ 3. Outputs (e.g. Redis, Elasticsearch, Stdout, StatsD)
 
 ### Support ###
 Please use the TimberWinR Google Group for discussion and support:
@@ -108,6 +108,7 @@ represented as a JSON Property or Array.
 2. [Elasticsearch](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/ElasticsearchOutput.md)
 3. [Stdout](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/StdoutOutput.md)
 4. [File](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/FileOutput.md)
+5. [StatsD](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/StatsD.md)
 
 ## Sample Configuration
 TimberWinR reads a JSON configuration file, an example file is shown here:

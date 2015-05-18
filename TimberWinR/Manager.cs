@@ -24,7 +24,7 @@ namespace TimberWinR
         public Configuration Config { get; set; }
         public List<OutputSender> Outputs { get; set; }       
         public List<InputListener> Listeners { get; set; }
-        public bool LiveMonitor { get; set; }
+        public bool LiveMonitor { get; set; }      
 
         public event Action<Configuration> OnConfigurationProcessed;
 
@@ -47,7 +47,7 @@ namespace TimberWinR
 
 
         public void Shutdown()
-        {
+        {          
             LogManager.GetCurrentClassLogger().Info("Shutting Down");
 
             foreach (InputListener listener in Listeners)
@@ -68,7 +68,7 @@ namespace TimberWinR
         }
 
         public Manager(string jsonConfigFile, string logLevel, string logfileDir, bool liveMonitor, CancellationToken cancelToken, bool processConfiguration = true)
-        {
+        {          
             LogsFileDatabase.Manager = this;
 
             StartedOn = DateTime.UtcNow;
@@ -149,7 +149,7 @@ namespace TimberWinR
             if (processConfiguration)
             {
                 ProcessConfiguration(cancelToken, Config);
-            }
+            }         
         }
 
         public void Start(CancellationToken cancelToken)
@@ -161,9 +161,18 @@ namespace TimberWinR
         {
             // Read the Configuration file
             if (config != null)
-            {
+            {                
                 if (OnConfigurationProcessed != null)
                     OnConfigurationProcessed(config);
+
+                if (config.StatsDOutputs != null)
+                {
+                    foreach (var ro in config.StatsDOutputs)
+                    {
+                        var output = new StatsDOutput(this, ro, cancelToken);
+                        Outputs.Add(output);
+                    }
+                }
 
                 if (config.RedisOutputs != null)
                 {
@@ -294,7 +303,7 @@ namespace TimberWinR
                     json.Add(new JProperty("type", "Win32-TimberWinR"));
                     json.Add(new JProperty("host", computerName));
                     output.Startup(json);
-                }
+                }               
             }
         }
 

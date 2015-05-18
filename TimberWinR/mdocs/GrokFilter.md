@@ -33,7 +33,7 @@ The following operations are allowed when mutating a field.
 | *remove_field*  | property:array  |If the filter is successful, remove arbitrary fields from this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.                                
 | *remove_tag*    | property:array  |If the filter is successful, remove arbitrary tags from this event.  Field names can be dynamic and include parts of the event using the %{field} syntax.                          
 | *rename*        | property:array  |Rename one or more fields                                       
-| *type*          | property:string |Type to which this filter applyes, if empty, applies to all types.
+| *type*          | property:string |Type to which this filter applies, if empty, applies to all types.
 
 ## Operation Details
 ### match 

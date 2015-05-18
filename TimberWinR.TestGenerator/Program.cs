@@ -350,7 +350,7 @@ namespace TimberWinR.TestGenerator
                     var mbc = outputToken["queuedMessageCount"].Value<int>();
                     var smc = outputToken["sentMessageCount"].Value<int>();
 
-                    // LogManager.GetCurrentClassLogger().Info("Queued: {0}, Sent: {1}", mbc, smc);
+                    //LogManager.GetCurrentClassLogger().Info("Output: {2} Queued: {0}, Sent: {1}", mbc, smc, outputToken.ToString());
 
                     completed = mbc == 0 && smc >= _totalMessagesToSend;
                 }
@@ -504,6 +504,8 @@ namespace TimberWinR.TestGenerator
 
         static Task[] RunGenerators(CommandLineOptions options)
         {
+            _totalMessagesToSend = options.TotalMessages;
+
             _monitorTask = Task.Factory.StartNew(() =>
                 {
                     using (var syncHandle = new ManualResetEventSlim())

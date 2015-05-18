@@ -54,6 +54,8 @@
         <File Id="default.json" Source="$(var.TimberWinR.ServiceHost.TargetDir)\default.json"  />
         <File Id="Newtonsoft.Json.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Newtonsoft.Json.dll"  />
         <File Id="Nlog.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\Nlog.dll"  />
+        <File Id="StatsdClient.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\StatsdClient.dll"  />
+        <File Id="StatsdClient.Configuration.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\StatsdClient.Configuration.dll"  />
         <File Id="RestSharp.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RestSharp.dll"  />
         <File Id="RapidRegex.Core.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\RapidRegex.Core.dll"  />
         <File Id="TimberWinR.dll" Source="$(var.TimberWinR.ServiceHost.TargetDir)\TimberWinR.dll"  />

@@ -3,7 +3,7 @@
 The Elasticsearch output passes on data directly to Elasticsearch.
 
 ## Parameters
-The following parameters are allowed when configuring the Redis output.
+The following parameters are allowed when configuring the Elasticsearch output.
 
 | Parameter     |   Type   |  Description                                                | Details               |  Default |
 | :-------------|:---------|:------------------------------------------------------------| :---------------------------  | :-- |
