@@ -18,11 +18,11 @@ after_build:
 
     cat chocolateyUninstall.ps1.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > tools\chocolateyUninstall.ps1
     
-	cat tools\chocolateyUninstall.ps1
+    cat tools\chocolateyUninstall.ps1
     
-	cat timberwinr.nuspec.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > timberwinr.nuspec
+    cat timberwinr.nuspec.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > timberwinr.nuspec
     
-	choco pack timberwinr.nuspec
+    choco pack timberwinr.nuspec
 artifacts:
 - path: .\*.nupkg
   name: NuGet
