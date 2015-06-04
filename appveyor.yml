@@ -34,6 +34,7 @@ artifacts:
   name: MSI 
 deploy:
 - provider: NuGet
+  server: http://chocolatey.org/
   api_key:
     secure: y8zhZTNm3PWLLxtKiMO79Shx3TyG3lnuGpJ6J7GT+2SihEspFxuBXz+WvmI6qzX+
   skip_symbols: true
