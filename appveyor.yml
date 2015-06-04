@@ -9,7 +9,7 @@ assembly_info:
   assembly_version: $(VERSION_FROM_BRANCH)
   assembly_file_version: $(VERSION_FROM_BRANCH)
   assembly_informational_version: $(VERSION_FROM_BRANCH)
-before_build:  mkdir tools  NuGet.exe restore TimberWinR.sln
+before_build:- ps: >-    mkdir tools    NuGet.exe restore TimberWinR.sln
 build:
   verbosity: minimal
 after_build:
