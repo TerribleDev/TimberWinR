@@ -11,7 +11,7 @@ assembly_info:
   assembly_informational_version: $(VERSION_FROM_BRANCH)
 before_build:- ps: >-    mkdir tools    NuGet.exe restore TimberWinR.sln
 build:
-  verbosity: minimal
+  verbosity: normal
 after_build:
 - ps: >-
     cat chocolateyInstall.ps1.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > tools\chocolateyInstall.ps1
