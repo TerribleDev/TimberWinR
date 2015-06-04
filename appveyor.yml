@@ -14,17 +14,17 @@ build:
   verbosity: minimal
 after_build:
 - ps: >-
-    cat chocolateyInstall.ps1.template|%{$_-replace "\$\{version\}",$env:APPVEYOR_BUILD_VERSION} > tools\chocolateyInstall.ps1
-    cat chocolateyUninstall.ps1.template|%{$_-replace "\$\{version\}",$env:APPVEYOR_BUILD_VERSION} > tools\chocolateyUninstall.ps1
+    cat chocolateyInstall.ps1.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > tools\chocolateyInstall.ps1
+    cat chocolateyUninstall.ps1.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > tools\chocolateyUninstall.ps1
     cat tools\chocolateyUninstall.ps1
 artifacts:
 - path: .\*.nupkg
   name: NuGet
-- path: .\TimberWinR.ServiceHost\bin\*\*.dll
+- path: TimberWinR.ServiceHost\bin\*\*.dll
   name: Dlls
-- path: .\TimberWinR.ServiceHost\bin\*\*.exe
+- path: TimberWinR.ServiceHost\bin\*\*.exe
   name: Exes
-- path: .\TimberWix\bin\*\*.msi
+- path: TimberWix\bin\*\*.msi
   name: MSI 
 deploy:
 - provider: NuGet
