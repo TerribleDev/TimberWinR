@@ -145,6 +145,12 @@ namespace TimberWinR.Inputs
                         catch (Exception ex)
                         {
                             LogManager.GetCurrentClassLogger().Error(ex);
+                            try
+                            {
+                                if (!Stop)
+                                    syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                            }
+                            catch (Exception) { }
                         }                       
                     }
                 }

@@ -8,6 +8,7 @@ using TimberWinR.Parser;
 using LogQuery = Interop.MSUtil.LogQueryClassClass;
 using EventLogInputFormat = Interop.MSUtil.COMEventLogInputContextClassClass;
 using LogRecordSet = Interop.MSUtil.ILogRecordset;
+using System.IO;
 
 namespace TimberWinR.Inputs
 {
@@ -97,12 +98,13 @@ namespace TimberWinR.Inputs
                     // Execute the query
                     if (!CancelToken.IsCancellationRequested)
                     {
+                        var oLogQuery = new LogQuery();
                         try
-                        {                          
-                            var oLogQuery = new LogQuery();
+                        {
 
                             var qfiles = string.Format("SELECT Distinct [EventLog] FROM {0}", location);
                             var rsfiles = oLogQuery.Execute(qfiles, iFmt);
+
                             for (; !rsfiles.atEnd(); rsfiles.moveNext())
                             {
                                 var record = rsfiles.getRecord();
@@ -113,7 +115,7 @@ namespace TimberWinR.Inputs
                                         logName);
                                     var rcount = oLogQuery.Execute(qcount, iFmt);
                                     var qr = rcount.getRecord();
-                                    var lrn = (Int64)qr.getValueEx("MaxRecordNumber");
+                                    var lrn = (Int64) qr.getValueEx("MaxRecordNumber");
                                     logFileMaxRecords[logName] = lrn;
                                 }
                             }
@@ -137,12 +139,13 @@ namespace TimberWinR.Inputs
                                         object v = record.getValue(field.Name);
                                         if (field.Name == "Data")
                                             v = ToPrintable(v.ToString());
-                                        if ((field.Name == "TimeGenerated" || field.Name == "TimeWritten") && field.DataType == typeof (DateTime))
+                                        if ((field.Name == "TimeGenerated" || field.Name == "TimeWritten") &&
+                                            field.DataType == typeof (DateTime))
                                             v = ((DateTime) v).ToUniversalTime();
                                         json.Add(new JProperty(field.Name, v));
                                     }
 
-                                    var lrn = (Int64)record.getValueEx("RecordNumber");
+                                    var lrn = (Int64) record.getValueEx("RecordNumber");
                                     logFileMaxRecords[fileName] = lrn;
 
                                     ProcessJson(json);
@@ -162,6 +165,24 @@ namespace TimberWinR.Inputs
                         catch (Exception ex)
                         {
                             LogManager.GetCurrentClassLogger().Error(ex);
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                oLogQuery = null;
+                                // Sleep 
+                                if (!Stop)
+                                    syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                            }
+                            catch (Exception ex1)
+                            {
+                                LogManager.GetCurrentClassLogger().Warn(ex1);
+                            }
+                            
                         }
                     }
                 }
