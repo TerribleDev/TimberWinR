@@ -68,7 +68,7 @@ namespace TimberWinR.Diagnostics
         protected void AddDiagnosis(JObject wrapper)
         {
             wrapper.Add("inputs", GetDiagnosisByType("inputs", Manager.Listeners.ToList<IDiagnosable>()));
-            wrapper.Add("filters", GetDiagnosisByType("inputs", Manager.Config.Filters.ToList<IDiagnosable>()));
+            wrapper.Add("filters", GetDiagnosisByType("filters", Manager.Config.Filters.ToList<IDiagnosable>()));
             wrapper.Add("outputs", GetDiagnosisByType("inputs", Manager.Outputs.ToList<IDiagnosable>()));
         }
 
