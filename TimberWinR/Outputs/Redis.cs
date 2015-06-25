@@ -132,6 +132,7 @@ namespace TimberWinR.Outputs
         private long _errorCount;
         private long _redisDepth;
         private DateTime? _lastErrorTimeUTC;
+        private DateTime? _lastSentTimeUTC;
         private readonly int _maxQueueSize;
         private readonly bool _queueOverflowDiscardOldest;
         private BatchCounter _batchCounter;
@@ -180,6 +181,7 @@ namespace TimberWinR.Outputs
                         new JProperty("host", string.Join(",", _redisHosts)),
                         new JProperty("errors", _errorCount),
                         new JProperty("lastErrorTimeUTC", _lastErrorTimeUTC),
+                        new JProperty("lastSentTimeUTC", _lastSentTimeUTC),
                         new JProperty("redisQueueDepth", _redisDepth),
                         new JProperty("sentMessageCount", _sentMessages),
                         new JProperty("queuedMessageCount", _jsonQueue.Count),
@@ -348,6 +350,7 @@ namespace TimberWinR.Outputs
                                                     Interlocked.Add(ref _sentMessages, messages.Length);
                                                     client.EndPipe();
                                                     sentSuccessfully = true;
+                                                    _lastSentTimeUTC = DateTime.UtcNow;
                                                     if (messages.Length > 0)
                                                         _manager.IncrementMessageCount(messages.Length);
                                                 }

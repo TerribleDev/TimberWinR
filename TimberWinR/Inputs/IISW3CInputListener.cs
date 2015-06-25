@@ -135,8 +135,6 @@ namespace TimberWinR.Inputs
                                 rs.close();
                                 GC.Collect();
                             }
-                            if (!Stop)
-                                syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
                         }
                         catch (OperationCanceledException)
                         {
@@ -145,7 +143,18 @@ namespace TimberWinR.Inputs
                         catch (Exception ex)
                         {
                             LogManager.GetCurrentClassLogger().Error(ex);
-                        }                       
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                if (!Stop)
+                                    syncHandle.Wait(TimeSpan.FromSeconds(_pollingIntervalInSeconds), CancelToken);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
                     }
                 }
             }

@@ -8,10 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using NLog;
+using TimberWinR.Diagnostics;
 
 namespace TimberWinR.Inputs
 {
-    public abstract class InputListener
+    public abstract class InputListener: IDiagnosable
     {
         public CancellationToken CancelToken { get; set; }
         public event Action<JObject> OnMessageRecieved;
