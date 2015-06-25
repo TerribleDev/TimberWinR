@@ -8,7 +8,7 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.IO;
-
+using System.Linq.Expressions;
 using Newtonsoft.Json.Linq;
 
 using NLog;
@@ -52,27 +52,46 @@ namespace TimberWinR.Diagnostics
         public JObject DiagnosticsOutput()
         {
             JObject json = new JObject(
-                           new JProperty("timberwinr",
-                               new JObject(
-                                   new JProperty("version", Assembly.GetEntryAssembly().GetName().Version.ToString()),
-                                   new JProperty("messages", Manager.NumMessages),
-                                   new JProperty("startedon", Manager.StartedOn),
-                                   new JProperty("configfile", Manager.JsonConfig),
-                                   new JProperty("logdir", Manager.LogfileDir),
-                                   new JProperty("logginglevel", LogManager.GlobalThreshold.ToString()),
-                                   new JProperty("inputs",
-                                       new JArray(
-                                           from i in Manager.Listeners
-                                           select new JObject(i.ToJson()))),
-                                   new JProperty("filters",
-                                       new JArray(
-                                           from f in Manager.Config.Filters
-                                           select new JObject(f.ToJson()))),
-                                   new JProperty("outputs",
-                                       new JArray(
-                                           from o in Manager.Outputs
-                                           select new JObject(o.ToJson()))))));
+                new JProperty("timberwinr",
+                    new JObject(
+                        new JProperty("version", Assembly.GetEntryAssembly().GetName().Version.ToString()),
+                        new JProperty("messages", Manager.NumMessages),
+                        new JProperty("startedon", Manager.StartedOn),
+                        new JProperty("configfile", Manager.JsonConfig),
+                        new JProperty("logdir", Manager.LogfileDir),
+                        new JProperty("logginglevel", LogManager.GlobalThreshold.ToString())
+                        )));
+            AddDiagnosis(json);
             return json;
+        }
+
+        protected void AddDiagnosis(JObject wrapper)
+        {
+            wrapper.Add("inputs", GetDiagnosisByType("inputs", Manager.Listeners.ToList<IDiagnosable>()));
+            wrapper.Add("filters", GetDiagnosisByType("filters", Manager.Config.Filters.ToList<IDiagnosable>()));
+            wrapper.Add("outputs", GetDiagnosisByType("inputs", Manager.Outputs.ToList<IDiagnosable>()));
+        }
+
+        protected JObject GetDiagnosisByType(String type, List<IDiagnosable> diags)
+        {
+            JObject category = new JObject();
+            foreach(IDiagnosable diag in diags)
+            {
+                JArray array = GetTypeArray(diag.GetType().Name.ToString(), category);
+                array.Add(diag.ToJson());
+            }
+            return category;
+        }
+
+        protected JArray GetTypeArray(String name, JObject category)
+        {
+            JArray ret = (JArray)category.GetValue(name);
+            if (ret == null)
+            {
+                ret = new JArray();
+                category.Add(new JProperty(name, ret));
+            }
+            return ret;
         }
 
         private void DiagnosticCallback(IAsyncResult result)

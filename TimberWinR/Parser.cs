@@ -15,6 +15,7 @@ using NLog;
 using NLog.Config;
 using TimberWinR.Outputs;
 using System.CodeDom.Compiler;
+using TimberWinR.Diagnostics;
 
 namespace TimberWinR.Parser
 {
@@ -26,7 +27,7 @@ namespace TimberWinR.Parser
     }
 
 
-    public abstract class LogstashFilter : IValidateSchema
+    public abstract class LogstashFilter : IValidateSchema, IDiagnosable
     {
         public abstract bool Apply(JObject json);
 
