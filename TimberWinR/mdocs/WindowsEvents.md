@@ -65,3 +65,5 @@ After a successful parse of an event, the following fields are added:
 | Message | STRING | The full event message  |
 | Data | STRING | The binary data associated with the event  |
 
+
+
