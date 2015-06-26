@@ -96,6 +96,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationErrors.cs" />
     <Compile Include="Diagnostics\Diagnostics.cs" />
+    <Compile Include="Diagnostics\IDiagnosable.cs" />
     <Compile Include="Filters\DateFilter.cs" />
     <Compile Include="Filters\FilterBase.cs" />
     <Compile Include="Filters\GrokFilter.cs" />
