@@ -2,7 +2,7 @@ version: build_number_{build}
 configuration: Release
 skip_tags: true
 init:
-- ps: "$v = [regex]::match($env:APPVEYOR_REPO_BRANCH,'rel-(.*)').Groups[1].Value\nWrite-Host \"On branch $($env:APPVEYOR_REPO_BRANCH)\"\nIF($v) { \n   $env:VERSION_FROM_BRANCH = \"$($v).$($env:APPVEYOR_BUILD_NUMBER)\"\n} else {\n   $env:VERSION_FROM_BRANCH = \"0.0.0.$($env:APPVEYOR_BUILD_NUMBER)\"\n}\nWrite-Host \"Set version to $($env:VERSION_FROM_BRANCH)\""
+- ps: "$v = [regex]::match($env:APPVEYOR_REPO_BRANCH,'release/(.*)').Groups[1].Value\nWrite-Host \"On branch $($env:APPVEYOR_REPO_BRANCH)\"\nIF($v) { \n   $env:VERSION_FROM_BRANCH = \"$($v).$($env:APPVEYOR_BUILD_NUMBER)\"\n} else {\n   $env:VERSION_FROM_BRANCH = \"0.0.0.$($env:APPVEYOR_BUILD_NUMBER)\"\n}\nWrite-Host \"Set version to $($env:VERSION_FROM_BRANCH)\""
 assembly_info:
   patch: true
   file: '**\AssemblyInfo.*'
