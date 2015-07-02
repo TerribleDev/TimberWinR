@@ -36,15 +36,15 @@ artifacts:
   name: Exes
 - path: TimberWix\bin\*\*.msi
   name: MSI 
-deploy:
-- provider: NuGet
-  server: https://chocolatey.org/
-  skip_symbols: true
-  artifact: NuGet
-  on:
-    branch: /release/.*/
-- provider: GitHub
-  release: $(VERSION_FROM_BRANCH)
-  artifact: Dlls, Exes, MSI
-  on:
-    branch: /release/.*/
+#deploy:
+#- provider: NuGet
+#  server: https://chocolatey.org/
+#  skip_symbols: true
+#  artifact: NuGet
+#  on:
+#    branch: /release/.*/
+#- provider: GitHub
+#  release: $(VERSION_FROM_BRANCH)
+#  artifact: Dlls, Exes, MSI
+#  on:
+#    branch: /release/.*/
