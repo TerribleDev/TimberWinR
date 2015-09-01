@@ -29,6 +29,9 @@ namespace TimberWinR.Outputs
     {
         private TimberWinR.Manager _manager;
         private readonly int _port;
+        private readonly bool _ssl;
+        private readonly string _username;
+        private readonly string _password;
         private readonly int _interval;
         private readonly int _flushSize;
         private readonly int _idleFlushTimeSeconds;
@@ -57,8 +60,8 @@ namespace TimberWinR.Outputs
             var nodes = new List<Uri>();
             foreach (var host in _hosts)
             {
-                var url = string.Format("http://{0}:{1}", host, _port);
-                nodes.Add(new Uri(url));
+                var uri = ComposeUri(host, _port, _ssl, _username, _password);
+                nodes.Add(uri);
             }
             var pool = new StaticConnectionPool(nodes.ToArray());
             var settings = new ConnectionSettings(pool)
@@ -71,6 +74,13 @@ namespace TimberWinR.Outputs
 
             var client = new ElasticClient(settings);
             return client;
+        }
+
+        public static Uri ComposeUri(string host, int port, bool ssl, string username, string password)
+        {
+            return ssl
+                ? new Uri(string.Format("https://{0}:{1}@{2}:{3}", Uri.EscapeDataString(username), Uri.EscapeDataString(password), host, port))
+                : new Uri(string.Format("http://{0}:{1}", host, port));
         }
 
         public ElasticsearchOutput(TimberWinR.Manager manager, Parser.ElasticsearchOutputParameters parameters, CancellationToken cancelToken)
@@ -86,6 +96,9 @@ namespace TimberWinR.Outputs
             _timeout = parameters.Timeout;
             _manager = manager;
             _port = parameters.Port;
+            _ssl = parameters.Ssl;
+            _username = parameters.Username;
+            _password = parameters.Password;
             _interval = parameters.Interval;
             _hosts = parameters.Host;          
             _jsonQueue = new List<JObject>();
@@ -111,6 +124,9 @@ namespace TimberWinR.Outputs
                         new JProperty("messages", _sentMessages),
                         new JProperty("queuedMessageCount", _jsonQueue.Count),
                         new JProperty("port", _port),
+                        new JProperty("ssl", _ssl),
+                        new JProperty("username", _username),
+                        new JProperty("password", _password),
                         new JProperty("flushSize", _flushSize),                                       
                         new JProperty("idleFlushTime", _idleFlushTimeSeconds),     
                         new JProperty("interval", _interval),
