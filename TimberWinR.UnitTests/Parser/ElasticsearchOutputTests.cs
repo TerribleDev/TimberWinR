@@ -1,4 +1,6 @@
-﻿namespace TimberWinR.UnitTests.Parser
+﻿using TimberWinR.Outputs;
+
+namespace TimberWinR.UnitTests.Parser
 {
     using System;
 
@@ -50,6 +52,52 @@
             var result = this.parser.GetIndexName(json);
 
             Assert.AreEqual("someindex-" + DateTime.UtcNow.ToString("yyyy.MM.dd"), result);
+        }
+
+        [Test]
+        public void Given_no_ssl_then_validate_does_not_throw()
+        {
+            parser.Ssl = false;
+            Assert.That(() => parser.Validate(), Throws.Nothing);
+        }
+
+        [Test]
+        public void Given_ssl_and_no_username_then_validate_throws()
+        {
+            parser.Ssl = true;
+            parser.Password = "pass";
+
+            Assert.That(() => parser.Validate(), Throws.Exception.InstanceOf<ElasticsearchOutputParameters.ElasticsearchBasicAuthException>());
+        }
+
+        [Test]
+        public void Given_ssl_and_no_password_then_validate_throws()
+        {
+            parser.Ssl = true;
+            parser.Username = "user";
+
+            Assert.That(() => parser.Validate(), Throws.Exception.InstanceOf<ElasticsearchOutputParameters.ElasticsearchBasicAuthException>());
+        }
+
+        [Test]
+        public void Given_ssl_and_username_and_password_then_validate_does_not_throw()
+        {
+            parser.Ssl = true;
+            parser.Username = "user";
+            parser.Password = "pass";
+
+            Assert.That(() => parser.Validate(), Throws.Nothing);
+        }
+
+        [Test]
+        [TestCase("host", 1234, false, null, null, "http://host:1234/")]
+        [TestCase("host", 1234, true, "user", "pass", "https://user:pass@host:1234/")]
+        [TestCase("host", 1234, true, "user:", "pass@", "https://user%3A:pass%40@host:1234/")]
+        public void ComposeUri_Matches_Expected(string host, int port, bool ssl, string username, string password, string expectedUri)
+        {
+            var uri = ElasticsearchOutput.ComposeUri(host, port, ssl, username, password);
+
+            Assert.That(uri.ToString(), Is.EqualTo(expectedUri));
         }
     }
 }
