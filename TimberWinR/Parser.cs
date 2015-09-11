@@ -626,8 +626,16 @@ namespace TimberWinR.Parser
     }
 
 
-    public class ElasticsearchOutputParameters
+    public class ElasticsearchOutputParameters : IValidateSchema
     {
+        public class ElasticsearchBasicAuthException : Exception
+        {
+            public ElasticsearchBasicAuthException()
+                : base("Elasticsearch 'username' and 'password' properties must be set when SSL is enabled.")
+            {
+            }
+        }
+
         const string IndexDatePattern = "(%\\{(?<format>[^\\}]+)\\})";
 
         [JsonProperty(PropertyName = "host")]
@@ -636,6 +644,12 @@ namespace TimberWinR.Parser
         public string Index { get; set; }
         [JsonProperty(PropertyName = "port")]
         public int Port { get; set; }
+        [JsonProperty(PropertyName = "ssl")]
+        public bool Ssl { get; set; }
+        [JsonProperty(PropertyName = "username")]
+        public string Username { get; set; }
+        [JsonProperty(PropertyName = "password")]
+        public string Password { get; set; }
         [JsonProperty(PropertyName = "timeout")]
         public int Timeout { get; set; }
         [JsonProperty(PropertyName = "threads")]
@@ -663,6 +677,9 @@ namespace TimberWinR.Parser
             IdleFlushTimeInSeconds = 10;
             Protocol = "http";
             Port = 9200;
+            Ssl = false;
+            Username = string.Empty;
+            Password = string.Empty;
             Index = "";
             Host = new string[] { "localhost" };
             Timeout = 10000;
@@ -712,6 +729,11 @@ namespace TimberWinR.Parser
             return typeName;
         }
 
+        public void Validate()
+        {
+            if (Ssl && (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password)))
+                throw new ElasticsearchBasicAuthException();
+        }
     }
 
     public class RedisOutputParameters
