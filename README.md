@@ -2,6 +2,10 @@ TimberWinR
 ==========
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
+## DEPRECATION NOTICE
+
+TimberWinR is no longer under active development.  We would like to transfer this project to new ownership, so please submit an [Issue](https://github.com/Cimpress-MCP/TimberWinR/issues) if you would like to volunteer.
+
 ## Why have TimberWinR?
 TimberWinR is a native .NET implementation utilizing Microsoft's [LogParser](http://technet.microsoft.com/en-us/scriptcenter/dd919274.aspx).  This means
 no JVM/JRuby is required, and LogParser does all the heavy lifting.  TimberWinR collects
