@@ -1,14 +1,50 @@
-version: 1.2.{build}
-
-build:
-  verbosity: minimal
-
+version: build_number_{build}
+configuration: Release
+skip_tags: true
+init:
+- ps: "$v = [regex]::match($env:APPVEYOR_REPO_BRANCH,'rel-(.*)').Groups[1].Value\nWrite-Host \"On branch $($env:APPVEYOR_REPO_BRANCH)\"\nIF($v) { \n   $env:VERSION_FROM_BRANCH = \"$($v).$($env:APPVEYOR_BUILD_NUMBER)\"\n} else {\n   $env:VERSION_FROM_BRANCH = \"0.0.0.$($env:APPVEYOR_BUILD_NUMBER)\"\n}\nWrite-Host \"Set version to $($env:VERSION_FROM_BRANCH)\""
 assembly_info:
   patch: true
-  file: AssemblyInfo.*
-  assembly_version: "1.2.{build}"
-  assembly_file_version: "{version}"
-  assembly_informational_version: "{version}"
+  file: '**\AssemblyInfo.*'
+  assembly_version: $(VERSION_FROM_BRANCH)
+  assembly_file_version: $(VERSION_FROM_BRANCH)
+  assembly_informational_version: $(VERSION_FROM_BRANCH)
+before_build:
+- ps: >-
+    mkdir tools
 
+    NuGet.exe restore TimberWinR.sln
+build:
+  verbosity: normal
+after_build:
+- ps: >-
+    cat chocolateyInstall.ps1.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > tools\chocolateyInstall.ps1
+
+    cat chocolateyUninstall.ps1.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > tools\chocolateyUninstall.ps1
+
+    cat tools\chocolateyUninstall.ps1
+
+    cat timberwinr.nuspec.template|%{$_-replace "\$\{version\}",$env:VERSION_FROM_BRANCH} > timberwinr.nuspec
+
+    choco pack timberwinr.nuspec
 artifacts:
-  - path: '**\*.msi'
+- path: .\*.nupkg
+  name: NuGet
+- path: TimberWinR.ServiceHost\bin\*\*.dll
+  name: Dlls
+- path: TimberWinR.ServiceHost\bin\*\*.exe
+  name: Exes
+- path: TimberWix\bin\*\*.msi
+  name: MSI 
+deploy:
+- provider: NuGet
+  server: https://chocolatey.org/
+  skip_symbols: true
+  artifact: NuGet
+  on:
+    branch: /release/.*/
+- provider: GitHub
+  release: $(VERSION_FROM_BRANCH)
+  artifact: Dlls, Exes, MSI
+  on:
+    branch: /release/.*/

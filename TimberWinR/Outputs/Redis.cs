@@ -132,6 +132,7 @@ namespace TimberWinR.Outputs
         private long _errorCount;
         private long _redisDepth;
         private DateTime? _lastErrorTimeUTC;
+        private DateTime? _lastSentTimeUTC;
         private readonly int _maxQueueSize;
         private readonly bool _queueOverflowDiscardOldest;
         private BatchCounter _batchCounter;
@@ -180,6 +181,7 @@ namespace TimberWinR.Outputs
                         new JProperty("host", string.Join(",", _redisHosts)),
                         new JProperty("errors", _errorCount),
                         new JProperty("lastErrorTimeUTC", _lastErrorTimeUTC),
+                        new JProperty("lastSentTimeUTC", _lastSentTimeUTC),
                         new JProperty("redisQueueDepth", _redisDepth),
                         new JProperty("sentMessageCount", _sentMessages),
                         new JProperty("queuedMessageCount", _jsonQueue.Count),
@@ -317,9 +319,13 @@ namespace TimberWinR.Outputs
                                 _batchCounter.SampleQueueDepth(_jsonQueue.Count);
                                 // Re-compute current batch size
 
-                                LogManager.GetCurrentClassLogger().Trace("{0}: Average Queue Depth: {1}, Current Length: {2}", Thread.CurrentThread.ManagedThreadId, _batchCounter.AverageQueueDepth(), _jsonQueue.Count); 
-       
-                                _currentBatchCount = _batchCounter.UpdateCurrentBatchCount(_jsonQueue.Count, _currentBatchCount);
+                                LogManager.GetCurrentClassLogger()
+                                    .Trace("{0}: Average Queue Depth: {1}, Current Length: {2}",
+                                        Thread.CurrentThread.ManagedThreadId, _batchCounter.AverageQueueDepth(),
+                                        _jsonQueue.Count);
+
+                                _currentBatchCount = _batchCounter.UpdateCurrentBatchCount(_jsonQueue.Count,
+                                    _currentBatchCount);
 
                                 messages = _jsonQueue.Take(_currentBatchCount).ToArray();
                                 _jsonQueue.RemoveRange(0, messages.Length);
@@ -340,7 +346,9 @@ namespace TimberWinR.Outputs
                                             {
                                                 client.StartPipe();
                                                 LogManager.GetCurrentClassLogger()
-                                                    .Debug("{0}: Sending {1} Messages to {2}", Thread.CurrentThread.ManagedThreadId, messages.Length, client.Host);
+                                                    .Debug("{0}: Sending {1} Messages to {2}",
+                                                        Thread.CurrentThread.ManagedThreadId, messages.Length,
+                                                        client.Host);
 
                                                 try
                                                 {
@@ -348,6 +356,7 @@ namespace TimberWinR.Outputs
                                                     Interlocked.Add(ref _sentMessages, messages.Length);
                                                     client.EndPipe();
                                                     sentSuccessfully = true;
+                                                    _lastSentTimeUTC = DateTime.UtcNow;
                                                     if (messages.Length > 0)
                                                         _manager.IncrementMessageCount(messages.Length);
                                                 }
@@ -391,9 +400,7 @@ namespace TimberWinR.Outputs
                                         _jsonQueue.InsertRange(0, messages);
                                     }
                                 }
-                            }                          
-                            if (!Stop)
-                                syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);
+                            }
                         }
                         catch (OperationCanceledException)
                         {
@@ -408,6 +415,17 @@ namespace TimberWinR.Outputs
                             _lastErrorTimeUTC = DateTime.UtcNow;
                             Interlocked.Increment(ref _errorCount);
                             LogManager.GetCurrentClassLogger().Error(ex);
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                if (!Stop)
+                                    syncHandle.Wait(TimeSpan.FromMilliseconds(_interval), CancelToken);
+                            }
+                            catch (Exception)
+                            {
+                            }
                         }
                     }
                 }

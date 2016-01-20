@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using TimberWinR.Diagnostics;
 using TimberWinR.Inputs;
 
 namespace TimberWinR.Outputs
 {
-    public abstract class OutputSender
+    public abstract class OutputSender : IDiagnosable
     {
         public CancellationToken CancelToken { get; private set; }        
         private List<InputListener> _inputs;
