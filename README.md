@@ -2,9 +2,13 @@ TimberWinR
 ==========
 A Native Windows to Redis/Elasticsearch Logstash Agent which runs as a service.
 
-## DEPRECATION NOTICE
+## Development and Roadmap
 
-TimberWinR is no longer under active development.  We would like to transfer this project to new ownership, so please submit an [Issue](https://github.com/Cimpress-MCP/TimberWinR/issues) if you would like to volunteer.
+TimberWinR's development has been and in the short term will continue to be on a hiatus. The project's ownership has been recently transferred, and thus the project will be slow to pick up steam again. Currently a roadmap is being established, and a vision for the project is currently being formulated.
+
+#### Getting Involved
+
+If you wish to be involved with TimberWinR in an on-going basis file an issue.
 
 ## Why have TimberWinR?
 TimberWinR is a native .NET implementation utilizing Microsoft's [LogParser](http://technet.microsoft.com/en-us/scriptcenter/dd919274.aspx).  This means
@@ -13,7 +17,7 @@ the data from LogParser and ships it to Logstash via Redis (or can ship direcly 
 
 ## Release Notes
 
-[View Version History](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/ReleaseNotes.md)
+[View Version History](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/ReleaseNotes.md)
 
 ## Basics
 TimberWinR uses a configuration file to control how the logs are collected, filtered and shipped off.  
@@ -34,27 +38,27 @@ Latest Build:
 
 ## Inputs
 The current supported Input format sources are:
- 1. [Logs](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/Logs.md) (Files, a.k.a Tailing a file)
- 2. [Tcp](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/TcpInput.md) (listens on TCP port for JSON messages)
- 3. [IISW3C](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/IISW3CInput.md)(Internet Information Services W3C Format)
- 4. [WindowsEvents](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/WindowsEvents.md) (Windows Event Viewer)
- 5. [Stdin](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/StdinInput.md) (Standard Input for Debugging)
- 6. [W3C](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/W3CInput.md)(Internet Information Services W3C Advanced/Custom Format)
- 7. [Udp](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/UdpInput.md) (listens for UDP on port for JSON messages)
- 8. [TailFiles](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/TailFiles.md) (Tails log files efficiently)
- 8. [Generator](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/Generator.md) (Generate logs for testing *New*)
+ 1. [Logs](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/Logs.md) (Files, a.k.a Tailing a file)
+ 2. [Tcp](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/TcpInput.md) (listens on TCP port for JSON messages)
+ 3. [IISW3C](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/IISW3CInput.md)(Internet Information Services W3C Format)
+ 4. [WindowsEvents](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/WindowsEvents.md) (Windows Event Viewer)
+ 5. [Stdin](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/StdinInput.md) (Standard Input for Debugging)
+ 6. [W3C](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/W3CInput.md)(Internet Information Services W3C Advanced/Custom Format)
+ 7. [Udp](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/UdpInput.md) (listens for UDP on port for JSON messages)
+ 8. [TailFiles](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/TailFiles.md) (Tails log files efficiently)
+ 8. [Generator](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/Generator.md) (Generate logs for testing *New*)
 
 ## Codecs
 The current list of supported codecs are:
- 1. [Multiline](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/Codec.md)
+ 1. [Multiline](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/Codec.md)
 
 ## Filters
 The current list of supported filters are:
- 1. [Grok](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/GrokFilter.md)
- 2. [Mutate](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/MutateFilter.md)
- 3. [Date](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/DateFilter.md)
- 4. [Json](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/JsonFilter.md)
- 5. [GeoIP](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/GeoIPFilter.md)
+ 1. [Grok](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/GrokFilter.md)
+ 2. [Mutate](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/MutateFilter.md)
+ 3. [Date](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/DateFilter.md)
+ 4. [Json](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/JsonFilter.md)
+ 5. [GeoIP](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/GeoIPFilter.md)
 
 Note that there are now two syntaxes for filters, array and single, if you want more than one filter of the same
 type then you must use the array tag instead of the singular tag. i.e:
@@ -108,11 +112,11 @@ Since TimberWinR only ships to Redis and Elasticsearch, the format generated by 
 represented as a JSON Property or Array.
 
 ## Outputs
-1. [Redis](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/RedisOutput.md)
-2. [Elasticsearch](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/ElasticsearchOutput.md)
-3. [Stdout](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/StdoutOutput.md)
-4. [File](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/FileOutput.md)
-5. [StatsD](https://github.com/Cimpress-MCP/TimberWinR/blob/master/TimberWinR/mdocs/StatsD.md)
+1. [Redis](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/RedisOutput.md)
+2. [Elasticsearch](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/ElasticsearchOutput.md)
+3. [Stdout](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/StdoutOutput.md)
+4. [File](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/FileOutput.md)
+5. [StatsD](https://github.com/tparnell8/TimberWinR/blob/master/TimberWinR/mdocs/StatsD.md)
 
 ## Sample Configuration
 TimberWinR reads a JSON configuration file, an example file is shown here:
